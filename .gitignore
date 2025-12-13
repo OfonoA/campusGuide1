@@ -1,0 +1,14 @@
+# Virtual environment
+venv/
+
+# Project report
+PROJECT REPORT Final.pdf
+
+# macOS system files
+.DS_Store
+
+.env
+backend/.env
+
+
+

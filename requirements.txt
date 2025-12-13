@@ -1,0 +1,23 @@
+fastapi
+uvicorn
+pypdf
+langchain
+openai
+faiss-cpu
+python-dotenv
+langchain-community
+langchain-openai
+python-multipart  
+# For handling form data (potentially needed later)
+Jinja2            
+# For serving HTML templates
+aiofiles          
+# For asynchronous file operations (serving static files)
+passlib[bcrypt] 
+# For password hashing
+python-jose[cryptography] 
+# For JWT (authentication)
+SQLAlchemy        
+# For database interaction
+pdfplumber        
+# More robust PDF text extraction
