@@ -1,7 +1,7 @@
 import os
 from typing import List
-from langchain_openai import OpenAIEmbeddings # Updated import
-from langchain_community.vectorstores import FAISS      # Updated import
+from langchain_openai import OpenAIEmbeddings
+from langchain_community.vectorstores import FAISS
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -66,4 +66,3 @@ class VectorStoreManager:
 
 # Singleton instance of the VectorStoreManager
 vector_store_manager = VectorStoreManager()
-

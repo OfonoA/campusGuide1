@@ -35,9 +35,8 @@ class Message(BaseModel):
     content: str
     timestamp: datetime
 
-         
+    
     class Config:
         from_attributes = True
-
 
 
