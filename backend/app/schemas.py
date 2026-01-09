@@ -55,3 +55,18 @@ class FeedbackResponse(BaseModel):
         orm_mode = True
 
 
+class FeedbackVote(BaseModel):
+    """Payload for student rating of a bot message.
+    This endpoint is not used for training — it's only an escalation signal.
+    """
+    satisfactory: bool
+
+
+class TicketResponse(BaseModel):
+    id: int
+    reference_code: str
+
+    class Config:
+        orm_mode = True
+
+

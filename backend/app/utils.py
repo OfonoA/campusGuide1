@@ -18,3 +18,13 @@ def chunk_text(text: str, chunk_size: int = 1500, chunk_overlap: int = 0):
     if not text:
         return []
     return chunk_documents([text], chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+
+
+def generate_reference_code(prefix: str = "AR") -> str:
+    """Generate a short, human-friendly reference code for tickets.
+
+    The format is PREFIX-YYYYMMDDHHMMSS to keep codes compact and reasonably unique.
+    """
+    from datetime import datetime
+
+    return f"{prefix}-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"

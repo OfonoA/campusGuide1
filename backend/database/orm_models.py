@@ -100,6 +100,18 @@ class RLFeedback(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
+class StudentFeedback(Base):
+    __tablename__ = "student_feedback"
+
+    id = Column(Integer, primary_key=True)
+    message_id = Column(Integer, ForeignKey("messages.id"), unique=True, nullable=False)
+    student_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    satisfactory = Column(Boolean, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    # relationships are optional for this lightweight attachment
+
+
 class RAGDocument(Base):
     __tablename__ = "rag_documents"
 

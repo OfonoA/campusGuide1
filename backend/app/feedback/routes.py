@@ -1,72 +1,111 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from datetime import datetime
-
 from backend.database.database import get_db
-from backend.database.orm_models import Ticket, Conversation
-from backend.database.orm_models import TicketUpdate
-from app.feedback.schemas import FeedbackRequest, FeedbackResponse
-from app.auth import get_current_user  # adjust import if needed
+from backend.database.orm_models import (
+    Message,
+    Conversation,
+    Ticket,
+    TicketUpdate,
+    StudentFeedback,
+)
+from app.auth import get_current_user
+from app.schemas import FeedbackVote, FeedbackResponse, TicketResponse
+from app.utils import generate_reference_code
 
-router = APIRouter()
+router = APIRouter(prefix="/api/chat", tags=["Feedback"])
 
 
-def generate_reference_code():
-    return f"AR-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
-
-
-@router.post("/feedback", response_model=FeedbackResponse)
-def submit_feedback(
-    payload: FeedbackRequest,
+@router.post("/{message_id}/feedback", response_model=FeedbackResponse)
+def submit_message_feedback(
+    message_id: int,
+    payload: FeedbackVote,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(get_current_user),
 ):
-    # 1️⃣ Validate conversation exists & belongs to user
-    conversation = db.query(Conversation).filter(
-        Conversation.id == payload.conversation_id,
-        Conversation.user_id == current_user.id
-    ).first()
+    """Attach a student rating to a specific bot message.
 
-    if not conversation:
+    - This endpoint only records the student's `satisfactory` boolean.
+    - It does NOT trigger any ingestion or training pipeline.
+    - Only the conversation owner may attach feedback to messages in that conversation.
+    """
+    # Ensure message exists
+    message = db.query(Message).filter(Message.id == message_id).first()
+    if not message:
+        raise HTTPException(status_code=404, detail="Message not found")
+
+    # Only allow rating of bot responses
+    if message.sender != "bot":
+        raise HTTPException(status_code=400, detail="Only bot messages are rateable")
+
+    # Ensure conversation belongs to the current user
+    conversation = db.query(Conversation).filter(Conversation.id == message.conversation_id).first()
+    if not conversation or conversation.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not allowed to rate this message")
+
+    # Create or update a lightweight StudentFeedback record (no ingestion)
+    existing = db.query(StudentFeedback).filter(StudentFeedback.message_id == message_id).first()
+    if existing:
+        existing.satisfactory = payload.satisfactory
+        existing.student_id = current_user.id
+        db.add(existing)
+        db.commit()
+        db.refresh(existing)
+    else:
+        sf = StudentFeedback(
+            message_id=message_id,
+            student_id=current_user.id,
+            satisfactory=payload.satisfactory,
+        )
+        db.add(sf)
+        db.commit()
+        db.refresh(sf)
+
+    if payload.satisfactory:
+        return FeedbackResponse(message="Thank you — glad this helped.")
+
+    # If not satisfactory, frontend may prompt the student to request assistance.
+    return FeedbackResponse(message="Thanks for the feedback. Would you like in-person assistance?")
+
+
+@router.post("/{conversation_id}/request-assistance", response_model=TicketResponse)
+def request_in_person_assistance(
+    conversation_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    """Student-driven explicit request to create an in-person assistance ticket.
+
+    - Only users with role `student` may call this endpoint.
+    - Tickets are created only by explicit student intent.
+    """
+    # Role enforcement
+    if getattr(current_user, "role", None) != "student":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only students may request assistance")
+
+    # Ensure conversation exists and belongs to the student
+    conversation = db.query(Conversation).filter(Conversation.id == conversation_id).first()
+    if not conversation or conversation.user_id != current_user.id:
         raise HTTPException(status_code=404, detail="Conversation not found")
 
-    # 2️⃣ If satisfactory → no ticket
-    if payload.satisfactory:
-        return FeedbackResponse(
-            message="Thank you for your feedback. We're glad it helped."
-        )
-
-    # 3️⃣ If NOT satisfactory & wants in-person help → create ticket
-    if payload.request_in_person:
-        reference_code = generate_reference_code()
-
-        ticket = Ticket(
-            reference_code=reference_code,
-            conversation_id=conversation.id,
-            student_id=current_user.id,
-            status="open"
-        )
-
-        db.add(ticket)
-        db.commit()
-        db.refresh(ticket)
-
-        # Create initial ticket update record
-        initial_update = TicketUpdate(
-            ticket_id=ticket.id,
-            updated_by=current_user.id,
-            note="Ticket created from user feedback",
-            status_change="created->open"
-        )
-        db.add(initial_update)
-        db.commit()
-
-        return FeedbackResponse(
-            message="Your request has been escalated to Academic Registrar staff.",
-            ticket_reference=reference_code
-        )
-
-    # 4️⃣ Not satisfactory but no in-person request
-    return FeedbackResponse(
-        message="Thank you for your feedback. We will use it to improve responses."
+    # Create ticket and initial update inside a transaction
+    reference_code = generate_reference_code()
+    ticket = Ticket(
+        reference_code=reference_code,
+        conversation_id=conversation.id,
+        student_id=current_user.id,
+        status="open",
     )
+    db.add(ticket)
+    db.commit()
+    db.refresh(ticket)
+
+    initial_update = TicketUpdate(
+        ticket_id=ticket.id,
+        updated_by=current_user.id,
+        note="Student requested in-person assistance",
+        status_change="open",
+    )
+    db.add(initial_update)
+    db.commit()
+
+    return TicketResponse(id=ticket.id, reference_code=ticket.reference_code)
