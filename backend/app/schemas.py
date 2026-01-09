@@ -10,6 +10,7 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     response: str
     chat_id: Optional[int] = None  # Make sure ChatResponse also has chat_id if you're returning it
+    ticket_reference: Optional[str] = None
 
 class UserCreate(BaseModel):
     username: str
@@ -30,7 +31,7 @@ class Chat(BaseModel):
 
 class Message(BaseModel):
     id: int
-    chat_id: int
+    conversation_id: int
     sender: str
     content: str
     timestamp: datetime
@@ -38,5 +39,19 @@ class Message(BaseModel):
     
     class Config:
         from_attributes = True
+
+
+class FeedbackRequest(BaseModel):
+    message_id: int
+    satisfactory: bool
+    request_in_person: Optional[bool] = False
+
+
+class FeedbackResponse(BaseModel):
+    message: str
+    ticket_reference: Optional[str] = None
+
+    class Config:
+        orm_mode = True
 
 

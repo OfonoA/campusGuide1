@@ -1,5 +1,9 @@
-from database import engine
-from orm_models import Base
+from backend.database.database import engine
+from backend.database.orm_models import Base
 
-Base.metadata.create_all(bind=engine)
-print("✅ Database tables created successfully")
+def create_tables():
+	Base.metadata.create_all(bind=engine)
+	print("✅ Database tables created successfully")
+
+if __name__ == '__main__':
+	create_tables()

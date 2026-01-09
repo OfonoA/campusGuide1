@@ -2,8 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from datetime import datetime
 
-from database.database import get_db
-from database.orm_models import Ticket, Conversation
+from backend.database.database import get_db
+from backend.database.orm_models import Ticket, Conversation
+from backend.database.orm_models import TicketUpdate
 from app.feedback.schemas import FeedbackRequest, FeedbackResponse
 from app.auth import get_current_user  # adjust import if needed
 
@@ -49,6 +50,16 @@ def submit_feedback(
         db.add(ticket)
         db.commit()
         db.refresh(ticket)
+
+        # Create initial ticket update record
+        initial_update = TicketUpdate(
+            ticket_id=ticket.id,
+            updated_by=current_user.id,
+            note="Ticket created from user feedback",
+            status_change="created->open"
+        )
+        db.add(initial_update)
+        db.commit()
 
         return FeedbackResponse(
             message="Your request has been escalated to Academic Registrar staff.",

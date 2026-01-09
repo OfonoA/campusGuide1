@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from database.orm_models import (
+from backend.database.orm_models import (
     RLFeedback,
     RAGDocument,
     DocumentChunk
@@ -15,7 +15,7 @@ def run_reinforcement_ingestion(db: Session):
     Pulls validated AR resolutions and injects them into the RAG knowledge base.
     """
 
-    # Fetch un-ingested validated feedback
+    # 1️⃣ Fetch un-ingested validated feedback
     feedback_entries = db.query(RLFeedback).filter(
         RLFeedback.ingested == False,
         RLFeedback.confidence == "high"
@@ -36,7 +36,7 @@ def run_reinforcement_ingestion(db: Session):
         db.commit()
         db.refresh(rag_doc)
 
-        #  Chunk the validated answer
+        # 3️⃣ Chunk the validated answer
         chunks = chunk_text(feedback.validated_answer)
 
         for chunk in chunks:
@@ -49,15 +49,18 @@ def run_reinforcement_ingestion(db: Session):
                 }
             )
 
-            # Persist chunk metadata
-            chunk_record = DocumentChunk(
-                document_id=rag_doc.id,
-                chunk_text=chunk,
-                embedding_id=embedding_id
-            )
-            db.add(chunk_record)
+            # 5️⃣ Persist chunk metadata (only if embedding succeeded)
+            if embedding_id:
+                chunk_record = DocumentChunk(
+                    document_id=rag_doc.id,
+                    chunk_text=chunk,
+                    embedding_id=embedding_id
+                )
+                db.add(chunk_record)
+            else:
+                print(f"Warning: embedding failed for ticket {feedback.ticket_id}, skipping chunk persist.")
 
-        # Mark feedback as ingested
+        # 6️⃣ Mark feedback as ingested
         feedback.ingested = True
 
         db.commit()

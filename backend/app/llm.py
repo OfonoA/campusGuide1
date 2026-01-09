@@ -63,8 +63,17 @@ def ask_campusguide(query: str, chat_history: List[tuple[str, str]] = None) -> s
     """
     Retrieves relevant context and generates a CampusGuide response.
     """
-    context = retrieve_relevant_context(query)
-    return generate_response(query, context, chat_history)
+    try:
+        context = retrieve_relevant_context(query)
+    except Exception as e:
+        print(f"Error retrieving context for query '{query}': {e}")
+        context = []
+
+    try:
+        return generate_response(query, context, chat_history)
+    except Exception as e:
+        print(f"Error generating LLM response: {e}")
+        return ""
 
 
 

@@ -11,3 +11,10 @@ def chunk_documents(texts: list[str], chunk_size: int = 1500, chunk_overlap: int
     )
     chunks = text_splitter.create_documents(texts)
     return [chunk.page_content for chunk in chunks]
+
+
+def chunk_text(text: str, chunk_size: int = 1500, chunk_overlap: int = 0):
+    """Chunk a single text string into a list of chunk strings."""
+    if not text:
+        return []
+    return chunk_documents([text], chunk_size=chunk_size, chunk_overlap=chunk_overlap)

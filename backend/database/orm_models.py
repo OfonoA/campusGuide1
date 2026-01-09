@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, Enum, Text, ForeignKey, Float, Boolean, DateTime
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
-from database import Base
+from backend.database.database import Base
 
 class User(Base):
     __tablename__ = "users"
@@ -20,8 +20,12 @@ class Conversation(Base):
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"))
+    # Optional human-readable title for the conversation (used by UI)
+    title = Column(String(255), nullable=True)
     started_at = Column(DateTime(timezone=True), server_default=func.now())
     ended_at = Column(DateTime(timezone=True))
+    # created_at kept for compatibility with previous code that orders by created_at
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     messages = relationship("Message", back_populates="conversation")
     tickets = relationship("Ticket", back_populates="conversation")
@@ -35,6 +39,11 @@ class Message(Base):
     content = Column(Text, nullable=False)
     confidence_score = Column(Float)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    # compatibility property: some code expects `timestamp`
+    @property
+    def timestamp(self):
+        return self.created_at
 
     conversation = relationship("Conversation", back_populates="messages")
 
@@ -81,6 +90,10 @@ class RLFeedback(Base):
 
     id = Column(Integer, primary_key=True)
     ticket_id = Column(Integer, ForeignKey("tickets.id"))
+    # Link this feedback to a specific bot Message so we can enforce
+    # "one feedback per bot message". This is nullable at creation
+    # but we mark it non-nullable when a message is specified.
+    message_id = Column(Integer, ForeignKey("messages.id"), unique=True, nullable=True)
     validated_answer = Column(Text, nullable=False)
     confidence = Column(Enum("high", "medium"))
     ingested = Column(Boolean, default=False)

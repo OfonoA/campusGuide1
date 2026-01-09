@@ -56,6 +56,32 @@ class VectorStoreManager:
         else:
             print("Vector store not initialized. Cannot add documents.")
 
+    def add_text(self, text: str, metadata: dict | None = None, index_path: str = "faiss_index") -> str:
+        """Adds a single text chunk to the FAISS index and returns a generated embedding id."""
+        import uuid
+
+        if self.vector_store is None:
+            self.load_or_create_store(index_path=index_path)
+
+        embedding_id = str(uuid.uuid4())
+        metadata = metadata or {}
+        # include embedding id in metadata so it can be traced
+        metadata_with_id = dict(metadata)
+        metadata_with_id["embedding_id"] = embedding_id
+
+        try:
+            new_vector_store = FAISS.from_texts([text], self.embeddings, metadatas=[metadata_with_id])
+            if self.vector_store:
+                self.vector_store.merge_from(new_vector_store)
+            else:
+                self.vector_store = new_vector_store
+            self.vector_store.save_local(index_path)
+            print(f"Added text to FAISS index with embedding_id={embedding_id}")
+            return embedding_id
+        except Exception as e:
+            print(f"Failed to add text to vector store: {e}")
+            return ""
+
     def search(self, query: str, k: int = 5):
         """Searches the FAISS index for the top k relevant documents."""
         if self.vector_store:

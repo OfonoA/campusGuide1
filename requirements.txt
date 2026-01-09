@@ -19,5 +19,6 @@ python-jose[cryptography]
 # For JWT (authentication)
 SQLAlchemy        
 # For database interaction
+pymysql
 pdfplumber        
 # More robust PDF text extraction
