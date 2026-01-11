@@ -70,3 +70,40 @@ class TicketResponse(BaseModel):
         orm_mode = True
 
 
+# --- Admin dashboard schemas ---
+class AdminTicket(BaseModel):
+    ticket_id: int
+    reference_code: str
+    student_id: int
+    student_username: Optional[str]
+    status: str
+    ar_assigned_id: Optional[int]
+    ar_assigned_username: Optional[str]
+    created_at: datetime
+    resolved_at: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+
+
+class IngestionStatusItem(BaseModel):
+    id: int
+    ticket_id: Optional[int]
+    validated_answer_snippet: Optional[str]
+    ingested: bool
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class ARActivityItem(BaseModel):
+    ar_id: int
+    ar_username: Optional[str]
+    tickets_resolved: int
+    last_activity: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+
+

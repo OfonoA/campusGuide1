@@ -60,7 +60,7 @@ def get_ticket_conversation(
 
     return messages
 
-@router.post("/tickets/{ticket_id}/resolve")
+@router.post("/tickets/{ticket_id}/resolve", response_model=TicketSummary)
 def resolve_ticket(
     ticket_id: int,
     payload: TicketResolutionRequest,
@@ -136,6 +136,14 @@ def resolve_ticket(
         # Log ingestion errors but do not fail the resolve operation
         print(f"Error during reinforcement ingestion for ticket {ticket.id}: {e}")
 
-    return {"message": "Ticket resolved and logged successfully"}
+    # Refresh the ticket from the DB to ensure returned fields are up-to-date
+    try:
+        db.refresh(ticket)
+    except Exception:
+        # If refresh fails for any reason, proceed to return the minimal info
+        pass
+
+    # Return concise ticket summary for caller (ticket id, status, reference_code)
+    return TicketSummary.from_orm(ticket)
 
 

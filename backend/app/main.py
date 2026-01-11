@@ -294,3 +294,12 @@ app.include_router(
     prefix="/api",
     tags=["Reinforcement"]
 )
+
+
+from app.admin.routes import router as admin_router
+
+app.include_router(
+    admin_router,
+    prefix="/api/admin",
+    tags=["Admin"]
+)
