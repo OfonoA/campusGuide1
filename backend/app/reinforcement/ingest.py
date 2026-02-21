@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from backend.database.orm_models import (
+from database.orm_models import (
     RLFeedback,
     RAGDocument,
     DocumentChunk
@@ -16,9 +16,9 @@ def run_reinforcement_ingestion(db: Session):
     """
 
     # 1️⃣ Fetch un-ingested validated feedback
-        feedback_entries = db.query(RLFeedback).filter(
-            RLFeedback.ingested == False
-        ).all()
+    feedback_entries = db.query(RLFeedback).filter(
+        RLFeedback.ingested == False
+    ).all()
 
     if not feedback_entries:
         print("No reinforcement data to ingest.")

@@ -5,8 +5,8 @@ from datetime import datetime
 from app.reinforcement.ingest import run_reinforcement_ingestion
 from app.reinforcement.ingest import ingest_feedback_entry
 
-from backend.database.database import get_db
-from backend.database.orm_models import (
+from database.database import get_db
+from database.orm_models import (
     Ticket,
     Conversation,
     Message,
@@ -145,5 +145,4 @@ def resolve_ticket(
 
     # Return concise ticket summary for caller (ticket id, status, reference_code)
     return TicketSummary.from_orm(ticket)
-
 

@@ -1,5 +1,10 @@
 from typing import List
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+try:
+    # LangChain >= 0.1
+    from langchain_text_splitters import RecursiveCharacterTextSplitter
+except Exception:
+    # Older LangChain
+    from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 def chunk_documents(texts: list[str], chunk_size: int = 1500, chunk_overlap: int = 0):
     """Splits a list of texts into smaller chunks with overlap."""

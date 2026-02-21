@@ -2,6 +2,7 @@ fastapi
 uvicorn
 pypdf
 langchain
+langchain-text-splitters
 openai
 faiss-cpu
 python-dotenv

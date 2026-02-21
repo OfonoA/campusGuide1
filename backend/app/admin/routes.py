@@ -3,8 +3,8 @@ from sqlalchemy.orm import Session, aliased
 from sqlalchemy import func, and_
 from typing import List
 
-from backend.database.database import get_db
-from backend.database.orm_models import Ticket, User, InPersonAssistance, RLFeedback
+from database.database import get_db
+from database.orm_models import Ticket, User, InPersonAssistance, RLFeedback
 from app.auth import get_current_user
 from app.schemas import AdminTicket, IngestionStatusItem, ARActivityItem
 

@@ -2,7 +2,12 @@ import os
 from dotenv import load_dotenv
 import pdfplumber
 from langchain_community.document_loaders import PyPDFLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+try:
+    # LangChain >= 0.1
+    from langchain_text_splitters import RecursiveCharacterTextSplitter
+except Exception:
+    # Older LangChain
+    from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
 

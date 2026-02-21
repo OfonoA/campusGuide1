@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from backend.database.database import get_db
-from backend.database.orm_models import (
+from database.database import get_db
+from database.orm_models import (
     Message,
     Conversation,
     Ticket,

@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, Enum, Text, ForeignKey, Float, Boolean, DateTime
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
-from backend.database.database import Base
+from database.database import Base
 
 class User(Base):
     __tablename__ = "users"
@@ -130,5 +130,4 @@ class DocumentChunk(Base):
     chunk_text = Column(Text, nullable=False)
     embedding_id = Column(String(255))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-
 

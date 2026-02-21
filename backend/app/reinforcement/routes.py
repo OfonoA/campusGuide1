@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from backend.database.database import get_db
+from database.database import get_db
 from app.auth import get_current_user
 from app.reinforcement.ingest import run_reinforcement_ingestion
 

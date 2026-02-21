@@ -3,8 +3,8 @@ from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from typing import Annotated
 
-from backend.database.database import get_db, SessionLocal
-from backend.database.orm_models import User
+from database.database import get_db, SessionLocal
+from database.orm_models import User
 from sqlalchemy.orm import Session
 
 # --- Security settings ---
