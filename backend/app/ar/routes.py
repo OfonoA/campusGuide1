@@ -78,52 +78,53 @@ def resolve_ticket(
     if ticket.status != "in_progress":
         raise HTTPException(status_code=400, detail=f"Ticket must be 'in_progress' to resolve (current: '{ticket.status}')")
 
-    # Perform DB updates within a transaction for atomicity
-    with db.begin():
-        # 1️⃣ Log in-person assistance
-        assistance = InPersonAssistance(
+    # Perform DB updates (let the session manage its own transaction)
+    # 1️⃣ Log in-person assistance
+    assistance = InPersonAssistance(
+        ticket_id=ticket.id,
+        ar_staff_id=current_user.id,
+        actions_taken=payload.actions_taken,
+        resolution_summary=payload.resolution_summary
+    )
+    db.add(assistance)
+
+    # 2️⃣ Update ticket (enforce transition and record update)
+    previous_status = ticket.status
+    ticket.status = "resolved"
+    ticket.resolved_at = datetime.utcnow()
+
+    # Record a ticket update entry for audit
+    update = TicketUpdate(
+        ticket_id=ticket.id,
+        updated_by=current_user.id,
+        note=payload.resolution_summary,
+        status_change=f"{previous_status}->resolved"
+    )
+    db.add(update)
+
+    # Mark conversation as ended when ticket resolved
+    try:
+        if ticket.conversation:
+            ticket.conversation.ended_at = datetime.utcnow()
+    except Exception:
+        # safe guard: continue even if relationship not present
+        pass
+
+    # 3️⃣ Create or update RLFeedback: record validated answer and mark not yet ingested.
+    # If feedback already exists for this ticket, update it; otherwise create a new one.
+    feedback = db.query(RLFeedback).filter(RLFeedback.ticket_id == ticket.id).first()
+    if feedback:
+        feedback.validated_answer = payload.resolution_summary
+        feedback.ingested = False
+    else:
+        feedback = RLFeedback(
             ticket_id=ticket.id,
-            ar_staff_id=current_user.id,
-            actions_taken=payload.actions_taken,
-            resolution_summary=payload.resolution_summary
+            validated_answer=payload.resolution_summary,
+            ingested=False
         )
-        db.add(assistance)
+        db.add(feedback)
 
-        # 2️⃣ Update ticket (enforce transition and record update)
-        previous_status = ticket.status
-        ticket.status = "resolved"
-        ticket.resolved_at = datetime.utcnow()
-
-        # Record a ticket update entry for audit
-        update = TicketUpdate(
-            ticket_id=ticket.id,
-            updated_by=current_user.id,
-            note=payload.resolution_summary,
-            status_change=f"{previous_status}->resolved"
-        )
-        db.add(update)
-
-        # Mark conversation as ended when ticket resolved
-        try:
-            if ticket.conversation:
-                ticket.conversation.ended_at = datetime.utcnow()
-        except Exception:
-            # safe guard: continue even if relationship not present
-            pass
-
-        # 3️⃣ Create or update RLFeedback: record validated answer and mark not yet ingested.
-        # If feedback already exists for this ticket, update it; otherwise create a new one.
-        feedback = db.query(RLFeedback).filter(RLFeedback.ticket_id == ticket.id).first()
-        if feedback:
-            feedback.validated_answer = payload.resolution_summary
-            feedback.ingested = False
-        else:
-            feedback = RLFeedback(
-                ticket_id=ticket.id,
-                validated_answer=payload.resolution_summary,
-                ingested=False
-            )
-            db.add(feedback)
+    db.commit()
 
     # 4️⃣ System-controlled ingestion: attempt to ingest this feedback into the RAG
     # Only proceed if resolution text is non-empty and ticket is resolved.
@@ -145,4 +146,3 @@ def resolve_ticket(
 
     # Return concise ticket summary for caller (ticket id, status, reference_code)
     return TicketSummary.from_orm(ticket)
-
