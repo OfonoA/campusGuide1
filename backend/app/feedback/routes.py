@@ -9,7 +9,7 @@ from database.orm_models import (
     StudentFeedback,
 )
 from app.auth import get_current_user
-from app.schemas import FeedbackVote, FeedbackResponse, TicketResponse
+from app.schemas import FeedbackRequest, FeedbackResponse, TicketResponse
 from app.utils import generate_reference_code
 
 router = APIRouter(prefix="/api/chat", tags=["Feedback"])
@@ -18,7 +18,7 @@ router = APIRouter(prefix="/api/chat", tags=["Feedback"])
 @router.post("/{message_id}/feedback", response_model=FeedbackResponse)
 def submit_message_feedback(
     message_id: int,
-    payload: FeedbackVote,
+    payload: FeedbackRequest,
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
@@ -63,8 +63,35 @@ def submit_message_feedback(
     if payload.satisfactory:
         return FeedbackResponse(message="Thank you — glad this helped.")
 
+    # If not satisfactory and the student explicitly requests help, create a ticket.
+    ticket_ref = None
+    if payload.request_in_person:
+        reference_code = generate_reference_code()
+        ticket = Ticket(
+            reference_code=reference_code,
+            conversation_id=conversation.id,
+            student_id=current_user.id,
+            status="open",
+        )
+        db.add(ticket)
+        db.commit()
+        db.refresh(ticket)
+
+        update = TicketUpdate(
+            ticket_id=ticket.id,
+            updated_by=current_user.id,
+            note="Student requested in-person assistance via feedback",
+            status_change="open",
+        )
+        db.add(update)
+        db.commit()
+        ticket_ref = ticket.reference_code
+
     # If not satisfactory, frontend may prompt the student to request assistance.
-    return FeedbackResponse(message="Thanks for the feedback. Would you like in-person assistance?")
+    return FeedbackResponse(
+        message="Thanks for the feedback. Would you like in-person assistance?",
+        ticket_reference=ticket_ref,
+    )
 
 
 @router.post("/{conversation_id}/request-assistance", response_model=TicketResponse)

@@ -42,7 +42,6 @@ class Message(BaseModel):
 
 
 class FeedbackRequest(BaseModel):
-    message_id: int
     satisfactory: bool
     request_in_person: Optional[bool] = False
 
@@ -105,5 +104,4 @@ class ARActivityItem(BaseModel):
 
     class Config:
         from_attributes = True
-
 

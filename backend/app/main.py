@@ -166,7 +166,12 @@ async def chat(request: ChatRequest, current_user: User = Depends(get_current_us
         db.refresh(ticket)
 
     if not db_chat.title:
-        first_message = db.query(Message).filter(Message.conversation_id == db_chat.id).order_by(Message.timestamp).first()
+        first_message = (
+            db.query(Message)
+            .filter(Message.conversation_id == db_chat.id)
+            .order_by(Message.created_at)
+            .first()
+        )
         if first_message:
             db_chat.title = first_message.content[:50] + "..."
             db.commit()
@@ -186,7 +191,12 @@ async def get_messages_for_chat(chat_id: int, current_user: User = Depends(get_c
     chat_db = db.query(Conversation).filter(Conversation.id == chat_id, Conversation.user_id == current_user.id).first()
     if not chat_db:
         raise HTTPException(status_code=404, detail="Chat not found")
-    messages_db = db.query(Message).filter(Message.conversation_id == chat_id).order_by(Message.timestamp).all()
+    messages_db = (
+        db.query(Message)
+        .filter(Message.conversation_id == chat_id)
+        .order_by(Message.created_at)
+        .all()
+    )
     return [MessageSchema.from_orm(msg_db) for msg_db in messages_db]
 
 if __name__ == "__main__":
@@ -194,12 +204,15 @@ if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
 
 from app.ar.routes import router as ar_router
+from app.feedback.routes import router as feedback_router
 
 app.include_router(
     ar_router,
     prefix="/api/ar",
     tags=["AR Staff"]
 )
+
+app.include_router(feedback_router)
 
 
 from app.feedback.routes import router as feedback_router
