@@ -105,3 +105,13 @@ class ARActivityItem(BaseModel):
     class Config:
         from_attributes = True
 
+
+class AdminDocumentItem(BaseModel):
+    id: int
+    source: Optional[str]
+    title: Optional[str]
+    source_reference: Optional[str]
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

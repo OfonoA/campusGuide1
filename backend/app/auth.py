@@ -1,5 +1,7 @@
 from fastapi import Depends, Header, HTTPException
+import os
 from jose import JWTError, jwt
+from dotenv import load_dotenv
 from datetime import datetime, timedelta
 from typing import Annotated
 
@@ -8,7 +10,8 @@ from database.orm_models import User
 from sqlalchemy.orm import Session
 
 # --- Security settings ---
-SECRET_KEY = "Ofono1234."  # Replace with a strong key
+load_dotenv()
+SECRET_KEY = os.getenv("SECRET_KEY", "changeme")  # Set in .env
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 

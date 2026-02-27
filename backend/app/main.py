@@ -34,10 +34,7 @@ from database.database import get_db
 from database.orm_models import User, Conversation, Message, Ticket
 from database.orm_models import RLFeedback, TicketUpdate
 
-# --- Security ---
-SECRET_KEY = "Ofono1234."  # Replace with a strong key
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+# --- Security (defined in auth.py) ---
 
 
 def generate_reference_code():
@@ -213,15 +210,6 @@ app.include_router(
 )
 
 app.include_router(feedback_router)
-
-
-from app.feedback.routes import router as feedback_router
-
-app.include_router(
-    feedback_router,
-    prefix="/api",
-    tags=["Feedback"]
-)
 
 
 from app.reinforcement.routes import router as reinforcement_router

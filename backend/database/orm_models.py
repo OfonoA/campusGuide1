@@ -130,4 +130,3 @@ class DocumentChunk(Base):
     chunk_text = Column(Text, nullable=False)
     embedding_id = Column(String(255))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-

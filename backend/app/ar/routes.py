@@ -60,6 +60,29 @@ def get_ticket_conversation(
 
     return messages
 
+@router.post("/tickets/{ticket_id}/start", response_model=TicketSummary)
+def start_ticket(
+    ticket_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+    """Move a ticket from open -> in_progress."""
+    require_ar_staff(current_user)
+
+    ticket = db.query(Ticket).filter(Ticket.id == ticket_id).first()
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+
+    if ticket.status != "open":
+        raise HTTPException(status_code=400, detail=f"Ticket must be 'open' to start (current: '{ticket.status}')")
+
+    ticket.status = "in_progress"
+    db.add(ticket)
+    db.commit()
+    db.refresh(ticket)
+
+    return TicketSummary.from_orm(ticket)
+
 @router.post("/tickets/{ticket_id}/resolve", response_model=TicketSummary)
 def resolve_ticket(
     ticket_id: int,
