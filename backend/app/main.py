@@ -86,7 +86,9 @@ async def signup(user: UserCreate, db: Session = Depends(get_db)):
     new_user = User(username=user.username, hashed_password=hashed_password, role="student")
     db.add(new_user)
     db.commit()
-    access_token = create_access_token({"username": new_user.username})
+    access_token = create_access_token(
+        {"username": new_user.username, "user_id": new_user.id, "role": new_user.role}
+    )
     return TokenResponse(token=access_token, token_type="bearer")
 
 @app.post("/api/login", response_model=TokenResponse)
@@ -94,7 +96,9 @@ async def login(user: UserCreate, db: Session = Depends(get_db)):
     db_user = db.query(User).filter(User.username == user.username).first()
     if not db_user or not bcrypt.verify(user.password, db_user.hashed_password):
         raise HTTPException(status_code=401, detail="Incorrect username or password")
-    access_token = create_access_token({"username": db_user.username})
+    access_token = create_access_token(
+        {"username": db_user.username, "user_id": db_user.id, "role": db_user.role}
+    )
     return TokenResponse(token=access_token, token_type="bearer")
 
 @app.get("/api/check_auth")

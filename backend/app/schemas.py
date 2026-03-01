@@ -115,3 +115,17 @@ class AdminDocumentItem(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class AdminUserItem(BaseModel):
+    id: int
+    username: str
+    role: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class RoleUpdateRequest(BaseModel):
+    role: str

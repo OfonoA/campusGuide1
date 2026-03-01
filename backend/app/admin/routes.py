@@ -7,7 +7,7 @@ import os
 from database.database import get_db
 from database.orm_models import Ticket, User, InPersonAssistance, RLFeedback, RAGDocument, DocumentChunk
 from app.auth import get_current_user
-from app.schemas import AdminTicket, IngestionStatusItem, ARActivityItem
+from app.schemas import AdminTicket, IngestionStatusItem, ARActivityItem, AdminDocumentItem, AdminUserItem, RoleUpdateRequest
 from app.vector_store import vector_store_manager
 import shutil
 from app.schemas import AdminDocumentItem
@@ -248,6 +248,42 @@ def delete_document(
     _rebuild_faiss_from_db(db)
 
     return {"message": "Document deleted and FAISS index rebuilt"}
+
+
+@router.get("/users", response_model=List[AdminUserItem])
+def list_users(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """List all users with roles."""
+    require_admin(current_user)
+    users = db.query(User).order_by(User.created_at.desc()).all()
+    return [AdminUserItem.from_orm(u) for u in users]
+
+
+@router.put("/users/{user_id}/role", response_model=AdminUserItem)
+def update_user_role(
+    user_id: int,
+    payload: RoleUpdateRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Update a user's role. Allowed roles: student, ar_staff, admin."""
+    require_admin(current_user)
+
+    if payload.role not in {"student", "ar_staff", "admin"}:
+        raise HTTPException(status_code=400, detail="Invalid role")
+
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user.role = payload.role
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+
+    return AdminUserItem.from_orm(user)
 
 
 def _rebuild_faiss_from_db(db: Session):
