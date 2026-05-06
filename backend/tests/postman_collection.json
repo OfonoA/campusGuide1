@@ -1,0 +1,341 @@
+{
+  "info": {
+    "name": "CampusGuide Backend E2E",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "End-to-end workflow for CampusGuide backend"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://127.0.0.1:8000" },
+    { "key": "admin_user", "value": "admin1" },
+    { "key": "admin_pass", "value": "AdminPass123!" },
+    { "key": "ar_user", "value": "arstaff1" },
+    { "key": "ar_pass", "value": "ArPass123!" },
+    { "key": "student_user", "value": "student1" },
+    { "key": "student_pass", "value": "StudentPass123!" },
+    { "key": "admin_token", "value": "" },
+    { "key": "ar_token", "value": "" },
+    { "key": "student_token", "value": "" },
+    { "key": "chat_id", "value": "" },
+    { "key": "bot_message_id", "value": "" },
+    { "key": "ticket_ref", "value": "" },
+    { "key": "ticket_id", "value": "" },
+    { "key": "ar_id", "value": "" },
+    { "key": "doc_id", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1) Admin Login",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{base_url}}/api/login", "host": ["{{base_url}}"], "path": ["api", "login"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{admin_user}}\",\n  \"password\": \"{{admin_pass}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('login ok', () => pm.response.code === 200);",
+              "pm.environment.set('admin_token', pm.response.json().token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2) Create AR Staff (Admin Only)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+        ],
+        "url": { "raw": "{{base_url}}/api/admin/users", "host": ["{{base_url}}"], "path": ["api", "admin", "users"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{ar_user}}\",\n  \"password\": \"{{ar_pass}}\",\n  \"role\": \"ar_staff\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) { pm.environment.set('ar_id', pm.response.json().id); }"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "3) Create Student (Admin Only)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+        ],
+        "url": { "raw": "{{base_url}}/api/admin/users", "host": ["{{base_url}}"], "path": ["api", "admin", "users"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{student_user}}\",\n  \"password\": \"{{student_pass}}\",\n  \"role\": \"student\"\n}"
+        }
+      }
+    },
+    {
+      "name": "4) AR Login",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{base_url}}/api/login", "host": ["{{base_url}}"], "path": ["api", "login"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{ar_user}}\",\n  \"password\": \"{{ar_pass}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": ["pm.environment.set('ar_token', pm.response.json().token);"] }
+        }
+      ]
+    },
+    {
+      "name": "5) Student Login",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{base_url}}/api/login", "host": ["{{base_url}}"], "path": ["api", "login"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{student_user}}\",\n  \"password\": \"{{student_pass}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": ["pm.environment.set('student_token', pm.response.json().token);"] }
+        }
+      ]
+    },
+    {
+      "name": "6) Student Chat",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{student_token}}" }
+        ],
+        "url": { "raw": "{{base_url}}/chat/", "host": ["{{base_url}}"], "path": ["chat"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"query\": \"When are office hours?\",\n  \"chat_history\": []\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.environment.set('chat_id', pm.response.json().chat_id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "7) Get Chat Messages",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{student_token}}" }
+        ],
+        "url": { "raw": "{{base_url}}/api/chats/{{chat_id}}/messages", "host": ["{{base_url}}"], "path": ["api", "chats", "{{chat_id}}", "messages"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const msgs = pm.response.json();",
+              "const bot = msgs.filter(m => m.sender === 'bot').slice(-1)[0];",
+              "pm.environment.set('bot_message_id', bot.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "8) Feedback -> Request Officer (Ticket)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{student_token}}" }
+        ],
+        "url": { "raw": "{{base_url}}/api/chat/{{bot_message_id}}/feedback", "host": ["{{base_url}}"], "path": ["api", "chat", "{{bot_message_id}}", "feedback"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"satisfactory\": false,\n  \"request_in_person\": true\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": ["pm.environment.set('ticket_ref', pm.response.json().ticket_reference);"] }
+        }
+      ]
+    },
+    {
+      "name": "9) Admin List Tickets",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+        ],
+        "url": { "raw": "{{base_url}}/api/admin/tickets", "host": ["{{base_url}}"], "path": ["api", "admin", "tickets"] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const t = pm.response.json().find(x => x.reference_code === pm.environment.get('ticket_ref'));",
+              "if (t) pm.environment.set('ticket_id', t.ticket_id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10) Admin Assign Ticket",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/admin/tickets/{{ticket_id}}/assign?officer_id={{ar_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "admin", "tickets", "{{ticket_id}}", "assign"],
+          "query": [{ "key": "officer_id", "value": "{{ar_id}}" }]
+        }
+      }
+    },
+    {
+      "name": "11) AR Start Ticket",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{ar_token}}" }
+        ],
+        "url": { "raw": "{{base_url}}/api/ar/tickets/{{ticket_id}}/start", "host": ["{{base_url}}"], "path": ["api", "ar", "tickets", "{{ticket_id}}", "start"] }
+      }
+    },
+    {
+      "name": "12) Student Ticket Message",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{student_token}}" }
+        ],
+        "url": { "raw": "{{base_url}}/api/tickets/{{ticket_id}}/messages", "host": ["{{base_url}}"], "path": ["api", "tickets", "{{ticket_id}}", "messages"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"content\": \"Hello officer, I need help.\"\n}"
+        }
+      }
+    },
+    {
+      "name": "13) Officer Ticket Message",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{ar_token}}" }
+        ],
+        "url": { "raw": "{{base_url}}/api/tickets/{{ticket_id}}/messages", "host": ["{{base_url}}"], "path": ["api", "tickets", "{{ticket_id}}", "messages"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"content\": \"Thanks, here is the answer.\"\n}"
+        }
+      }
+    },
+    {
+      "name": "14) Get Ticket Messages (Aliases)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{student_token}}" }
+        ],
+        "url": { "raw": "{{base_url}}/api/tickets/{{ticket_id}}/messages", "host": ["{{base_url}}"], "path": ["api", "tickets", "{{ticket_id}}", "messages"] }
+      }
+    },
+    {
+      "name": "15) Resolve Ticket",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{ar_token}}" }
+        ],
+        "url": { "raw": "{{base_url}}/api/ar/tickets/{{ticket_id}}/resolve", "host": ["{{base_url}}"], "path": ["api", "ar", "tickets", "{{ticket_id}}", "resolve"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"actions_taken\": \"Explained policy\",\n  \"resolution_summary\": \"Resolved.\"\n}"
+        }
+      }
+    },
+    {
+      "name": "16) Ingestion Status",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+        ],
+        "url": { "raw": "{{base_url}}/api/admin/ingestion-status", "host": ["{{base_url}}"], "path": ["api", "admin", "ingestion-status"] }
+      }
+    },
+    {
+      "name": "17) Upload Document (Optional)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+        ],
+        "url": { "raw": "{{base_url}}/api/admin/documents/upload", "host": ["{{base_url}}"], "path": ["api", "admin", "documents", "upload"] },
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "file", "type": "file", "src": "" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "19) List Documents",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+        ],
+        "url": { "raw": "{{base_url}}/api/admin/documents", "host": ["{{base_url}}"], "path": ["api", "admin", "documents"] }
+      }
+    },
+    {
+      "name": "20) Delete Document",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+        ],
+        "url": { "raw": "{{base_url}}/api/admin/documents/{{doc_id}}", "host": ["{{base_url}}"], "path": ["api", "admin", "documents", "{{doc_id}}"] }
+      }
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+# Environment files
+.env
+backend/.env
+frontend/.env
+frontend/.env.local
+
+# Python
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Node / frontend build outputs
+frontend/node_modules/
+frontend/dist/
+
+# Runtime / local data
+backend/faiss_index/
+backend/*.db
+backend/crawl_checkpoint.json
+
+# OS files
+.DS_Store
+
+# Local documents
+PROJECT REPORT Final.pdf
+
+# Python env (fix)
+.venv-reranker/
+
+# AI artifacts
+*.pkl
+*.faiss

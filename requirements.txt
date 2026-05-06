@@ -1,0 +1,34 @@
+fastapi
+uvicorn
+pypdf
+langchain
+langchain-text-splitters
+openai
+faiss-cpu
+python-dotenv
+langchain-community
+langchain-openai
+python-multipart  
+# For handling form data (potentially needed later)
+Jinja2            
+# For serving HTML templates
+aiofiles          
+# For asynchronous file operations (serving static files)
+passlib[bcrypt]==1.7.4
+# For password hashing
+bcrypt<4
+# Passlib 1.7.x expects bcrypt 3.x internals
+python-jose[cryptography] 
+# For JWT (authentication)
+SQLAlchemy        
+# For database interaction
+pymysql
+pdfplumber        
+# scraper deps
+trafilatura>=1.8.0
+apscheduler>=3.10.0
+beautifulsoup4>=4.12.0
+playwright>=1.40.0
+# More robust PDF text extraction
+rank-bm25
+sentence-transformers
