@@ -37,26 +37,27 @@ Decision contract:
 - If the context is missing, weak, or conflicting in a way that prevents a reliable answer, do not guess.
 - If context chunks conflict, prefer the more specific or more directly relevant chunk. If the conflict still prevents a reliable answer, return a no-answer outcome and mention the conflict briefly in the answer field.
 - For tuition and fee-payment questions, ignore enrolment or first-login steps unless the user explicitly asks about enrolment or account login.
-- Keep answers brief, practical, and grounded in the cited chunks.
-- Use numbered steps only when the answer is a process.
+- Keep answers practical, clear, and grounded in the cited chunks.
+- Prefer complete, helpful answers that fully explain the relevant policy, process, requirements, conditions, exceptions, and next steps supported by the context.
+- Match the level of detail to the question. For simple questions, a short direct answer is fine. For procedural or policy questions, provide a more thorough explanation.
+- For broad questions about rules, requirements, eligibility, application, submission, selection, benefits, deadlines, or contacts, provide a well-organized answer instead of a compressed summary.
+- When the context supports it, organize comprehensive answers with short section headings such as "Eligibility Criteria", "Application Process", "Documents Required", "Submission", "Selection Process", "Important Notes", and "Contact".
+- Use bullet lists for criteria, requirements, documents, conditions, exclusions, and benefits when that makes the answer easier to scan.
+- Use numbered steps when the answer is a process, and include as many steps as the context supports.
 - If the context includes the actual procedure, requirements, or steps, state them directly in the answer instead of referring the user to a section, clause, page, document, or heading.
 - Do not answer with phrases like "refer to section...", "see section...", "check the document...", or similar deflections when the relevant content is already present in the supplied context.
-- Summarize the exact actionable procedure from the context in plain language, while preserving important conditions, deadlines, and required documents.
+- Present the exact actionable procedure from the context in plain language, while preserving important conditions, deadlines, required documents, eligibility rules, exclusions, and follow-up actions.
 - Do not mention "the provided context", "the context above", "the supplied chunks", or similar internal phrasing in the final answer.
 - If account details, dates, contacts, steps, or other requested facts are present in the context, state them explicitly.
 - If a requested fact is not present in the context, do not imply that it is present. Instead, return a no-answer outcome or ask one clarifying question if that is the real blocker.
-- When responding:
-- Use numbered steps if there is a process or sequence.
-- Bold key actions or important words for emphasis.
-- If appropriate, include clickable links in Markdown format.
-- Separate each step clearly with a heading or divider.
-- End the response with a polite reminder or useful tip.
+- You may use light formatting such as short headings or numbered steps when it makes the answer easier to follow, but keep the formatting clean and natural.
+- For simple operational questions such as generating a payment reference number, answer directly but include the full actionable procedure and any important requirements or constraints present in the context.
 
 Return valid JSON only with this schema:
 {
   "can_answer": true,
   "needs_clarification": false,
-  "answer": "short final answer for the user",
+  "answer": "final answer for the user",
   "clarifying_question": null,
   "citations": [1, 2]
 }
@@ -444,7 +445,7 @@ def _is_reliable_retrieval(scored_chunks: List[tuple[str, float, dict]]) -> bool
     return True
 
 
-def _prepare_context(scored_chunks: List[tuple[str, float, dict]], max_chunks: int = 5, max_chars: int = 4000) -> List[str]:
+def _prepare_context(scored_chunks: List[tuple[str, float, dict]], max_chunks: int = 7, max_chars: int = 6000) -> List[str]:
     cleaned: List[str] = []
     for chunk, _score, _metadata in scored_chunks[:max_chunks]:
         text = (chunk or "").strip()
@@ -454,7 +455,7 @@ def _prepare_context(scored_chunks: List[tuple[str, float, dict]], max_chunks: i
     return cleaned
 
 
-def _log_selected_context(scored_chunks: List[tuple[str, float, dict]], max_chunks: int = 5) -> None:
+def _log_selected_context(scored_chunks: List[tuple[str, float, dict]], max_chunks: int = 7) -> None:
     """Log the metadata of the chunks that are actually sent to the model."""
     if not scored_chunks:
         print("[retrieval] selected_chunks=0")
@@ -542,7 +543,7 @@ def ask_campusguide(query: str, chat_history: List[tuple[str, str]] = None) -> d
 
     try:
         retrieval_start = perf_counter()
-        scored_chunks = retrieve_relevant_context_scored(retrieval_query, top_k=5)
+        scored_chunks = retrieve_relevant_context_scored(retrieval_query, top_k=8)
         retrieval_ms = (perf_counter() - retrieval_start) * 1000
         print(f"[perf] hybrid_retrieval_ms={retrieval_ms:.2f} query_len={len(retrieval_query)} results={len(scored_chunks)}")
     except Exception as e:
@@ -573,8 +574,8 @@ def ask_campusguide(query: str, chat_history: List[tuple[str, str]] = None) -> d
             citations=[],
         )
 
-    _log_selected_context(scored_chunks, max_chunks=5)
-    context = _prepare_context(scored_chunks, max_chunks=5, max_chars=4000)
+    _log_selected_context(scored_chunks, max_chunks=7)
+    context = _prepare_context(scored_chunks, max_chunks=7, max_chars=6000)
     if not context:
         return _build_final_result(
             can_answer=False,

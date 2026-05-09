@@ -22,8 +22,8 @@ load_dotenv()
 logger = logging.getLogger("must.retrieval")
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-VECTOR_TOP_K = 40
-BM25_TOP_K = 30
+VECTOR_TOP_K = 80
+BM25_TOP_K = 80
 FINAL_TOP_K = 5
 ENABLE_LLM_QUERY_EXPANSION = os.getenv("ENABLE_LLM_QUERY_EXPANSION", "0").strip().lower() in {"1", "true", "yes", "on"}
 OPENAI_REQUEST_TIMEOUT_SECONDS = float(os.getenv("OPENAI_REQUEST_TIMEOUT_SECONDS", "20"))
@@ -103,14 +103,98 @@ def _query_terms(query: str) -> set[str]:
     return {term for term in re.findall(r"[a-z0-9]+", str(query or "").lower()) if len(term) > 1}
 
 
+def _source_text(metadata: dict[str, Any] | None) -> str:
+    meta = dict(metadata or {})
+    return " ".join(
+        str(meta.get(key, "") or "")
+        for key in ("source", "title", "filename", "source_reference", "url", "source_url")
+    ).lower()
+
+
+def _extract_year_candidates(*values: str) -> list[int]:
+    years: list[int] = []
+    for value in values:
+        for raw in re.findall(r"\b(20\d{2})\b", str(value or "")):
+            try:
+                year = int(raw)
+            except ValueError:
+                continue
+            if 2000 <= year <= 2099 and year not in years:
+                years.append(year)
+    return years
+
+
+def _metadata_authority_score(metadata: dict[str, Any] | None) -> float:
+    meta = dict(metadata or {})
+    source = str(meta.get("source", "") or "").lower()
+    source_text = _source_text(meta)
+    score = 0.0
+
+    if source == "policy":
+        score += 3.0
+    elif source == "manual":
+        score += 2.4
+    elif source == "faq":
+        score += 1.8
+    elif source == "ar_resolution":
+        score += 1.2
+    elif source == "web_pdf":
+        score += 0.6
+    elif source == "web_page":
+        score += 0.3
+
+    if "call for applications" in source_text:
+        score += 2.0
+    if "fees policy" in source_text:
+        score += 1.2
+    if "joining instructions" in source_text:
+        score += 0.8
+    if "annual report" in source_text:
+        score -= 1.5
+
+    years = _extract_year_candidates(
+        str(meta.get("title", "") or ""),
+        str(meta.get("filename", "") or ""),
+        str(meta.get("source_reference", "") or ""),
+        str(meta.get("url", "") or ""),
+        str(meta.get("source_url", "") or ""),
+    )
+    if years:
+        score += (max(years) - 2020) * 0.18
+
+    return score
+
+
+def _chunk_specificity_bonus(query: str, chunk: str) -> float:
+    query_terms = _query_terms(query)
+    if not query_terms:
+        return 0.0
+
+    text = str(chunk or "")
+    lowered = text.lower()
+    overlap = len(query_terms & _query_terms(lowered))
+    bonus = overlap * 0.08
+
+    if any(char.isdigit() for char in text):
+        bonus += 0.12
+    if "table start" in lowered:
+        bonus += 0.18
+    if "|" in text:
+        bonus += 0.08
+
+    return bonus
+
+
 def _fallback_rerank_score(query: str, chunk: str, metadata: dict[str, Any] | None) -> float:
     rank_score = float((metadata or {}).get("_rank_score", 0.0))
     query_terms = _query_terms(query)
     if not query_terms:
-        return rank_score
+        return rank_score + float((metadata or {}).get("_authority_score", 0.0))
     chunk_terms = set(re.findall(r"[a-z0-9]+", str(chunk or "").lower()))
     overlap = len(query_terms & chunk_terms) / len(query_terms)
-    return (0.75 * rank_score) + (0.25 * overlap)
+    authority_score = float((metadata or {}).get("_authority_score", 0.0))
+    specificity_bonus = _chunk_specificity_bonus(query, chunk)
+    return (0.65 * rank_score) + (0.2 * overlap) + (0.1 * authority_score) + specificity_bonus
 
 
 def _cross_encoder_payload(query: str, documents: list[str]) -> str:
@@ -302,6 +386,7 @@ def _merge_result_sets(query, vector_results, bm25_results):
             continue
         vector_score = float(score)
         rank_score = _compute_rank_score(vector_score, None, bm25_max)
+        authority_score = _metadata_authority_score(metadata if isinstance(metadata, dict) else {})
         combined[text] = {
             "text": text,
             "score": _distance_proxy_from_rank(rank_score),
@@ -309,6 +394,7 @@ def _merge_result_sets(query, vector_results, bm25_results):
                 **dict(metadata or {}),
                 "_vector_score": vector_score,
                 "_rank_score": rank_score,
+                "_authority_score": authority_score,
                 "_retrieval_query": query,
             },
         }
@@ -324,8 +410,10 @@ def _merge_result_sets(query, vector_results, bm25_results):
             combined[text]["score"] = _distance_proxy_from_rank(rank_score)
             combined[text]["metadata"]["_bm25_score"] = bm25_score
             combined[text]["metadata"]["_rank_score"] = rank_score
+            combined[text]["metadata"]["_authority_score"] = _metadata_authority_score(combined[text]["metadata"])
             continue
         rank_score = _compute_rank_score(None, bm25_score, bm25_max)
+        authority_score = _metadata_authority_score(metadata if isinstance(metadata, dict) else {})
         combined[text] = {
             "text": text,
             "score": _distance_proxy_from_rank(rank_score),
@@ -334,6 +422,7 @@ def _merge_result_sets(query, vector_results, bm25_results):
                 "_bm25_score": bm25_score,
                 "_vector_score": None,
                 "_rank_score": rank_score,
+                "_authority_score": authority_score,
                 "_retrieval_query": query,
             },
         }
@@ -343,6 +432,7 @@ def _merge_result_sets(query, vector_results, bm25_results):
     ]
     merged.sort(
         key=lambda item: (
+            -float((item[2] or {}).get("_authority_score", 0.0)),
             -float((item[2] or {}).get("_rank_score", 0.0)),
             float(item[1]),
         )
@@ -398,6 +488,7 @@ def _rerank_scored_chunks(query: str, scored_chunks, top_k=FINAL_TOP_K):
         (doc_lookup[text] for text in unique_docs),
         key=lambda item: (
             -_fallback_rerank_score(query, item[0], item[2] if isinstance(item[2], dict) else {}),
+            -float((item[2] or {}).get("_authority_score", 0.0)),
             -float((item[2] or {}).get("_rank_score", 0.0)),
             float(item[1]),
         ),
@@ -450,6 +541,7 @@ def retrieve_relevant_context_scored(query, index_path="faiss_index", top_k=FINA
     candidates = sorted(
         combined.values(),
         key=lambda item: (
+            -float((item[2] or {}).get("_authority_score", 0.0)),
             -float((item[2] or {}).get("_rank_score", 0.0)),
             float(item[1]),
         ),

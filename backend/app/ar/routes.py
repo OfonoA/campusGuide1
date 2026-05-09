@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from datetime import datetime
+import logging
 
 from app.reinforcement.ingest import run_reinforcement_ingestion
 from app.reinforcement.ingest import ingest_feedback_entry
@@ -25,6 +26,7 @@ from app.utils import strip_attachment_ingestion_content
 from app.schemas import AttachmentOut
 
 router = APIRouter()
+logger = logging.getLogger("must.ar")
 
 
 def _serialize_attachment(attachment) -> AttachmentOut:
@@ -239,17 +241,32 @@ def resolve_ticket(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user)
 ):
+    print(
+        f"[resolve] entered ticket_id={ticket_id} user_id={getattr(current_user, 'id', None)} "
+        f"summary_len={len((payload.resolution_summary or '').strip())} "
+        f"actions_len={len((payload.actions_taken or '').strip())}",
+        flush=True,
+    )
     require_ar_staff(current_user)
 
     ticket = db.query(Ticket).filter(Ticket.id == ticket_id).first()
     if not ticket:
+        print(f"[resolve] ticket_not_found ticket_id={ticket_id}", flush=True)
         raise HTTPException(status_code=404, detail="Ticket not found")
 
     # Enforce lifecycle: only tickets currently in 'in_progress' may be resolved.
     # Valid transitions: open -> assigned -> in_progress -> resolved
     if ticket.status != "in_progress":
+        print(
+            f"[resolve] invalid_status ticket_id={ticket_id} status={ticket.status}",
+            flush=True,
+        )
         raise HTTPException(status_code=400, detail=f"Ticket must be 'in_progress' to resolve (current: '{ticket.status}')")
     if ticket.assigned_to != current_user.id:
+        print(
+            f"[resolve] forbidden ticket_id={ticket_id} assigned_to={ticket.assigned_to} user_id={current_user.id}",
+            flush=True,
+        )
         raise HTTPException(status_code=403, detail="Not assigned to this ticket")
 
     # Perform DB updates (let the session manage its own transaction)
@@ -284,14 +301,37 @@ def resolve_ticket(
         # safe guard: continue even if relationship not present
         pass
 
+    print(f"[resolve] committing_resolution ticket_id={ticket.id}", flush=True)
     db.commit()
+    print(f"[resolve] committed_resolution ticket_id={ticket.id}", flush=True)
 
     # Ingest the full resolved ticket conversation now that resolution is terminal.
     try:
         from app.reinforcement.ingest import ingest_ticket_conversation
 
-        ingest_ticket_conversation(db, ticket)
+        print(
+            f"[resolve] ingestion_start ticket_id={ticket.id} conversation_id={ticket.conversation_id}",
+            flush=True,
+        )
+        logger.info(
+            "ticket_resolve_ingestion_start ticket_id=%d conversation_id=%s assigned_to=%s",
+            ticket.id,
+            ticket.conversation_id,
+            ticket.assigned_to,
+        )
+        ingest_result = ingest_ticket_conversation(db, ticket)
+        print(
+            f"[resolve] ingestion_done ticket_id={ticket.id} result={bool(ingest_result)}",
+            flush=True,
+        )
+        logger.info(
+            "ticket_resolve_ingestion_done ticket_id=%d result=%s",
+            ticket.id,
+            str(bool(ingest_result)).lower(),
+        )
     except Exception as e:
+        print(f"[resolve] ingestion_error ticket_id={ticket.id} error={e}", flush=True)
+        logger.exception("ticket_resolve_ingestion_error ticket_id=%d", ticket.id)
         print(f"Error during ingestion for resolved ticket {ticket.id}: {e}")
 
     # Refresh the ticket from the DB to ensure returned fields are up-to-date
@@ -301,5 +341,6 @@ def resolve_ticket(
         # If refresh fails for any reason, proceed to return the minimal info
         pass
 
+    print(f"[resolve] returning ticket_id={ticket.id} status={ticket.status}", flush=True)
     # Return concise ticket summary for caller (ticket id, status, reference_code)
     return TicketSummary.from_orm(ticket)

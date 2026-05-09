@@ -18,6 +18,13 @@ FRESHNESS_URL_MAP = {
     "admission list": "https://www.must.ac.ug/admission-lists/",
     "academic calendar": "https://www.must.ac.ug/academic-calendar/",
     "scholarship": "https://www.must.ac.ug/announcement_type/scholarship-opportunities/",
+    "postgraduate program": "https://www.must.ac.ug/graduate-programmes/",
+    "postgraduate programme": "https://www.must.ac.ug/graduate-programmes/",
+    "graduate program": "https://www.must.ac.ug/graduate-programmes/",
+    "graduate programme": "https://www.must.ac.ug/graduate-programmes/",
+    "masters": "https://www.must.ac.ug/graduate-programmes/",
+    "master's": "https://www.must.ac.ug/graduate-programmes/",
+    "phd": "https://www.must.ac.ug/graduate-programmes/",
     "announcement": "https://www.must.ac.ug/notice-board/",
     "notice": "https://www.must.ac.ug/notice-board/",
     "fees": "https://www.must.ac.ug/undergraduate-programmes/",
@@ -46,6 +53,16 @@ FRESHNESS_SIGNALS = [
 def is_freshness_sensitive(query: str) -> bool:
     """Return True if query contains any freshness signal."""
     lowered = query.lower()
+    if any(term in lowered for term in (
+        "postgraduate program",
+        "postgraduate programme",
+        "graduate program",
+        "graduate programme",
+        "masters",
+        "master's",
+        "phd",
+    )):
+        return True
     return any(signal in lowered for signal in FRESHNESS_SIGNALS)
 
 

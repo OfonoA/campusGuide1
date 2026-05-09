@@ -13,6 +13,16 @@ def test_parse_structured_llm_output_accepts_code_fenced_json():
     assert payload["citations"] == [1]
 
 
+def test_system_prompt_prefers_detailed_answers_when_context_supports_them():
+    prompt = llm.SYSTEM_PROMPT
+
+    assert "Prefer complete, helpful answers" in prompt
+    assert "Match the level of detail to the question." in prompt
+    assert "include as many steps as the context supports" in prompt
+    assert 'Eligibility Criteria' in prompt
+    assert '"answer": "final answer for the user"' in prompt
+
+
 def test_normalize_structured_response_filters_invalid_citations():
     normalized = llm._normalize_structured_response(
         {
@@ -173,7 +183,6 @@ def test_ask_campusguide_returns_answer_and_citations(monkeypatch):
     assert result["reason"] == "answered"
     assert result["answer"] == "Office hours are 8am to 5pm."
     assert result["citations"] == [1]
-
 
 def test_expand_query_uses_heuristics_without_llm(monkeypatch):
     monkeypatch.setattr(retrieval, "ENABLE_LLM_QUERY_EXPANSION", False)

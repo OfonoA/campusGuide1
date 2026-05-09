@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Source+Serif+4:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,20 +6,17 @@
 
 @layer base {
   :root {
-    --must-blue: #2c348f;
-    --must-blue-deep: #18204f;
-    --must-gold: #f4b627;
-    --must-gold-soft: #ffd76a;
-    --must-green: #2f944c;
-    --must-green-soft: #d6efda;
-    --must-ink: #172033;
-    --must-mist: #f7f8fc;
-    --must-border: #d8dfeb;
-    --must-canvas: #e9eef7;
-    --must-panel: rgba(255, 255, 255, 0.82);
-    --must-nav: #17204d;
-    --must-nav-soft: #25306f;
-    --must-shadow: 0 28px 70px rgba(16, 24, 40, 0.12);
+    --staff-primary: #0A4B33;
+    --staff-accent: #D4AF37;
+    --student-primary: #1E6B3B;
+    --student-accent: #E6B422;
+    --admin-primary: #0D5C45;
+    --admin-accent: #B8860B;
+    --shared-light: #F5F5F5;
+    --shared-cream: #FEF9E6;
+    --shared-cool: #F0F2F5;
+    --text-dark: #333333;
+    --must-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
   }
 
   * {
@@ -27,83 +24,95 @@
   }
 
   body {
-    @apply bg-mist text-ink font-sans;
+    @apply font-sans;
     font-feature-settings: "rlig" 1, "calt" 1;
+    color: var(--text-dark);
     min-height: 100vh;
     line-height: 1.5;
-    background-image:
-      radial-gradient(1000px 430px at -8% -8%, rgba(244, 182, 39, 0.22), transparent 58%),
-      radial-gradient(1120px 520px at 114% -14%, rgba(44, 52, 143, 0.22), transparent 56%),
-      radial-gradient(760px 320px at 82% 16%, rgba(47, 148, 76, 0.12), transparent 58%),
-      radial-gradient(900px 420px at 44% 115%, rgba(135, 160, 214, 0.14), transparent 62%),
-      linear-gradient(180deg, #fbfcfe 0%, #eef3fa 52%, #e7edf7 100%);
+    background: linear-gradient(180deg, #FEF9E6 0%, #F5F5F5 55%, #F0F2F5 100%);
   }
 
   h1, h2, h3 {
-    @apply font-serif text-ink;
+    @apply font-sans;
     letter-spacing: -0.025em;
-    line-height: 0.95;
+    line-height: 1.05;
     text-wrap: balance;
   }
 
   h4, h5, h6 {
-    @apply font-sans font-semibold text-ink;
+    @apply font-sans font-semibold;
+    color: var(--text-dark);
     letter-spacing: -0.015em;
   }
 
   a {
-    @apply text-primary-700 hover:text-primary-800;
+    color: var(--staff-primary);
+  }
+
+  a:hover {
+    color: var(--staff-accent);
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply rounded-2xl bg-primary-700 px-4 py-2.5 font-medium text-white transition-all hover:bg-primary-800;
-    box-shadow: 0 18px 34px rgba(44, 52, 143, 0.24);
+    @apply px-4 py-2.5 font-medium text-white transition-all;
+    border-radius: 8px;
+    background: var(--staff-primary);
+    box-shadow: var(--must-shadow);
   }
 
   .btn-primary-outline {
-    @apply rounded-2xl border border-primary-200 px-4 py-2.5 font-medium text-primary-700 transition-all hover:border-primary-300 hover:bg-primary-50;
-    background-color: rgba(255, 255, 255, 0.76);
+    @apply border px-4 py-2.5 font-medium transition-all;
+    border-radius: 8px;
+    border-color: var(--staff-accent);
+    color: var(--staff-primary);
+    background-color: #ffffff;
   }
 
   .btn-success-soft {
-    @apply rounded-2xl border px-4 py-2.5 font-medium text-success-700 transition-all hover:bg-success-50;
-    border-color: rgba(47, 148, 76, 0.18);
-    background-color: rgba(214, 239, 218, 0.38);
+    @apply border px-4 py-2.5 font-medium transition-all;
+    border-radius: 8px;
+    border-color: var(--staff-accent);
+    color: var(--staff-primary);
+    background-color: #EAF7F0;
   }
 
   .btn-secondary {
-    @apply rounded-2xl border px-4 py-2.5 font-medium text-ink transition-all hover:bg-white;
-    border-color: rgba(255, 255, 255, 0.78);
-    background-color: rgba(255, 255, 255, 0.74);
-    box-shadow: 0 16px 32px rgba(15, 23, 42, 0.06);
+    @apply border px-4 py-2.5 font-medium transition-all hover:bg-white;
+    border-radius: 8px;
+    border-color: #d7d7d7;
+    color: var(--text-dark);
+    background-color: #ffffff;
+    box-shadow: var(--must-shadow);
   }
 
   .card {
-    @apply rounded-[1.5rem] border backdrop-blur;
-    border-color: rgba(255, 255, 255, 0.76);
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.8));
+    @apply border;
+    border-radius: 8px;
+    border-color: #e4e4e4;
+    background: #ffffff;
     box-shadow: var(--must-shadow);
   }
 
   .input-field {
-    @apply w-full rounded-2xl border border-slate-200 px-3 py-2.5 focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-100;
-    background-color: rgba(255, 255, 255, 0.86);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    @apply w-full border px-3 py-2.5 focus:outline-none;
+    border-radius: 8px;
+    border-color: #d7d7d7;
+    background-color: #ffffff;
   }
 
   .surface-panel {
-    @apply rounded-[1.5rem] border backdrop-blur;
-    border-color: rgba(255, 255, 255, 0.76);
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.8));
+    @apply border;
+    border-radius: 8px;
+    border-color: #e4e4e4;
+    background: #ffffff;
     box-shadow: var(--must-shadow);
   }
 
   .section-title {
-    @apply text-xl font-semibold text-ink;
+    @apply text-xl font-semibold;
+    color: var(--text-dark);
   }
 
   .badge-status {
@@ -111,12 +120,14 @@
   }
 
   .nav-pill {
-    @apply rounded-2xl px-4 py-3 transition-all;
+    @apply px-4 py-3 transition-all;
+    border-radius: 8px;
   }
 
   .nav-pill-active {
-    @apply bg-white text-primary-800;
-    box-shadow: 0 16px 34px rgba(15, 23, 42, 0.22);
+    background: #ffffff;
+    color: var(--staff-primary);
+    box-shadow: var(--must-shadow);
   }
 
   .nav-pill-idle {
@@ -129,7 +140,8 @@
   }
 
   .eyebrow-label {
-    @apply text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500;
+    @apply text-[11px] font-semibold uppercase tracking-[0.24em];
+    color: var(--text-dark);
   }
 
   .eyebrow-label-green {
@@ -137,30 +149,67 @@
   }
 
   .display-title {
-    @apply font-serif text-[clamp(2.3rem,4vw,4rem)] font-semibold text-ink;
+    @apply font-sans text-[clamp(2.3rem,4vw,4rem)] font-semibold;
+    color: var(--text-dark);
     letter-spacing: -0.04em;
-    line-height: 0.92;
+    line-height: 1;
   }
 
   .section-heading {
-    @apply font-serif text-[clamp(1.6rem,2.5vw,2.4rem)] font-semibold text-ink;
+    @apply font-sans text-[clamp(1.6rem,2.5vw,2.4rem)] font-semibold;
+    color: var(--text-dark);
     letter-spacing: -0.03em;
-    line-height: 0.95;
+    line-height: 1.05;
   }
 
   .dashboard-panel {
-    @apply rounded-[1.5rem] border backdrop-blur;
-    border-color: rgba(255, 255, 255, 0.76);
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.82));
+    @apply border;
+    border-radius: 8px;
+    border-color: #e4e4e4;
+    background: #ffffff;
     box-shadow: var(--must-shadow);
   }
 
   .metric-card {
-    @apply rounded-[1.35rem] border px-6 py-5;
-    border-color: rgba(255, 255, 255, 0.76);
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.84));
-    box-shadow: 0 20px 44px rgba(15, 23, 42, 0.08);
+    @apply border px-6 py-5;
+    border-radius: 8px;
+    border-color: #e4e4e4;
+    background: #ffffff;
+    box-shadow: var(--must-shadow);
+  }
+
+  .chat-scroll-area {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(10, 75, 51, 0.34) transparent;
+  }
+
+  .chat-scroll-area::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  .chat-scroll-area::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .chat-scroll-area::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-color: rgba(10, 75, 51, 0.34);
+    background-clip: padding-box;
+  }
+
+  .chat-scroll-area::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(10, 75, 51, 0.52);
+  }
+
+  .chat-rich-text p,
+  .chat-rich-text ol,
+  .chat-rich-text ul,
+  .chat-rich-text hr {
+    max-width: 72ch;
+  }
+
+  .chat-rich-text li::marker {
+    color: rgba(30, 107, 59, 0.72);
   }
 }

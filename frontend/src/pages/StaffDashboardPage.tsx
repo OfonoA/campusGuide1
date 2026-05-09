@@ -8,6 +8,7 @@ import {
   LogOut,
   Menu,
   MessageSquare,
+  PanelLeftOpen,
   Search,
   Settings,
   ShieldCheck,
@@ -28,8 +29,8 @@ import mustLogo from '../../images/logo.png'
 
 type StatusFilter = 'assigned' | 'in_progress' | 'resolved'
 
-const navCardClass = 'rounded-[1.2rem] border bg-white px-4 py-3.5 text-left transition'
-const mobileSheetClass = 'fixed inset-x-0 bottom-0 z-50 max-h-[78vh] overflow-y-auto border-t border-slate-200 bg-white px-4 py-4 shadow-[0_-18px_48px_rgba(15,23,42,0.16)] transition xl:static xl:max-h-none xl:border-l xl:border-t-0 xl:px-4 xl:py-4 xl:shadow-none xl:w-auto xl:max-w-none'
+const navCardClass = 'rounded-[8px] border bg-[#F8F8F8] px-4 py-3.5 text-left transition shadow-[0_2px_6px_rgba(0,0,0,0.05)]'
+const mobileSheetClass = 'fixed inset-x-0 bottom-0 z-50 max-h-[78vh] overflow-y-auto border-t border-slate-200 bg-white px-4 py-4 shadow-[0_2px_6px_rgba(0,0,0,0.05)] transition xl:static xl:max-h-none xl:border-l xl:border-t-0 xl:px-4 xl:py-4 xl:shadow-none xl:w-auto xl:max-w-none'
 
 const StaffDashboardPage: React.FC = () => {
   const [tickets, setTickets] = useState<TicketType[]>([])
@@ -38,6 +39,7 @@ const StaffDashboardPage: React.FC = () => {
   const [newMessage, setNewMessage] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [isSending, setIsSending] = useState(false)
+  const [isResolving, setIsResolving] = useState(false)
   const [resolutionSummary, setResolutionSummary] = useState('')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('assigned')
   const [searchTerm, setSearchTerm] = useState('')
@@ -362,17 +364,35 @@ const StaffDashboardPage: React.FC = () => {
   }
 
   const handleResolve = async () => {
-    if (!selectedTicket) return
+    console.info('[resolve] click', {
+      ticketId: selectedTicket?.id ?? null,
+      status: selectedTicket?.status ?? null,
+      summaryLength: resolutionSummary.trim().length,
+    })
+    if (!selectedTicket) {
+      console.warn('[resolve] aborted: no selected ticket')
+      return
+    }
     if (selectedTicket.status !== 'in_progress') {
+      console.warn('[resolve] aborted: ticket not in progress', {
+        ticketId: selectedTicket.id,
+        status: selectedTicket.status,
+      })
       showInfo({
         title: 'Ticket not ready to resolve',
         message: 'Send the first officer reply before resolving this ticket.',
       })
       return
     }
+    setIsResolving(true)
     try {
       const resolvedTicketId = selectedTicket.id
+      console.info('[resolve] request_start', {
+        ticketId: resolvedTicketId,
+        summaryLength: resolutionSummary.trim().length,
+      })
       await arAPI.resolveTicket(resolvedTicketId, resolutionSummary.trim() || undefined)
+      console.info('[resolve] request_success', { ticketId: resolvedTicketId })
       setStatusFilter('resolved')
       await loadTickets('resolved', resolvedTicketId, true)
       setWorkflowOpen(false)
@@ -382,10 +402,16 @@ const StaffDashboardPage: React.FC = () => {
       })
     } catch (error) {
       console.error('Error resolving ticket:', error)
+      console.error('[resolve] request_failed', {
+        ticketId: selectedTicket.id,
+        error,
+      })
       showError({
         title: 'Resolution failed',
         message: getErrorDetail(error, 'The ticket could not be resolved.'),
       })
+    } finally {
+      setIsResolving(false)
     }
   }
 
@@ -484,11 +510,11 @@ const StaffDashboardPage: React.FC = () => {
   const statusTone = (status: TicketType['status']) => {
     switch (status) {
       case 'assigned':
-        return 'bg-accent-400 text-accent-900'
+        return 'bg-[#D4AF37] text-[#333333]'
       case 'in_progress':
-        return 'bg-primary-100 text-primary-700'
+        return 'bg-[#0A4B33] text-white'
       case 'resolved':
-        return 'bg-[#e9e4fb] text-primary-700'
+        return 'bg-slate-300 text-[#333333]'
       default:
         return 'bg-slate-100 text-slate-600'
     }
@@ -502,17 +528,17 @@ const StaffDashboardPage: React.FC = () => {
 
   const actorTone = (msg: TicketMessage) => {
     if (msg.sender_role === 'student') return 'text-slate-500'
-    if (msg.sender_role === 'bot') return 'text-primary-700'
+    if (msg.sender_role === 'bot') return 'text-[#0A4B33]'
     return 'text-[#8c6500]'
   }
 
   const inboxActorLabel = (msg: ChatMessage) => (msg.sender === 'user' ? 'You (AR Staff)' : 'ArASSIST (AI Support)')
   const inboxActorTone = (msg: ChatMessage) =>
-    msg.sender === 'user' ? 'text-slate-400' : 'text-primary-700'
+    msg.sender === 'user' ? 'text-slate-400' : 'text-[#0A4B33]'
 
   const bubbleTone = (msg: TicketMessage) => {
     if (msg.sender_role === 'student') return 'border-slate-200 bg-white text-slate-800'
-    if (msg.sender_role === 'bot') return 'border-primary-600 bg-[#f8f8ff] text-primary-800'
+    if (msg.sender_role === 'bot') return 'border-[#D4AF37]/25 bg-[#FEF9E6] text-[#0A4B33]'
     return 'border-[#e6c96b] bg-[#fff7dd] text-slate-800'
   }
 
@@ -531,11 +557,11 @@ const StaffDashboardPage: React.FC = () => {
   }
 
   const sideLinks = [
-    { label: 'Tickets', icon: Ticket, action: () => navigate('/app/staff-dashboard'), active: location.pathname === '/app/staff-dashboard' },
-    { label: 'Inbox', icon: MessageSquare, action: () => navigate('/app/staff-chat'), active: location.pathname === '/app/staff-chat' },
+    { label: 'Tickets', icon: Ticket, to: '/app/staff-dashboard', active: location.pathname === '/app/staff-dashboard' },
+    { label: 'Inbox', icon: MessageSquare, to: '/app/staff-chat', active: location.pathname === '/app/staff-chat' },
     {
       label: 'Workflow',
-      icon: ClipboardCheck,
+      icon: PanelLeftOpen,
       action: () => {
         setWorkflowOpen(true)
         workflowRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -547,7 +573,7 @@ const StaffDashboardPage: React.FC = () => {
   const showMobileTicketDetail = !isInboxView && isCompactTicketLayout && !!selectedTicket
 
   return (
-    <div className="h-screen overflow-hidden bg-[#f6f7fc] text-slate-900">
+    <div className="staff-workspace flex h-screen flex-col overflow-hidden bg-[linear-gradient(180deg,#FEF9E6_0%,#F5F5F5_55%,#F0F2F5_100%)] text-[#333333]">
       <FeedbackToastStack toasts={toasts} onDismiss={dismissToast} />
       {mobileMenuOpen && (
         <button
@@ -567,50 +593,59 @@ const StaffDashboardPage: React.FC = () => {
         />
       )}
 
-      <header className="border-b border-slate-200 bg-white/95 px-5 py-4 backdrop-blur md:px-8">
+      <header className="border-b-4 border-[#D4AF37] bg-[#0A4B33] px-5 py-3 text-white shadow-[0_2px_6px_rgba(0,0,0,0.05)] md:px-8">
         <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
             <button
               type="button"
-              className="rounded-2xl border border-slate-200 bg-white p-2.5 text-slate-600 shadow-sm lg:hidden"
+              className="rounded-lg border border-white/15 bg-white/10 p-2 text-white lg:hidden"
               onClick={() => setMobileMenuOpen(true)}
               aria-label="Open staff navigation"
             >
-              <Menu className="h-5 w-5" />
+              <Menu className="h-4.5 w-4.5" />
             </button>
 
-            <div className="flex items-center gap-8">
+            <div className="flex items-center gap-6">
               <div>
-                <p className="text-xl font-semibold tracking-tight text-primary-700 sm:text-2xl md:text-3xl">ArASSIST</p>
-                <p className="text-sm text-slate-500">Academic Support Assistant</p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#FEF9E6]">Staff workspace</p>
+                <p className="mt-1 text-xl font-semibold tracking-[-0.05em] text-white sm:text-2xl md:text-[2.2rem]">ArASSIST</p>
+                <p className="text-xs text-[#FEF9E6] sm:text-sm">Academic Support Assistant</p>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 sm:gap-5">
-            <button className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100 hover:text-primary-700">
-              <Bell className="h-5 w-5" />
+          <div className="flex items-center gap-2 sm:gap-4">
+            <button className="rounded-full p-1.5 text-white transition hover:bg-white/10 hover:text-[#D4AF37]">
+              <Bell className="h-4.5 w-4.5" />
             </button>
-            <button className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100 hover:text-primary-700">
-              <Settings className="h-5 w-5" />
+            <button className="rounded-full p-1.5 text-white transition hover:bg-white/10 hover:text-[#D4AF37]">
+              <Settings className="h-4.5 w-4.5" />
             </button>
-            <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-2xl bg-white shadow ring-1 ring-primary-100">
-              <img src={mustLogo} alt="MUST logo" className="h-7 w-7 object-contain" />
+            <button
+              onClick={() => {
+                void logout()
+              }}
+              className="rounded-lg border border-[#D4AF37] px-3.5 py-1.5 text-sm font-semibold text-[#D4AF37] transition hover:bg-[#D4AF37] hover:text-[#0A4B33]"
+            >
+              Logout
+            </button>
+            <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg bg-white shadow-[0_2px_6px_rgba(0,0,0,0.05)] ring-1 ring-white/15">
+              <img src={mustLogo} alt="MUST logo" className="h-6 w-6 object-contain" />
             </div>
           </div>
         </div>
       </header>
 
-      <div className="flex h-[calc(100vh-81px)]">
+      <div className="flex min-h-0 flex-1">
         <aside
-          className={`fixed inset-y-[81px] left-0 z-50 flex w-[280px] transform flex-col border-r border-slate-200 bg-[#f3f5fb] transition lg:static lg:translate-x-0 ${
+          className={`fixed inset-y-0 left-0 z-50 flex w-[300px] shrink-0 transform flex-col border-r border-[#D4AF37]/20 bg-[#0A4B33] text-white shadow-[0_2px_6px_rgba(0,0,0,0.05)] transition lg:static lg:z-auto lg:translate-x-0 ${
             mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
-          <div className="flex items-start justify-end px-6 py-4 lg:block">
+          <div className="flex items-start justify-end px-4 py-4 lg:hidden">
             <button
               type="button"
-              className="rounded-full p-2 text-slate-400 transition hover:bg-white hover:text-slate-600 lg:hidden"
+              className="rounded-full bg-white/12 p-2 text-white shadow-[0_2px_6px_rgba(0,0,0,0.05)]"
               onClick={() => setMobileMenuOpen(false)}
               aria-label="Close sidebar"
             >
@@ -618,68 +653,98 @@ const StaffDashboardPage: React.FC = () => {
             </button>
           </div>
 
-          <div className="px-4 py-4">
-            <div className="space-y-2">
+          <div className="border-b border-white/10 px-6 py-6">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/58">Support desk</p>
+            <p className="mt-2 max-w-[220px] text-sm leading-6 text-white/68">
+              Respond to student cases, monitor replies, and advance registrar workflows.
+            </p>
+            <span className="mt-4 inline-flex rounded-full bg-[#D4AF37] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#0A4B33]">
+              Staff support online
+            </span>
+          </div>
+
+          <nav className="px-4 py-5">
+            <div className="space-y-3">
               {sideLinks.map((link) => {
                 const Icon = link.icon
                 const isTicketNav = link.label === 'Tickets'
+                const badges = (
+                  <>
+                    {assignedAttentionCount > 0 ? (
+                      <span className="inline-flex items-center justify-center rounded-full bg-[#D4AF37] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#0A4B33]">
+                        Assigned {assignedAttentionCount}
+                      </span>
+                    ) : null}
+                    {replyAttentionCount > 0 ? (
+                      <span className="inline-flex items-center justify-center rounded-full bg-[#0A4B33] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-white ring-1 ring-white/20">
+                        Replies {replyAttentionCount}
+                      </span>
+                    ) : null}
+                  </>
+                )
+
+                if ('to' in link) {
+                  return (
+                    <button
+                      key={link.label}
+                      onClick={() => {
+                        setMobileMenuOpen(false)
+                        navigate(link.to)
+                      }}
+                      className={`nav-pill flex w-full items-center gap-3 text-sm ${
+                        link.active ? 'nav-pill-active' : 'nav-pill-idle'
+                      }`}
+                    >
+                      <Icon className="h-4 w-4" />
+                      <span className="font-medium">{link.label}</span>
+                      {isTicketNav ? <span className="ml-auto flex items-center gap-1.5">{badges}</span> : null}
+                    </button>
+                  )
+                }
+
                 return (
                   <button
                     key={link.label}
-                    onClick={link.action}
-                    className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left transition ${
-                      link.active
-                        ? 'bg-white text-primary-700 shadow-[0_10px_22px_rgba(15,23,42,0.06)]'
-                        : 'text-slate-500 hover:bg-white/80 hover:text-primary-700'
-                    }`}
+                    onClick={() => {
+                      setMobileMenuOpen(false)
+                      link.action()
+                    }}
+                    className="nav-pill nav-pill-idle flex w-full items-center gap-3 text-sm"
                   >
                     <Icon className="h-4 w-4" />
-                    <span className="text-sm font-medium">{link.label}</span>
-                    {isTicketNav ? (
-                      <span className="ml-auto flex items-center gap-1.5">
-                        {assignedAttentionCount > 0 ? (
-                          <span className="inline-flex items-center justify-center rounded-full bg-primary-700 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-white">
-                            Assigned {assignedAttentionCount}
-                          </span>
-                        ) : null}
-                        {replyAttentionCount > 0 ? (
-                          <span className="inline-flex items-center justify-center rounded-full bg-accent-400 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-accent-900">
-                            Replies {replyAttentionCount}
-                          </span>
-                        ) : null}
-                      </span>
-                    ) : null}
+                    <span className="font-medium">{link.label}</span>
                   </button>
                 )
               })}
             </div>
-          </div>
+          </nav>
 
           <div className="mt-auto px-4 pb-4">
-            <button
-              onClick={() => {
-                void logout()
-              }}
-              className="flex items-center gap-3 px-4 py-3 text-sm font-semibold uppercase tracking-[0.24em] text-slate-600 transition hover:text-primary-700"
-            >
-              <LogOut className="h-5 w-5" />
-              <span>Logout</span>
-            </button>
+            <div className="rounded-[8px] border border-white/10 bg-white/5 p-4">
+              <div>
+                <p className="text-sm font-semibold text-white">{user?.username}</p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/55">{user?.role}</p>
+              </div>
+              <div className="mt-4 flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.24em] text-white/68">
+                <LogOut className="h-5 w-5" />
+                <span>Session active</span>
+              </div>
+            </div>
           </div>
         </aside>
 
         <div className={`grid min-h-0 flex-1 grid-cols-1 ${isInboxView ? 'xl:grid-cols-[320px_minmax(0,1fr)]' : 'xl:grid-cols-[320px_minmax(0,1fr)_340px]'}`}>
-          <section className={`min-h-0 border-r border-slate-200 bg-[#f8f8fd] px-4 py-5 md:px-5 ${showMobileTicketDetail ? 'hidden xl:block' : ''}`}>
+          <section className={`min-h-0 border-r border-slate-200 bg-[#F5F5F5] px-4 py-5 md:px-5 ${showMobileTicketDetail ? 'hidden xl:block' : ''}`}>
             <div className="flex h-full flex-col">
               <div>
                 <div className="relative">
-                  <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                  <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#0A4B33]" />
                   <input
                     type="text"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder={isInboxView ? 'Search inbox...' : 'Search references...'}
-                    className="w-full rounded-2xl border border-slate-200 bg-white px-12 py-3 text-sm text-slate-700 outline-none transition focus:border-primary-500 focus:ring-4 focus:ring-primary-100"
+                    className="w-full rounded-[8px] border border-slate-200 bg-white px-12 py-3 text-sm text-[#333333] outline-none transition focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/30"
                   />
                 </div>
 
@@ -687,7 +752,7 @@ const StaffDashboardPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={handleNewInboxChat}
-                    className="mt-4 w-full rounded-2xl bg-primary-700 px-4 py-3 text-sm font-semibold uppercase tracking-[0.14em] text-white shadow-[0_12px_20px_rgba(51,51,153,0.18)] transition hover:bg-primary-800"
+                    className="mt-4 w-full rounded-[8px] bg-[#0A4B33] px-4 py-3 text-sm font-semibold uppercase tracking-[0.14em] text-white shadow-[0_2px_6px_rgba(0,0,0,0.05)] transition hover:border hover:border-[#D4AF37]"
                   >
                     New Chat
                   </button>
@@ -701,17 +766,17 @@ const StaffDashboardPage: React.FC = () => {
                           key={status}
                           type="button"
                           onClick={() => setStatusFilter(status)}
-                          className={`rounded-2xl px-2 py-3 text-xs font-semibold uppercase tracking-[0.16em] transition ${
+                          className={`rounded-[8px] px-2 py-3 text-xs font-semibold uppercase tracking-[0.16em] transition ${
                             statusFilter === status
-                              ? 'bg-primary-700 text-white shadow-[0_12px_20px_rgba(51,51,153,0.18)]'
-                              : 'bg-white text-slate-500 hover:text-primary-700'
+                              ? 'bg-[#0A4B33] text-white shadow-[0_2px_6px_rgba(0,0,0,0.05)]'
+                              : 'bg-white text-[#333333] hover:text-[#0A4B33]'
                           }`}
                         >
                           <span>{status.replace('_', ' ')}</span>
                           <span className={`ml-1.5 inline-flex min-w-6 items-center justify-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${
                             statusFilter === status
                               ? 'bg-white/20 text-white'
-                              : 'bg-slate-100 text-slate-600'
+                              : 'bg-[#0A4B33] text-white'
                           }`}>
                             {statusCounts[status]}
                           </span>
@@ -741,17 +806,17 @@ const StaffDashboardPage: React.FC = () => {
                           onClick={() => void handleSelectInboxChat(chat)}
                           className={`w-full ${navCardClass} ${
                             selectedInboxChat?.id === chat.id
-                              ? 'border-primary-200 shadow-[0_16px_28px_rgba(15,23,42,0.06)]'
-                              : 'border-slate-100 hover:border-slate-200 hover:shadow-[0_14px_24px_rgba(15,23,42,0.04)]'
+                              ? 'border-[#D4AF37] bg-white shadow-[0_2px_6px_rgba(0,0,0,0.05)]'
+                              : 'border-slate-100 hover:border-slate-200 hover:bg-white'
                           }`}
                         >
                           <div className="flex items-center gap-3">
-                            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-100 text-primary-700">
+                            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FEF9E6] text-[#0A4B33]">
                               <MessageSquare className="h-4 w-4" />
                             </span>
                             <div className="min-w-0 flex-1">
-                              <p className="truncate text-sm font-medium text-slate-900">{chat.title}</p>
-                              <p className="mt-1 text-xs text-slate-400">{formatDate(chat.created_at)}</p>
+                              <p className="truncate text-sm font-medium text-[#333333]">{chat.title}</p>
+                              <p className="mt-1 text-xs text-[#333333]/60">{formatDate(chat.created_at)}</p>
                             </div>
                           </div>
                         </button>
@@ -772,12 +837,14 @@ const StaffDashboardPage: React.FC = () => {
                         onClick={() => void handleSelectTicket(ticket)}
                         className={`w-full ${navCardClass} ${
                           selectedTicket?.id === ticket.id
-                            ? 'border-primary-200 shadow-[0_16px_28px_rgba(15,23,42,0.06)]'
-                            : 'border-slate-100 hover:border-slate-200 hover:shadow-[0_14px_24px_rgba(15,23,42,0.04)]'
+                            ? 'border-[#D4AF37] border-l-4 border-l-[#D4AF37] bg-white shadow-[0_2px_6px_rgba(0,0,0,0.05)]'
+                            : ticket.status === 'assigned'
+                              ? 'border-[#D4AF37]/40 border-l-4 border-l-[#D4AF37] hover:bg-white'
+                              : 'border-slate-100 hover:border-slate-200 hover:bg-white'
                         }`}
                       >
                         <div className="flex items-start justify-between gap-3">
-                          <span className="text-sm font-semibold text-primary-700">
+                          <span className="text-sm font-semibold text-[#0A4B33]">
                             {shortTicketReference(ticket.reference_code)}
                           </span>
                           <span className={`rounded-md px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.16em] ${statusTone(ticket.status)}`}>
@@ -785,7 +852,7 @@ const StaffDashboardPage: React.FC = () => {
                           </span>
                         </div>
                         <p className={`mt-2 line-clamp-2 text-sm font-medium ${
-                          ticketsWithNewReply.includes(ticket.id) ? 'text-accent-900' : 'text-slate-900'
+                          ticketsWithNewReply.includes(ticket.id) ? 'text-[#0A4B33]' : 'text-[#333333]'
                         }`}>
                           {ticket.preview_text || 'No student message yet.'}
                         </p>
@@ -793,8 +860,8 @@ const StaffDashboardPage: React.FC = () => {
                           <span className="inline-flex h-6 w-6 rounded-full bg-slate-200" />
                           <span>{ticket.student_identifier || `Student #${ticket.student_id ?? ticket.id}`}</span>
                           {ticketsWithNewReply.includes(ticket.id) ? (
-                            <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-accent-400 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-accent-900 shadow-sm ring-1 ring-accent-500/40">
-                              <span className="h-1.5 w-1.5 rounded-full bg-accent-900" />
+                            <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-[#D4AF37] px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#0A4B33] shadow-[0_2px_6px_rgba(0,0,0,0.05)]">
+                              <span className="h-1.5 w-1.5 rounded-full bg-[#0A4B33]" />
                               New reply
                             </span>
                           ) : null}
@@ -807,19 +874,19 @@ const StaffDashboardPage: React.FC = () => {
             </div>
           </section>
 
-          <section className={`flex min-h-0 flex-col overflow-hidden border-r border-slate-200 bg-[#f4f5fa] ${!isInboxView && isCompactTicketLayout && !selectedTicket ? 'hidden xl:flex' : ''}`}>
+          <section className={`flex min-h-0 flex-col overflow-hidden border-r border-slate-200 bg-[#F0F2F5] ${!isInboxView && isCompactTicketLayout && !selectedTicket ? 'hidden xl:flex' : ''}`}>
             {isInboxView ? (
               !selectedInboxChat ? (
                 <div className="flex flex-1 items-center justify-center px-6 py-12">
-                  <div className="max-w-xl rounded-[2rem] border border-slate-200 bg-white px-10 py-14 text-center shadow-[0_20px_50px_rgba(15,23,42,0.06)]">
-                    <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-primary-50">
-                      <Bot className="h-10 w-10 text-primary-700" />
+                  <div className="max-w-xl rounded-[8px] border border-slate-200 bg-white px-10 py-14 text-center shadow-[0_2px_6px_rgba(0,0,0,0.05)]">
+                    <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-[#FEF9E6]">
+                      <Bot className="h-10 w-10 text-[#0A4B33]" />
                     </div>
-                    <h3 className="font-sans text-3xl font-semibold text-slate-950">Welcome to ArASSIST</h3>
-                    <p className="mt-3 text-lg text-slate-600">
+                    <h3 className="font-sans text-3xl font-semibold text-[#0A4B33]">Welcome to ArASSIST</h3>
+                    <p className="mt-3 text-lg text-[#333333]">
                       Your academic support assistant is ready to help.
                     </p>
-                    <p className="mt-2 text-sm uppercase tracking-[0.22em] text-slate-400">
+                    <p className="mt-2 text-sm uppercase tracking-[0.22em] text-[#0A4B33]/60">
                       Select a conversation or start a new inquiry
                     </p>
                   </div>
@@ -829,30 +896,30 @@ const StaffDashboardPage: React.FC = () => {
                   <div className="border-b border-slate-200 bg-white/95 px-5 py-4 sm:px-6">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex items-start gap-3">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary-700 text-white">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0A4B33] text-white">
                           <MessageSquare className="h-4 w-4" />
                         </div>
                         <div>
-                          <h2 className="text-2xl font-semibold text-primary-700">ArASSIST</h2>
-                          <p className="mt-1 text-sm text-slate-500">Academic Support Assistant</p>
+                          <h2 className="text-2xl font-semibold text-[#0A4B33]">ArASSIST</h2>
+                          <p className="mt-1 text-sm text-[#333333]/70">Academic Support Assistant</p>
                         </div>
                       </div>
                       <div className="text-right text-xs text-slate-500">
                         <p>Started {formatDate(selectedInboxChat.created_at)}</p>
-                        <p className="mt-1 font-semibold text-primary-700">{selectedInboxChat.title}</p>
+                        <p className="mt-1 font-semibold text-[#0A4B33]">{selectedInboxChat.title}</p>
                       </div>
                     </div>
                   </div>
 
-                <div className="flex-1 overflow-y-auto bg-[#f6f7fc] px-5 py-6 sm:px-6">
+                <div className="flex-1 overflow-y-auto bg-[#F0F2F5] px-5 py-6 sm:px-6">
                   {selectedInboxChat.messages.length === 0 ? (
                     <div className="flex h-full items-center justify-center px-6 py-12">
-                      <div className="max-w-xl rounded-[2rem] border border-slate-200 bg-white px-10 py-14 text-center shadow-[0_20px_50px_rgba(15,23,42,0.06)]">
-                        <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-primary-50">
-                          <Bot className="h-10 w-10 text-primary-700" />
+                      <div className="max-w-xl rounded-[8px] border border-slate-200 bg-white px-10 py-14 text-center shadow-[0_2px_6px_rgba(0,0,0,0.05)]">
+                        <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-[#FEF9E6]">
+                          <Bot className="h-10 w-10 text-[#0A4B33]" />
                         </div>
-                        <h3 className="font-sans text-3xl font-semibold text-slate-950">Start a conversation with ArASSIST</h3>
-                        <p className="mt-3 text-lg text-slate-600">
+                        <h3 className="font-sans text-3xl font-semibold text-[#0A4B33]">Start a conversation with ArASSIST</h3>
+                        <p className="mt-3 text-lg text-[#333333]">
                           Ask for institutional guidance, procedures, and academic support.
                         </p>
                         </div>
@@ -873,8 +940,8 @@ const StaffDashboardPage: React.FC = () => {
                               <div
                                 className={
                                   msg.sender === 'user'
-                                    ? 'ml-auto max-w-[min(58ch,100%)] rounded-[1.2rem] border-l-[3px] border-primary-600 bg-primary-700 px-4 py-3 text-white shadow-[0_16px_28px_rgba(51,51,153,0.2)]'
-                                    : 'rounded-[1.2rem] border border-slate-200 border-l-[3px] border-l-primary-600 bg-white px-4 py-3.5 shadow-[0_14px_28px_rgba(15,23,42,0.04)] md:px-5 md:py-4'
+                                    ? 'ml-auto max-w-[min(58ch,100%)] rounded-[20px] border border-[#D4AF37]/20 bg-[rgba(212,175,55,0.2)] px-4 py-3 text-[#0A4B33] shadow-[0_2px_6px_rgba(0,0,0,0.05)]'
+                                    : 'rounded-[20px] border border-[#D4AF37]/25 bg-[#FEF9E6] px-4 py-3.5 shadow-[0_2px_6px_rgba(0,0,0,0.05)] md:px-5 md:py-4'
                                 }
                               >
                                 <p className="text-[14px] leading-6 whitespace-pre-wrap break-words sm:text-[15px] sm:leading-7">
@@ -891,16 +958,16 @@ const StaffDashboardPage: React.FC = () => {
                     {inboxSending && (
                       <div className="mt-6 flex justify-start">
                         <div className="flex items-start gap-4">
-                          <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+                          <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-[8px] bg-[#FEF9E6] shadow-[0_2px_6px_rgba(0,0,0,0.05)] ring-1 ring-[#D4AF37]/20">
                             <img src={mustLogo} alt="ArASSIST avatar" className="h-7 w-7 object-contain" />
                           </div>
-                          <div className="rounded-[1.5rem] border border-slate-200 bg-white px-5 py-4 shadow-[0_18px_36px_rgba(15,23,42,0.06)]">
+                          <div className="rounded-[20px] border border-[#D4AF37]/25 bg-[#FEF9E6] px-5 py-4 shadow-[0_2px_6px_rgba(0,0,0,0.05)]">
                             <div className="flex gap-1.5">
                               <div className="h-2.5 w-2.5 animate-bounce rounded-full bg-slate-300" />
                               <div className="h-2.5 w-2.5 animate-bounce rounded-full bg-slate-300" style={{ animationDelay: '0.1s' }} />
                               <div className="h-2.5 w-2.5 animate-bounce rounded-full bg-slate-300" style={{ animationDelay: '0.2s' }} />
                             </div>
-                            <p className="mt-3 text-sm text-slate-500">ArASSIST is generating a response...</p>
+                            <p className="mt-3 text-sm text-[#0A4B33]">ArASSIST is generating a response...</p>
                           </div>
                         </div>
                       </div>
@@ -944,7 +1011,7 @@ const StaffDashboardPage: React.FC = () => {
                           })
                         }}
                       />
-                      <p className="mt-6 text-center text-xs uppercase tracking-[0.28em] text-slate-400">
+                      <p className="mt-6 text-center text-xs uppercase tracking-[0.28em] text-[#0A4B33]/60">
                         Official Assistant of Mbarara University of Science and Technology
                       </p>
                     </div>
@@ -963,25 +1030,25 @@ const StaffDashboardPage: React.FC = () => {
                       {isCompactTicketLayout ? (
                         <button
                           type="button"
-                          className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:border-primary-200 hover:text-primary-700 xl:hidden"
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-[#333333] shadow-[0_2px_6px_rgba(0,0,0,0.05)] transition hover:border-[#D4AF37] hover:text-[#0A4B33] xl:hidden"
                           onClick={handleBackToTicketList}
                           aria-label="Back to ticket list"
                         >
                           <ArrowLeft className="h-4 w-4" />
                         </button>
                       ) : null}
-                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary-700 text-white">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0A4B33] text-white">
                         <Ticket className="h-4 w-4" />
                       </div>
                       <div>
-                        <h2 className="text-2xl font-semibold text-primary-700">AR Staff</h2>
+                        <h2 className="text-2xl font-semibold text-[#0A4B33]">AR Staff</h2>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
                       {selectedTicket ? (
                         <button
                           type="button"
-                          className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 shadow-sm transition hover:border-primary-200 hover:text-primary-700 xl:hidden"
+                          className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#333333] shadow-[0_2px_6px_rgba(0,0,0,0.05)] transition hover:border-[#D4AF37] hover:text-[#0A4B33] xl:hidden"
                           onClick={() => setWorkflowOpen(true)}
                         >
                           <ClipboardCheck className="h-4 w-4" />
@@ -990,7 +1057,7 @@ const StaffDashboardPage: React.FC = () => {
                       ) : null}
                       <div className="text-right text-xs text-slate-500">
                         <p>Created {formatDate(selectedTicket.created_at)}</p>
-                        <p className="mt-1 font-semibold text-primary-700">
+                        <p className="mt-1 font-semibold text-[#0A4B33]">
                           Ref: {shortTicketReference(selectedTicket.reference_code)}
                         </p>
                       </div>
@@ -998,9 +1065,9 @@ const StaffDashboardPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto bg-[#f6f7fc] px-5 py-6 sm:px-6">
+                <div className="flex-1 overflow-y-auto bg-[#F0F2F5] px-5 py-6 sm:px-6">
                   <div className="mb-3 flex justify-center">
-                    <span className="rounded-full bg-white px-6 py-2 text-xs font-semibold uppercase tracking-[0.26em] text-slate-500 shadow-sm">
+                    <span className="rounded-full bg-[#0A4B33] px-6 py-2 text-xs font-semibold uppercase tracking-[0.26em] text-white shadow-[0_2px_6px_rgba(0,0,0,0.05)]">
                       {new Date(selectedTicket.created_at).toLocaleDateString('en-US', {
                         weekday: 'long',
                         month: 'short',
@@ -1024,7 +1091,7 @@ const StaffDashboardPage: React.FC = () => {
                               {formatTime(msg.created_at)}
                             </span>
                           </div>
-                          <div className={`max-w-[min(58ch,100%)] rounded-[1.2rem] border-l-[3px] px-4 py-3 shadow-sm ${bubbleTone(msg)} ${
+                          <div className={`max-w-[min(58ch,100%)] rounded-[20px] border-l-[3px] px-4 py-3 shadow-[0_2px_6px_rgba(0,0,0,0.05)] ${bubbleTone(msg)} ${
                             msg.sender_role === 'student' ? 'ml-auto' : ''
                           }`}>
                             <p className="text-[14px] leading-6 whitespace-pre-wrap break-words sm:text-[15px] sm:leading-7">
@@ -1039,7 +1106,7 @@ const StaffDashboardPage: React.FC = () => {
                 </div>
 
                 <div className="border-t border-slate-200 bg-white/90 px-5 py-4">
-                  <div className="rounded-[1.35rem] border border-slate-200 bg-white p-2.5 shadow-[0_18px_36px_rgba(15,23,42,0.06)]">
+                  <div className="rounded-[8px] border border-[#D4AF37]/20 bg-white p-2.5 shadow-[0_2px_6px_rgba(0,0,0,0.05)]">
                     <ChatInput
                       onSendMessage={(message, files) => void handleSendMessage(message, files || [])}
                       disabled={isSending}
@@ -1089,11 +1156,11 @@ const StaffDashboardPage: React.FC = () => {
 
                 <div>
                   <p className="hidden text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-400 xl:block">Ticket Workflow</p>
-                  <div className="mt-3 rounded-[1rem] bg-[#f6f6fb] p-4">
+                  <div className="mt-3 rounded-[8px] bg-[#EAF7F0] p-4">
                     <div className="grid grid-cols-2 gap-x-5 gap-y-4">
                       <div>
                         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">Status</p>
-                        <p className="mt-1.5 text-base font-semibold text-primary-700">{selectedTicket.status.replace('_', ' ')}</p>
+                        <p className="mt-1.5 text-base font-semibold text-[#0A4B33]">{selectedTicket.status.replace('_', ' ')}</p>
                       </div>
                       <div>
                         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">Opened Date</p>
@@ -1112,23 +1179,23 @@ const StaffDashboardPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <h2 className="text-[1.1rem] font-semibold text-slate-950">Official Actions</h2>
+                  <h2 className="text-[1.1rem] font-semibold text-[#0A4B33]">Official Actions</h2>
                   <div className="mt-3 space-y-2.5">
-                    <p className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-600">
+                    <p className="rounded-[8px] border border-slate-200 bg-[#FEF9E6] px-3 py-3 text-sm text-[#333333]">
                       Sending the first officer reply automatically moves an assigned ticket to in progress.
                     </p>
                     <button
                       onClick={handleResolve}
-                      disabled={selectedTicket.status !== 'in_progress'}
-                      className="w-full rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-3.5 text-sm font-semibold uppercase tracking-[0.14em] text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-40"
+                      disabled={selectedTicket.status !== 'in_progress' || isResolving}
+                      className="w-full rounded-[8px] border border-transparent bg-[#0A4B33] px-3 py-3.5 text-sm font-semibold uppercase tracking-[0.14em] text-white transition hover:border-[#D4AF37] disabled:cursor-not-allowed disabled:opacity-40"
                     >
-                      Resolve
+                      {isResolving ? 'Resolving...' : 'Resolve'}
                     </button>
                   </div>
                 </div>
 
                 <div>
-                  <h2 className="text-[1.1rem] font-semibold text-slate-950">Resolution Process</h2>
+                  <h2 className="text-[1.1rem] font-semibold text-[#0A4B33]">Resolution Process</h2>
                   <div className="mt-3 border-t border-slate-200 pt-4">
                     <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Actions Taken</p>
                     <div className="mt-3 space-y-3">
@@ -1147,7 +1214,7 @@ const StaffDashboardPage: React.FC = () => {
                                 [key]: e.target.checked,
                               }))
                             }
-                            className="h-5 w-5 rounded border-slate-300 text-primary-700 focus:ring-primary-500"
+                            className="h-5 w-5 rounded border-slate-300 text-[#0A4B33] focus:ring-[#D4AF37]"
                           />
                           <span>{label}</span>
                         </label>
@@ -1160,13 +1227,13 @@ const StaffDashboardPage: React.FC = () => {
                         value={resolutionSummary}
                         onChange={(e) => setResolutionSummary(e.target.value)}
                         placeholder="Summarize final resolution for student..."
-                        className="mt-2.5 min-h-[100px] w-full rounded-[1rem] border border-slate-200 bg-[#f6f6fb] px-3.5 py-3.5 text-sm text-slate-700 outline-none transition focus:border-primary-500 focus:ring-4 focus:ring-primary-100"
+                        className="mt-2.5 min-h-[100px] w-full rounded-[8px] border border-slate-200 border-l-4 border-l-[#D4AF37] bg-[#EAF7F0] px-3.5 py-3.5 text-sm text-[#333333] outline-none transition focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/30"
                       />
                     </div>
                   </div>
                 </div>
 
-                <div className="rounded-[1rem] bg-[#fff3d8] px-3.5 py-3.5 text-[11px] text-[#7a5800]">
+                <div className="rounded-[8px] bg-[#FEF9E6] px-3.5 py-3.5 text-[11px] text-[#333333]">
                   <div className="flex items-start gap-3">
                     <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" />
                     <p>

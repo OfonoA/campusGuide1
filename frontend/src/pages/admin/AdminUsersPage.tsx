@@ -4,21 +4,90 @@ import { User } from '../../types'
 import AdminShell from '../../components/admin/AdminShell'
 import FeedbackToastStack from '../../components/feedback/FeedbackToastStack'
 import { useFeedbackToasts } from '../../hooks/useFeedbackToasts'
-import { ChevronDown, Eye, EyeOff, Plus, Trash2, Pencil, AlertTriangle, X } from 'lucide-react'
+import { AlertTriangle, X } from 'lucide-react'
 import { getErrorDetail } from '../../utils/errors'
 
-const panelClass = 'overflow-hidden rounded-[1.5rem] border border-white/70 bg-white/88 shadow-[0_22px_54px_rgba(15,23,42,0.08)]'
-const modalCardClass = 'w-full max-w-md overflow-hidden rounded-[1.5rem] border border-white/70 bg-white shadow-[0_24px_60px_rgba(15,23,42,0.2)]'
+const panelClass = 'overflow-hidden rounded-[8px] border border-[#F0F2F5] bg-white shadow-[0_2px_6px_rgba(0,0,0,0.05)]'
+const modalCardClass = 'w-full max-w-md overflow-hidden rounded-[8px] border border-[#F0F2F5] bg-white shadow-[0_2px_6px_rgba(0,0,0,0.05)]'
+
+const roleOptions: Array<{ value: 'all' | User['role']; label: string }> = [
+  { value: 'all', label: 'All roles' },
+  { value: 'student', label: 'Student' },
+  { value: 'ar_staff', label: 'AR Staff' },
+  { value: 'admin', label: 'Admin' },
+]
+
+const roleLabel = (role: User['role']) => {
+  if (role === 'ar_staff') return 'AR Staff'
+  if (role === 'admin') return 'Admin'
+  return 'Student'
+}
+
+const roleBadgeClass = (role: User['role']) => {
+  if (role === 'admin') return 'bg-[#1E6B3B] text-white'
+  if (role === 'ar_staff') return 'bg-[#F5EDD6] text-[#B8860B]'
+  return 'bg-[#E0F0EA] text-[#1E6B3B]'
+}
+
+const getCreatedDate = (user: User) =>
+  user.created_at
+    ? new Date(user.created_at).toLocaleDateString('en-GB', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      })
+    : 'Unknown'
+
+const getLastActiveMeta = (user: User) => {
+  if (!user.last_active_at) {
+    return { dotClass: 'bg-[#999999]', label: 'No activity yet' }
+  }
+
+  const now = Date.now()
+  const lastActive = new Date(user.last_active_at).getTime()
+  const diffDays = Math.floor((now - lastActive) / (1000 * 60 * 60 * 24))
+
+  if (diffDays <= 1) {
+    return { dotClass: 'bg-[#1E6B3B]', label: 'Active today' }
+  }
+
+  if (diffDays <= 7) {
+    return { dotClass: 'bg-[#1E6B3B]', label: 'Active this week' }
+  }
+
+  if (diffDays > 90) {
+    return { dotClass: 'bg-[#999999]', label: '90+ days' }
+  }
+
+  if (diffDays > 30) {
+    return { dotClass: 'bg-[#B8860B]', label: '30+ days' }
+  }
+
+  return {
+    dotClass: 'bg-[#1E6B3B]',
+    label: new Date(user.last_active_at).toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'short',
+    }),
+  }
+}
+
+const generateTemporaryPassword = () => {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%'
+  return Array.from({ length: 12 }, () => chars[Math.floor(Math.random() * chars.length)]).join('')
+}
 
 const AdminUsersPage: React.FC = () => {
   const [users, setUsers] = useState<User[]>([])
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [email, setEmail] = useState('')
+  const [department, setDepartment] = useState('')
   const [role, setRole] = useState<User['role']>('student')
   const [isLoading, setIsLoading] = useState(true)
-  const [showPassword, setShowPassword] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [roleFilter, setRoleFilter] = useState<'all' | User['role']>('all')
+  const [searchTerm, setSearchTerm] = useState('')
   const [userToEdit, setUserToEdit] = useState<User | null>(null)
   const [editRole, setEditRole] = useState<User['role']>('student')
   const [isUpdatingRole, setIsUpdatingRole] = useState(false)
@@ -27,7 +96,7 @@ const AdminUsersPage: React.FC = () => {
   const [deletePassword, setDeletePassword] = useState('')
   const [deleteError, setDeleteError] = useState('')
   const [isDeleting, setIsDeleting] = useState(false)
-  const pageSize = 4
+  const pageSize = 6
   const { toasts, dismissToast, showError, showInfo, showSuccess } = useFeedbackToasts()
 
   useEffect(() => {
@@ -45,11 +114,15 @@ const AdminUsersPage: React.FC = () => {
     }
   }
 
+  const handleGeneratePassword = () => {
+    setPassword(generateTemporaryPassword())
+  }
+
   const handleCreate = async () => {
     if (!username.trim() || !password.trim()) {
       showInfo({
         title: 'Missing details',
-        message: 'Enter both username and password before creating a user.',
+        message: 'Enter a username and generate a temporary password before creating a user.',
       })
       return
     }
@@ -59,6 +132,8 @@ const AdminUsersPage: React.FC = () => {
       const createdRole = role
       setUsername('')
       setPassword('')
+      setEmail('')
+      setDepartment('')
       setRole('student')
       await loadUsers()
       showSuccess({
@@ -131,9 +206,18 @@ const AdminUsersPage: React.FC = () => {
   }
 
   const filteredUsers = useMemo(() => {
-    if (roleFilter === 'all') return users
-    return users.filter((user) => user.role === roleFilter)
-  }, [roleFilter, users])
+    const query = searchTerm.trim().toLowerCase()
+
+    return users.filter((user) => {
+      const matchesRole = roleFilter === 'all' || user.role === roleFilter
+      const matchesQuery =
+        !query ||
+        user.username.toLowerCase().includes(query) ||
+        roleLabel(user.role).toLowerCase().includes(query) ||
+        (user.email || '').toLowerCase().includes(query)
+      return matchesRole && matchesQuery
+    })
+  }, [roleFilter, searchTerm, users])
 
   const totalPages = Math.max(1, Math.ceil(filteredUsers.length / pageSize))
 
@@ -150,279 +234,491 @@ const AdminUsersPage: React.FC = () => {
 
   useEffect(() => {
     setCurrentPage(1)
-  }, [roleFilter])
+  }, [roleFilter, searchTerm])
 
-  const roleTone = (value: User['role']) => {
-    if (value === 'admin') return 'bg-[#ddd8ff] text-primary-700'
-    if (value === 'ar_staff') return 'bg-[#e6bf30] text-[#5c4900]'
-    return 'bg-accent-400 text-accent-900'
-  }
+  const stats = useMemo(() => {
+    const activeUsers = users.length
+    const staff = users.filter((user) => user.role === 'ar_staff').length
+    const students = users.filter((user) => user.role === 'student').length
+    return { activeUsers, staff, students }
+  }, [users])
 
   return (
     <AdminShell
       title="User Management"
-      subtitle="Manage institutional access, roles, and administrative permissions for the MUST portal."
-      headerAction={
-        <button className="inline-flex items-center gap-3 rounded-xl bg-primary-700 px-5 py-3 text-base font-semibold text-white shadow-[0_16px_24px_rgba(51,51,153,0.18)] transition hover:bg-primary-800">
-          <Plus className="h-5 w-5" />
-          <span>Create User</span>
-        </button>
-      }
+      subtitle="Manage institutional access, user roles, and account administration for ArASSIST."
+      fullWidth
     >
+      <style>{`
+        .user-management-screen {
+          --admin-primary: #1E6B3B;
+          --admin-accent: #B8860B;
+          --card-bg: #FFFFFF;
+          --page-bg: #F0F2F5;
+          --text-dark: #333333;
+          --text-light: #FFFFFF;
+          --success-tint: #E0F0EA;
+          --warning-tint: #F5EDD6;
+          --light-grey: #F0F2F5;
+          --inactive-dot: #999999;
+        }
+
+        .user-stats-grid {
+          display: grid;
+          gap: 1rem;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .user-stat-card {
+          background: var(--card-bg);
+          border-top: 4px solid var(--admin-primary);
+          border-radius: 8px;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+          padding: 1rem;
+          text-align: center;
+        }
+
+        .user-stat-value {
+          color: var(--admin-accent);
+          font-size: 2rem;
+          font-weight: 700;
+          line-height: 1.1;
+        }
+
+        .user-stat-label {
+          color: var(--text-dark);
+          font-size: 0.875rem;
+          font-weight: 600;
+          letter-spacing: 0.5px;
+          margin-top: 0.55rem;
+          text-transform: uppercase;
+        }
+
+        .user-filter-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 1rem;
+        }
+
+        .user-search-input,
+        .user-form-input,
+        .user-form-select,
+        .user-filter-select {
+          border: 1px solid #DDD;
+          border-radius: 6px;
+          color: var(--text-dark);
+          background: #FFFFFF;
+          padding: 8px 12px;
+        }
+
+        .user-search-input {
+          width: 300px;
+          max-width: 100%;
+        }
+
+        .user-filter-select,
+        .user-form-select {
+          border-color: var(--admin-accent);
+        }
+
+        .user-search-input:focus,
+        .user-form-input:focus,
+        .user-form-select:focus,
+        .user-filter-select:focus {
+          border-color: var(--admin-primary);
+          outline: none;
+        }
+
+        .user-directory-table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+
+        .user-directory-table th {
+          background: var(--page-bg);
+          color: var(--admin-primary);
+          font-weight: 700;
+          padding: 12px;
+          text-align: left;
+        }
+
+        .user-directory-table td {
+          border-bottom: 1px solid #EEE;
+          padding: 12px;
+          vertical-align: middle;
+        }
+
+        .user-directory-table tbody tr:hover {
+          background: #FAFAFA;
+        }
+
+        .user-role-badge {
+          border-radius: 20px;
+          display: inline-block;
+          font-size: 0.75rem;
+          font-weight: 600;
+          padding: 4px 10px;
+        }
+
+        .user-status-chip {
+          align-items: center;
+          display: inline-flex;
+          gap: 0.5rem;
+        }
+
+        .user-status-dot {
+          border-radius: 999px;
+          display: inline-block;
+          height: 8px;
+          width: 8px;
+        }
+
+        .user-action-button {
+          background: none;
+          border: none;
+          color: #666666;
+          cursor: pointer;
+          font-size: 1rem;
+          margin: 0 4px;
+          padding: 0;
+          transition: color 160ms ease;
+        }
+
+        .user-action-button:hover {
+          color: var(--admin-accent);
+        }
+
+        .user-action-button:disabled {
+          cursor: not-allowed;
+          opacity: 0.45;
+        }
+
+        .create-user-card {
+          background: var(--card-bg);
+          border-top: 4px solid var(--admin-primary);
+          border-radius: 8px;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+          margin-top: 1.5rem;
+          padding: 1.25rem;
+        }
+
+        .create-user-grid {
+          display: grid;
+          gap: 1rem;
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .create-user-span {
+          grid-column: 1 / -1;
+        }
+
+        .generate-password-button {
+          background: transparent;
+          border: 1px solid var(--admin-accent);
+          border-radius: 6px;
+          color: var(--admin-accent);
+          cursor: pointer;
+          margin-right: 1rem;
+          padding: 8px 16px;
+        }
+
+        .generate-password-button:hover {
+          background: var(--admin-accent);
+          color: var(--text-dark);
+        }
+
+        .temporary-password-chip {
+          background: #F5F5F5;
+          border: 1px solid #DDD;
+          border-radius: 6px;
+          display: inline-block;
+          font-family: monospace;
+          padding: 8px;
+        }
+
+        .create-user-button {
+          background: var(--admin-accent);
+          border: none;
+          border-radius: 6px;
+          color: var(--text-dark);
+          cursor: pointer;
+          font-weight: 600;
+          margin-top: 1rem;
+          padding: 10px 20px;
+        }
+
+        .create-user-button:hover {
+          background: var(--admin-primary);
+          color: var(--text-light);
+        }
+
+        @media (max-width: 767px) {
+          .user-stats-grid,
+          .create-user-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .user-filter-row {
+            align-items: stretch;
+            flex-direction: column;
+          }
+        }
+      `}</style>
+
       <FeedbackToastStack toasts={toasts} onDismiss={dismissToast} />
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+
+      <div className="user-management-screen space-y-6">
+        <section className="user-stats-grid">
+          <article className="user-stat-card">
+            <div className="user-stat-value">{stats.activeUsers}</div>
+            <div className="user-stat-label">Active Users</div>
+          </article>
+          <article className="user-stat-card">
+            <div className="user-stat-value">{stats.staff}</div>
+            <div className="user-stat-label">Staff</div>
+          </article>
+          <article className="user-stat-card">
+            <div className="user-stat-value">{stats.students}</div>
+            <div className="user-stat-label">Students</div>
+          </article>
+        </section>
+
         <section className={panelClass}>
-          <div className="flex flex-col gap-3 border-b border-slate-200 px-5 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
-                User Directory
-              </p>
-              <p className="mt-2 text-sm text-slate-500">Review active accounts and control who can access student, staff, and admin experiences.</p>
-            </div>
-            <div className="inline-flex items-center gap-2 text-sm text-slate-600">
-              <span>Filter by Role</span>
-              <ChevronDown className="h-4 w-4" />
+          <div className="space-y-5 px-5 py-5 sm:px-6">
+            <div className="user-filter-row">
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search by username or role..."
+                className="user-search-input"
+              />
+
               <select
                 value={roleFilter}
                 onChange={(e) => setRoleFilter(e.target.value as 'all' | User['role'])}
-                className="bg-transparent text-sm font-medium text-slate-700 outline-none"
+                className="user-filter-select"
               >
-                <option value="all">All</option>
+                {roleOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="user-directory-table min-w-[760px]">
+                <thead>
+                  <tr>
+                    <th>Username</th>
+                    <th>Role</th>
+                    <th>Created</th>
+                    <th>Last Active</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {isLoading ? (
+                    <tr>
+                      <td colSpan={5} className="text-sm text-[#333333]">
+                        Loading users...
+                      </td>
+                    </tr>
+                  ) : paginatedUsers.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="text-sm text-[#333333]">
+                        No users match the current search or filter.
+                      </td>
+                    </tr>
+                  ) : (
+                    paginatedUsers.map((user) => {
+                      const lastActive = getLastActiveMeta(user)
+                      return (
+                        <tr key={user.id}>
+                          <td className="font-medium text-[#333333]">{user.username}</td>
+                          <td>
+                            <span className={`user-role-badge ${roleBadgeClass(user.role)}`}>
+                              {roleLabel(user.role)}
+                            </span>
+                          </td>
+                          <td className="text-sm text-[#333333]">{getCreatedDate(user)}</td>
+                          <td>
+                            <span className="user-status-chip text-sm text-[#333333]">
+                              <span className={`user-status-dot ${lastActive.dotClass}`} />
+                              <span>{lastActive.label}</span>
+                            </span>
+                          </td>
+                          <td>
+                            <button
+                              type="button"
+                              title="Edit User"
+                              className="user-action-button"
+                              onClick={() => {
+                                setUserToEdit(user)
+                                setEditRole(user.role)
+                                setEditError('')
+                              }}
+                            >
+                              ✏️
+                            </button>
+                            <button
+                              type="button"
+                              title="Reset Password"
+                              className="user-action-button"
+                              onClick={() => {
+                                showInfo({
+                                  title: 'Password reset not available',
+                                  message: `Password reset for ${user.username} is not wired to the backend yet.`,
+                                })
+                              }}
+                            >
+                              🔄
+                            </button>
+                            <button
+                              type="button"
+                              title="Disable User"
+                              className="user-action-button"
+                              onClick={() => {
+                                showInfo({
+                                  title: 'Disable action not available',
+                                  message: `Disable user for ${user.username} is not available in this build yet.`,
+                                })
+                              }}
+                            >
+                              ⛔
+                            </button>
+                            <button
+                              type="button"
+                              title="Delete User"
+                              className="user-action-button"
+                              onClick={() => {
+                                setUserToDelete(user)
+                                setDeletePassword('')
+                                setDeleteError('')
+                              }}
+                            >
+                              🗑️
+                            </button>
+                          </td>
+                        </tr>
+                      )
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="flex flex-col gap-3 text-sm text-[#333333] sm:flex-row sm:items-center sm:justify-between">
+              <p>
+                Showing {paginatedUsers.length} of {filteredUsers.length.toLocaleString()} users
+              </p>
+              <div className="flex items-center gap-6">
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                  disabled={currentPage === 1}
+                  className="font-medium text-[#1E6B3B] disabled:opacity-40"
+                >
+                  Previous
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+                  disabled={currentPage === totalPages}
+                  className="font-medium text-[#1E6B3B] disabled:opacity-40"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="create-user-card">
+          <h2 className="mb-4 text-xl font-semibold text-[#1E6B3B]">Create New User</h2>
+
+          <div className="create-user-grid">
+            <div>
+              <label className="mb-2 block text-sm font-medium text-[#333333]">Username</label>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="user-form-input w-full"
+              />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium text-[#333333]">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="user-form-input w-full"
+              />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium text-[#333333]">Role</label>
+              <select
+                value={role}
+                onChange={(e) => setRole(e.target.value as User['role'])}
+                className="user-form-select w-full"
+              >
                 <option value="student">Student</option>
                 <option value="ar_staff">AR Staff</option>
                 <option value="admin">Admin</option>
               </select>
             </div>
-          </div>
 
-          <div className="hidden grid-cols-[1.6fr_0.8fr_0.75fr_0.45fr] gap-5 bg-slate-100 px-6 py-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500 lg:grid">
-            <div>Username</div>
-            <div>Role</div>
-            <div>Created</div>
-            <div>Actions</div>
-          </div>
+            <div>
+              <label className="mb-2 block text-sm font-medium text-[#333333]">Department</label>
+              <input
+                type="text"
+                value={department}
+                onChange={(e) => setDepartment(e.target.value)}
+                placeholder="e.g., Registrar, IT, Finance"
+                className="user-form-input w-full"
+              />
+            </div>
 
-          {isLoading ? (
-            <div className="px-6 py-8 text-sm text-slate-500">Loading users...</div>
-          ) : (
-            paginatedUsers.map((user, idx) => (
-              <React.Fragment key={user.id}>
-                <div
-                  className={`hidden grid-cols-[1.6fr_0.8fr_0.75fr_0.45fr] gap-5 border-b border-slate-100 px-6 py-6 lg:grid ${
-                    idx % 2 === 1 ? 'bg-[#fafafe]' : 'bg-white'
-                  }`}
+            <div className="create-user-span">
+              <label className="mb-3 block text-sm font-medium text-[#333333]">Generate Password</label>
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={handleGeneratePassword}
+                  className="generate-password-button"
                 >
-                  <div className="flex items-center gap-4">
-                    <div className={`flex h-10 w-10 items-center justify-center rounded-xl text-sm font-semibold ${
-                      user.role === 'admin' ? 'bg-[#ddd8ff] text-primary-700' :
-                      user.role === 'ar_staff' ? 'bg-[#ffd88b] text-[#8c6500]' :
-                      'bg-slate-100 text-slate-600'
-                    }`}>
-                      {user.username.slice(0, 2).toUpperCase()}
-                    </div>
-                    <p className="text-[1.2rem] font-semibold text-slate-900">{user.username}</p>
-                  </div>
-
-                  <div>
-                    <span className={`inline-flex rounded-md px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] ${roleTone(user.role)}`}>
-                      {user.role.replace('_', ' ')}
-                    </span>
-                  </div>
-
-                  <div className="text-sm text-slate-700">
-                    {new Date(2023, (user.id % 12), Math.max(1, user.id % 28)).toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric',
-                    })}
-                  </div>
-
-                  <div className="flex items-center gap-4">
-                    <button
-                      onClick={() => {
-                        setUserToEdit(user)
-                        setEditRole(user.role)
-                        setEditError('')
-                      }}
-                      className="text-primary-700"
-                    >
-                      <Pencil className="h-5 w-5" />
-                    </button>
-                    <button
-                      onClick={() => {
-                        setUserToDelete(user)
-                        setDeletePassword('')
-                        setDeleteError('')
-                      }}
-                      className="text-red-600"
-                    >
-                      <Trash2 className="h-5 w-5" />
-                    </button>
-                  </div>
-                </div>
-
-                <div className={`border-b border-slate-100 px-5 py-5 lg:hidden ${idx % 2 === 1 ? 'bg-[#fafafe]' : 'bg-white'}`}>
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-4">
-                      <div className={`flex h-10 w-10 items-center justify-center rounded-xl text-sm font-semibold ${
-                        user.role === 'admin' ? 'bg-[#ddd8ff] text-primary-700' :
-                        user.role === 'ar_staff' ? 'bg-[#ffd88b] text-[#8c6500]' :
-                        'bg-slate-100 text-slate-600'
-                      }`}>
-                        {user.username.slice(0, 2).toUpperCase()}
-                      </div>
-                      <div>
-                        <p className="text-base font-semibold text-slate-900">{user.username}</p>
-                        <p className="mt-1 text-sm text-slate-500">
-                          {new Date(2023, (user.id % 12), Math.max(1, user.id % 28)).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric',
-                          })}
-                        </p>
-                      </div>
-                    </div>
-                    <span className={`inline-flex rounded-md px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] ${roleTone(user.role)}`}>
-                      {user.role.replace('_', ' ')}
-                    </span>
-                  </div>
-
-                  <div className="mt-4 flex items-center gap-4">
-                    <button
-                      onClick={() => {
-                        setUserToEdit(user)
-                        setEditRole(user.role)
-                        setEditError('')
-                      }}
-                      className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-primary-700"
-                    >
-                      <Pencil className="h-4 w-4" />
-                      <span>Edit</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        setUserToDelete(user)
-                        setDeletePassword('')
-                        setDeleteError('')
-                      }}
-                      className="inline-flex items-center gap-2 rounded-xl border border-red-200 px-3 py-2 text-sm font-medium text-red-600"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      <span>Delete</span>
-                    </button>
-                  </div>
-                </div>
-              </React.Fragment>
-            ))
-          )}
-
-          <div className="flex flex-col gap-3 px-5 py-5 text-base text-slate-600 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-            <p>
-              Showing {paginatedUsers.length} of {filteredUsers.length.toLocaleString()} users
-            </p>
-            <div className="flex items-center gap-6">
-              <button
-                type="button"
-                onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
-                disabled={currentPage === 1}
-                className="disabled:opacity-40"
-              >
-                Previous
-              </button>
-              <button
-                type="button"
-                onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
-                disabled={currentPage === totalPages}
-                className="disabled:opacity-40"
-              >
-                Next
-              </button>
+                  Generate Password
+                </button>
+                {password ? <span className="temporary-password-chip">{password}</span> : null}
+              </div>
             </div>
           </div>
+
+          <button
+            type="button"
+            onClick={() => void handleCreate()}
+            className="create-user-button"
+          >
+            Create User
+          </button>
         </section>
-
-        <div className="space-y-6">
-          <section className={panelClass}>
-            <div className="border-b border-slate-200 px-6 py-5">
-              <h2 className="text-[1.8rem] font-semibold text-slate-950">Create New User</h2>
-              <p className="mt-2 text-base text-slate-600">
-                Assign university credentials and system scope.
-              </p>
-            </div>
-
-            <div className="space-y-5 px-5 py-6 sm:px-6">
-              <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-                  Username
-                </label>
-                <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="e.g. j.doe@must.ac.ug"
-                  className="mt-3 w-full rounded-2xl border border-slate-200 bg-[#f5f6fb] px-4 py-3 text-base outline-none transition focus:border-primary-500 focus:ring-4 focus:ring-primary-100"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-                  Password
-                </label>
-                <div className="relative mt-3">
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full rounded-2xl border border-slate-200 bg-[#f5f6fb] px-4 py-3 pr-12 text-base outline-none transition focus:border-primary-500 focus:ring-4 focus:ring-primary-100"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((prev) => !prev)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
-                  >
-                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-                  Role Assignment
-                </label>
-                <select
-                  value={role}
-                  onChange={(e) => setRole(e.target.value as User['role'])}
-                  className="mt-3 w-full rounded-2xl border border-slate-200 bg-[#f5f6fb] px-4 py-3 text-base outline-none focus:ring-4 focus:ring-primary-100"
-                >
-                  <option value="student">Student</option>
-                  <option value="ar_staff">AR Staff</option>
-                  <option value="admin">Admin</option>
-                </select>
-              </div>
-
-              <button
-                onClick={handleCreate}
-                className="flex w-full items-center justify-center gap-3 rounded-[1.2rem] bg-primary-700 px-5 py-3.5 text-base font-semibold text-white transition hover:bg-primary-800"
-              >
-                <Plus className="h-5 w-5" />
-                <span>Create User</span>
-              </button>
-            </div>
-          </section>
-
-        </div>
       </div>
 
-      {userToDelete && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/45 px-0 py-0 backdrop-blur-sm sm:items-center sm:px-4 sm:py-6">
+      {userToDelete ? (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-[#333333]/45 px-0 py-0 sm:items-center sm:px-4 sm:py-6">
           <div className={`min-h-[48vh] sm:min-h-0 ${modalCardClass}`}>
-            <div className="flex items-start justify-between border-b border-slate-200 px-6 py-5">
+            <div className="flex items-start justify-between border-b border-[#F0F2F5] px-6 py-5">
               <div className="flex items-start gap-3">
-                <AlertTriangle className="mt-1 h-5 w-5 text-red-600" />
+                <AlertTriangle className="mt-1 h-5 w-5 text-[#B8860B]" />
                 <div>
-                  <h3 className="text-xl font-semibold text-slate-950">Confirm User Deletion</h3>
-                  <p className="mt-1 text-sm text-slate-500">
-                    This action will permanently remove <span className="font-semibold text-slate-700">{userToDelete.username}</span> if the account has no linked records.
+                  <h3 className="text-xl font-semibold text-[#333333]">Confirm User Deletion</h3>
+                  <p className="mt-1 text-sm text-[#333333]">
+                    This action will permanently remove <span className="font-semibold">{userToDelete.username}</span> if the account has no linked records.
                   </p>
                 </div>
               </div>
@@ -433,7 +729,7 @@ const AdminUsersPage: React.FC = () => {
                   setDeletePassword('')
                   setDeleteError('')
                 }}
-                className="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                className="rounded-full p-2 text-[#333333] transition hover:bg-[#F0F2F5]"
                 aria-label="Close delete confirmation"
               >
                 <X className="h-5 w-5" />
@@ -441,20 +737,18 @@ const AdminUsersPage: React.FC = () => {
             </div>
 
             <div className="space-y-4 px-6 py-6">
-              <p className="text-sm text-slate-600">
-                Enter your admin password to confirm this action.
-              </p>
+              <p className="text-sm text-[#333333]">Enter your admin password to confirm this action.</p>
 
               <input
                 type="password"
                 value={deletePassword}
                 onChange={(e) => setDeletePassword(e.target.value)}
                 placeholder="Admin password"
-                className="w-full rounded-2xl border border-slate-200 bg-[#f5f6fb] px-4 py-3 text-base outline-none transition focus:border-primary-500 focus:ring-4 focus:ring-primary-100"
+                className="user-form-input w-full"
               />
 
               {deleteError ? (
-                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                <div className="rounded-[8px] border border-[#B8860B] bg-[#F5EDD6] px-4 py-3 text-sm text-[#333333]">
                   {deleteError}
                 </div>
               ) : null}
@@ -467,7 +761,7 @@ const AdminUsersPage: React.FC = () => {
                     setDeletePassword('')
                     setDeleteError('')
                   }}
-                  className="rounded-[1rem] border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                  className="rounded-[6px] border border-[#DDD] px-4 py-2.5 text-sm font-medium text-[#333333] transition hover:bg-[#F0F2F5]"
                 >
                   Cancel
                 </button>
@@ -475,7 +769,7 @@ const AdminUsersPage: React.FC = () => {
                   type="button"
                   onClick={() => void handleDeleteUser()}
                   disabled={isDeleting}
-                  className="rounded-[1rem] bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-50"
+                  className="rounded-[6px] bg-[#B8860B] px-4 py-2.5 text-sm font-semibold text-[#333333] transition hover:bg-[#1E6B3B] hover:text-white disabled:opacity-50"
                 >
                   {isDeleting ? 'Deleting...' : 'Delete User'}
                 </button>
@@ -483,16 +777,16 @@ const AdminUsersPage: React.FC = () => {
             </div>
           </div>
         </div>
-      )}
+      ) : null}
 
-      {userToEdit && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/45 px-0 py-0 backdrop-blur-sm sm:items-center sm:px-4 sm:py-6">
+      {userToEdit ? (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-[#333333]/45 px-0 py-0 sm:items-center sm:px-4 sm:py-6">
           <div className={`min-h-[44vh] sm:min-h-0 ${modalCardClass}`}>
-            <div className="flex items-start justify-between border-b border-slate-200 px-6 py-5">
+            <div className="flex items-start justify-between border-b border-[#F0F2F5] px-6 py-5">
               <div>
-                <h3 className="text-xl font-semibold text-slate-950">Edit User Role</h3>
-                <p className="mt-1 text-sm text-slate-500">
-                  Update the role for <span className="font-semibold text-slate-700">{userToEdit.username}</span>.
+                <h3 className="text-xl font-semibold text-[#333333]">Edit User Role</h3>
+                <p className="mt-1 text-sm text-[#333333]">
+                  Update the role for <span className="font-semibold">{userToEdit.username}</span>.
                 </p>
               </div>
               <button
@@ -501,7 +795,7 @@ const AdminUsersPage: React.FC = () => {
                   setUserToEdit(null)
                   setEditError('')
                 }}
-                className="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                className="rounded-full p-2 text-[#333333] transition hover:bg-[#F0F2F5]"
                 aria-label="Close role editor"
               >
                 <X className="h-5 w-5" />
@@ -510,13 +804,11 @@ const AdminUsersPage: React.FC = () => {
 
             <div className="space-y-4 px-6 py-6">
               <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-                  Role Assignment
-                </label>
+                <label className="mb-2 block text-sm font-medium text-[#333333]">Role Assignment</label>
                 <select
                   value={editRole}
                   onChange={(e) => setEditRole(e.target.value as User['role'])}
-                  className="mt-3 w-full rounded-2xl border border-slate-200 bg-[#f5f6fb] px-4 py-3 text-base outline-none focus:ring-4 focus:ring-primary-100"
+                  className="user-form-select w-full"
                 >
                   <option value="student">Student</option>
                   <option value="ar_staff">AR Staff</option>
@@ -525,7 +817,7 @@ const AdminUsersPage: React.FC = () => {
               </div>
 
               {editError ? (
-                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                <div className="rounded-[8px] border border-[#B8860B] bg-[#F5EDD6] px-4 py-3 text-sm text-[#333333]">
                   {editError}
                 </div>
               ) : null}
@@ -537,7 +829,7 @@ const AdminUsersPage: React.FC = () => {
                     setUserToEdit(null)
                     setEditError('')
                   }}
-                  className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                  className="rounded-[6px] border border-[#DDD] px-4 py-2.5 text-sm font-medium text-[#333333] transition hover:bg-[#F0F2F5]"
                 >
                   Cancel
                 </button>
@@ -545,7 +837,7 @@ const AdminUsersPage: React.FC = () => {
                   type="button"
                   onClick={() => void handleUpdateRole()}
                   disabled={isUpdatingRole}
-                  className="rounded-xl bg-primary-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-800 disabled:opacity-50"
+                  className="rounded-[6px] bg-[#B8860B] px-4 py-2.5 text-sm font-semibold text-[#333333] transition hover:bg-[#1E6B3B] hover:text-white disabled:opacity-50"
                 >
                   {isUpdatingRole ? 'Saving...' : 'Save Changes'}
                 </button>
@@ -553,7 +845,7 @@ const AdminUsersPage: React.FC = () => {
             </div>
           </div>
         </div>
-      )}
+      ) : null}
     </AdminShell>
   )
 }

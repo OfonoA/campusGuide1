@@ -17,20 +17,10 @@ const Layout: React.FC = () => {
     (location.pathname === '/app/staff-dashboard' || location.pathname === '/app/staff-chat')
   const useAdminWorkspaceShell =
     user?.role === 'admin' &&
-    (
-      location.pathname === '/app/admin/dashboard' ||
-      location.pathname === '/app/admin/inbox' ||
-      location.pathname === '/app/admin/chat' ||
-      location.pathname === '/app/admin/users' ||
-      location.pathname === '/app/admin/documents'
-    )
+    location.pathname.startsWith('/app/admin/')
 
   if (useStudentWorkspaceShell || useStaffWorkspaceShell || useAdminWorkspaceShell) {
-    return (
-      <div className="min-h-screen bg-[linear-gradient(180deg,#f8fbff_0%,#eef3fa_56%,#e7edf7_100%)]">
-        <Outlet />
-      </div>
-    )
+    return <Outlet />
   }
 
   return (

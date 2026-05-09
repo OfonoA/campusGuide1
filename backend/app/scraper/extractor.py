@@ -2,6 +2,7 @@
 import hashlib
 import logging
 import os
+import re
 import tempfile
 from dataclasses import dataclass
 from datetime import datetime
@@ -50,6 +51,44 @@ def compute_hash(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
+def _decode_cloudflare_email(encoded: str) -> str:
+    encoded = (encoded or "").strip()
+    if len(encoded) < 2 or len(encoded) % 2 != 0:
+        return ""
+
+    try:
+        key = int(encoded[:2], 16)
+        return "".join(
+            chr(int(encoded[index:index + 2], 16) ^ key)
+            for index in range(2, len(encoded), 2)
+        )
+    except ValueError:
+        return ""
+
+
+def _replace_cloudflare_protected_emails(html: str) -> str:
+    soup = BeautifulSoup(html, "html.parser")
+
+    for node in soup.select(".__cf_email__"):
+        encoded = node.get("data-cfemail") or ""
+        decoded = _decode_cloudflare_email(encoded)
+        if decoded:
+            node.replace_with(decoded)
+
+    for anchor in soup.find_all("a", href=True):
+        href = anchor.get("href", "")
+        match = re.search(r"/cdn-cgi/l/email-protection#([0-9a-fA-F]+)", href)
+        if not match:
+            continue
+        decoded = _decode_cloudflare_email(match.group(1))
+        if decoded:
+            anchor["href"] = f"mailto:{decoded}"
+            if not anchor.get_text(strip=True) or "[email protected]" in anchor.get_text(strip=True).lower():
+                anchor.string = decoded
+
+    return str(soup)
+
+
 def _response_is_pdf(response: requests.Response) -> bool:
     content_type = response.headers.get("Content-Type", "").lower()
     if "application/pdf" in content_type:
@@ -95,6 +134,7 @@ def _download_pdf(
 
 
 def _clean_html(html: str) -> str:
+    html = _replace_cloudflare_protected_emails(html)
     soup = BeautifulSoup(html, "html.parser")
     for tag in soup.select("nav, header, footer, script, style"):
         tag.decompose()
@@ -152,6 +192,7 @@ def _group_profile_listing_lines(lines: list[str]) -> list[str]:
 
 def extract_html_page(url: str, html: str, response_headers: Dict[str, str]) -> ExtractionResult:
     """Extract clean readable text from an HTML page."""
+    html = _replace_cloudflare_protected_emails(html)
     clean_text = trafilatura.extract(html, include_tables=True, include_links=False) or ""
     if len((clean_text or "").strip()) < 200:
         clean_text = _clean_html(html)
@@ -281,6 +322,7 @@ def extract_profiles_page(url: str) -> ExtractionResult:
             response = requests.get(url, timeout=20, headers={"User-Agent": "MUSTRagBot/1.0"})
             response.raise_for_status()
             html = response.text
+        html = _replace_cloudflare_protected_emails(html)
         soup = BeautifulSoup(html, "html.parser")
         header = soup.find("h1")
         meta_sections = soup.select(".staff-content, .content") or [soup.body]

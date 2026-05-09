@@ -1,8 +1,12 @@
 import json
+import logging
+from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException, Depends, Header, UploadFile, File, Form
+from fastapi import FastAPI, HTTPException, Depends, Header, UploadFile, File, Form, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
+from fastapi.exception_handlers import request_validation_exception_handler
 from typing import List
 from sqlalchemy.orm import Session
 from time import perf_counter
@@ -56,10 +60,36 @@ from database.orm_models import RLFeedback, TicketUpdate
 # --- Security (defined in auth.py) ---
 
 # --- FastAPI App ---
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    print("Startup: Loading vector store...")
+    vector_store_manager.load_or_create_store()
+    if vector_store_manager.vector_store:
+        print("Vector store loaded successfully")
+    else:
+        print("Vector store failed to load")
+
+    from app.scraper.scheduler import start_scheduler, stop_scheduler
+
+    start_scheduler(app.state)
+    try:
+        yield
+    finally:
+        stop_scheduler(app.state)
+
+
+app = FastAPI(lifespan=lifespan)
+logger = logging.getLogger(__name__)
+app_logger = logging.getLogger("must")
+app_logger.setLevel(logging.INFO)
 
 ESCALATION_ELIGIBLE_REASONS = {"no_answer"}
 LLM_RESULT_REASONS = {"answered", "clarification_needed", "no_answer", "system_error"}
+CLARIFICATION_LOOP_LIMIT = 2
+CLARIFICATION_LOOP_FALLBACK = (
+    "I need more specific information to help. Please rephrase or contact an officer."
+)
+_clarification_loop_state: dict[int, int] = {}
 
 
 def _get_allowed_origins() -> list[str]:
@@ -81,6 +111,18 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.exception_handler(RequestValidationError)
+async def log_request_validation_error(request: Request, exc: RequestValidationError):
+    logger.error(
+        "422 validation error on %s %s content-type=%s errors=%s",
+        request.method,
+        request.url.path,
+        request.headers.get("content-type"),
+        exc.errors(),
+    )
+    return await request_validation_exception_handler(request, exc)
 
 
 def _get_active_ticket_for_conversation(db: Session, conversation_id: int) -> Ticket | None:
@@ -150,6 +192,14 @@ def _augment_query_with_uploads(query: str, files: list[UploadFile]) -> tuple[st
     ]
 
 
+def _normalize_uploaded_files(files: UploadFile | list[UploadFile] | None) -> list[UploadFile]:
+    if files is None:
+        return []
+    if isinstance(files, list):
+        return files
+    return [files]
+
+
 def _parse_chat_history_payload(chat_history: str | None) -> list[tuple[str, str]]:
     if not chat_history:
         return []
@@ -179,6 +229,25 @@ def _normalize_llm_result(raw_result: object) -> tuple[str, bool, str]:
 
 def _should_escalate_to_ticket(llm_reason: str, current_user: User) -> bool:
     return current_user.role == "student" and llm_reason in ESCALATION_ELIGIBLE_REASONS
+
+
+def _apply_clarification_loop_guard(
+    session_id: int,
+    llm_reason: str,
+    found_answer: bool,
+    bot_response_content: str,
+) -> tuple[str, bool, str]:
+    """Prevent repeated clarification-only loops within the same conversation."""
+    if llm_reason == "clarification_needed":
+        clarification_count = _clarification_loop_state.get(session_id, 0) + 1
+        _clarification_loop_state[session_id] = clarification_count
+        if clarification_count > CLARIFICATION_LOOP_LIMIT:
+            _clarification_loop_state[session_id] = 0
+            return "answered", True, CLARIFICATION_LOOP_FALLBACK
+        return llm_reason, found_answer, bot_response_content
+
+    _clarification_loop_state.pop(session_id, None)
+    return llm_reason, found_answer, bot_response_content
 
 
 def _run_chat_flow(
@@ -236,6 +305,12 @@ def _run_chat_flow(
         llm_ms = (perf_counter() - llm_start) * 1000
         print(f"[perf] llm_ms={llm_ms:.2f} query_len={len(query)}")
         llm_reason, found_answer, bot_response_content = _normalize_llm_result(llm_result)
+        llm_reason, found_answer, bot_response_content = _apply_clarification_loop_guard(
+            db_chat.id,
+            llm_reason,
+            found_answer,
+            bot_response_content,
+        )
         if not bot_response_content:
             raise ValueError("Empty LLM response")
     except Exception as e:
@@ -269,36 +344,13 @@ def _run_chat_flow(
             except Exception:
                 pass
         else:
-            ticket_ref = generate_reference_code()
-            ticket = Ticket(
-                reference_code=ticket_ref,
-                conversation_id=db_chat.id,
-                student_id=current_user.id,
-                status="open"
-            )
-            db.add(ticket)
-            db.commit()
-            db.refresh(ticket)
-            db_chat.ended_at = datetime.utcnow()
-            db.add(db_chat)
-            db.commit()
-            db.add(
-                TicketMessage(
-                    ticket_id=ticket.id,
-                    sender_role="student",
-                    sender_id=current_user.id,
-                    content=db_query,
-                )
-            )
-            db.commit()
-            try:
-                apply_ticket_recommendation(db, ticket)
-                maybe_auto_assign_recommended_ticket(db, ticket)
-            except Exception as exc:
-                print(f"Ticket recommendation failed for ticket {ticket.id}: {exc}")
+            # Do NOT create a ticket automatically. Instead, prompt the student
+            # to explicitly request an officer ticket. Frontend may call the
+            # student-driven endpoint POST /api/chat/{conversation_id}/request-officer
+            # to create the ticket when the student confirms.
             bot_response_content = (
-                "Your inquiry has been referred to an officer in the Academic Registrar's Department. "
-                f"Your ticket reference is {ticket_ref}. Please continue in the ticket chat."
+                "I couldn’t confirm a reliable answer from the available sources. "
+                "If you want, tap 'Talk to an officer' and I’ll open a ticket for follow-up support."
             )
             try:
                 bot_message.content = bot_response_content
@@ -342,25 +394,11 @@ def _run_chat_flow(
         f"[perf] total_ms={total_ms:.2f} chat_id={db_chat.id} "
         f"ticket_created={1 if ticket_ref else 0} found_answer={1 if found_answer else 0} llm_reason={llm_reason} early_return=0"
     )
-    return ChatResponse(response=bot_response_content, chat_id=db_chat.id, ticket_reference=ticket_ref)
-
-async def startup_event():
-    print("Startup: Loading vector store...")
-    vector_store_manager.load_or_create_store()
-    if vector_store_manager.vector_store:
-        print("Vector store loaded successfully")
-    else:
-        print("Vector store failed to load")
-    from app.scraper.scheduler import start_scheduler
-    start_scheduler(app.state)
-
-
-async def shutdown_event():
-    from app.scraper.scheduler import stop_scheduler
-    stop_scheduler(app.state)
-
-app.add_event_handler("startup", startup_event)
-app.add_event_handler("shutdown", shutdown_event)
+    return ChatResponse(
+        response=bot_response_content,
+        chat_id=db_chat.id,
+        ticket_reference=ticket_ref,
+    )
 
 # --- Routes ---
 @app.post("/api/signup", response_model=TokenResponse)
@@ -448,12 +486,12 @@ async def chat_with_uploads(
     query: str = Form(...),
     chat_id: int | None = Form(None),
     chat_history: str | None = Form(None),
-    files: list[UploadFile] | None = File(None),
+    files: UploadFile | list[UploadFile] | None = File(None),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     normalized_query = query.strip() or "Please review the attached files."
-    usable_files = [file for file in (files or []) if file.filename]
+    usable_files = [file for file in _normalize_uploaded_files(files) if file.filename]
     augmented_query, stored_user_content, uploaded_attachments = _augment_query_with_uploads(normalized_query, usable_files)
     return _run_chat_flow(
         query=augmented_query,

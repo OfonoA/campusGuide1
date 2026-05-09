@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from io import BytesIO
+import logging
 import os
 import secrets
 
@@ -14,6 +15,7 @@ MAX_ATTACHMENT_TEXT_CHARS = 12000
 ATTACHMENT_STORAGE_DIR = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..", "uploaded_attachments")
 )
+logger = logging.getLogger("must.attachments")
 
 
 @dataclass
@@ -34,14 +36,32 @@ def _safe_filename(filename: str) -> str:
 def _extract_text_from_bytes(filename: str, raw: bytes) -> str:
     suffix = os.path.splitext(filename.lower())[1]
     if suffix in {".txt", ".md", ".csv"}:
-        return raw.decode("utf-8", errors="ignore").strip()
+        text = raw.decode("utf-8", errors="ignore").strip()
+        logger.info(
+            "attachment_text_extracted filename=%s suffix=%s bytes=%d chars=%d",
+            filename,
+            suffix,
+            len(raw),
+            len(text),
+        )
+        return text
     if suffix == ".pdf":
         try:
             from pypdf import PdfReader
 
             reader = PdfReader(BytesIO(raw))
-            return "\n".join((page.extract_text() or "") for page in reader.pages).strip()
+            text = "\n".join((page.extract_text() or "") for page in reader.pages).strip()
+            logger.info(
+                "attachment_text_extracted filename=%s suffix=%s bytes=%d pages=%d chars=%d",
+                filename,
+                suffix,
+                len(raw),
+                len(reader.pages),
+                len(text),
+            )
+            return text
         except Exception as exc:
+            logger.exception("attachment_text_extraction_failed filename=%s suffix=%s", filename, suffix)
             raise HTTPException(status_code=400, detail=f"Could not read PDF {filename}: {exc}") from exc
     raise HTTPException(status_code=400, detail=f"Unsupported file type for {filename}. Use PDF, TXT, MD, or CSV.")
 
@@ -59,6 +79,7 @@ def process_message_uploads(files: list[UploadFile]) -> list[ProcessedAttachment
         filename = _safe_filename(file.filename or "attachment")
         raw = file.file.read()
         if not raw:
+            logger.warning("attachment_upload_empty filename=%s", filename)
             continue
         if len(raw) > MAX_ATTACHMENT_FILE_BYTES:
             raise HTTPException(status_code=400, detail=f"{filename} exceeds the 5 MB upload limit")
@@ -77,6 +98,13 @@ def process_message_uploads(files: list[UploadFile]) -> list[ProcessedAttachment
                 file_size_bytes=len(raw),
                 extracted_text=_extract_text_from_bytes(filename, raw),
             )
+        )
+        logger.info(
+            "attachment_upload_processed filename=%s stored_filename=%s bytes=%d extracted_chars=%d",
+            filename,
+            stored_filename,
+            len(raw),
+            len(processed[-1].extracted_text or ""),
         )
 
     return processed

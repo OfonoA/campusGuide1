@@ -1,21 +1,24 @@
 import axios from 'axios'
 import { User, Chat, Ticket, DashboardMetrics, Attachment } from '../types'
 import { emitAppFeedback, queuePersistentFeedback } from '../utils/appFeedback'
+import { clearAuthSession, getAuthToken, getRefreshToken, setAuthSession } from '../utils/authStorage'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 })
 
 // Add auth token to requests
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('authToken')
+  const token = getAuthToken()
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
+  }
+  if (config.data instanceof FormData) {
+    config.headers.setContentType(undefined)
+  } else {
+    config.headers.setContentType('application/json')
   }
   return config
 })
@@ -34,7 +37,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
       if (!isAuthRoute) {
         originalRequest._retry = true
-        const refreshToken = localStorage.getItem('refreshToken')
+        const refreshToken = getRefreshToken()
 
         if (refreshToken) {
           try {
@@ -47,17 +50,13 @@ api.interceptors.response.use(
 
             if (!newToken) throw new Error('No access token returned from refresh')
 
-            localStorage.setItem('authToken', newToken)
-            if (newRefresh) {
-              localStorage.setItem('refreshToken', newRefresh)
-            }
+            setAuthSession(newToken, newRefresh || refreshToken)
 
             originalRequest.headers = originalRequest.headers || {}
             originalRequest.headers.Authorization = `Bearer ${newToken}`
             return api(originalRequest)
           } catch {
-            localStorage.removeItem('authToken')
-            localStorage.removeItem('refreshToken')
+            clearAuthSession()
             queuePersistentFeedback({
               tone: 'error',
               title: 'Session expired',
@@ -66,8 +65,7 @@ api.interceptors.response.use(
             window.location.href = '/login'
           }
         } else {
-          localStorage.removeItem('authToken')
-          localStorage.removeItem('refreshToken')
+          clearAuthSession()
           queuePersistentFeedback({
             tone: 'error',
             title: 'Session expired',
@@ -79,8 +77,7 @@ api.interceptors.response.use(
     }
 
     if (error.response?.status === 401 && !isAuthRoute) {
-      localStorage.removeItem('authToken')
-      localStorage.removeItem('refreshToken')
+      clearAuthSession()
       queuePersistentFeedback({
         tone: 'error',
         title: 'Session expired',
@@ -151,9 +148,7 @@ export const chatAPI = {
         form.append('chat_history', JSON.stringify(chatHistory))
       }
       usableFiles.forEach((file) => form.append('files', file))
-      const response = await api.post('/chat/upload', form, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      })
+      const response = await api.post('/chat/upload', form)
       return response.data
     }
 
@@ -244,9 +239,7 @@ export const ticketsAPI = {
     const form = new FormData()
     form.append('content', normalizedContent || (usableFiles.length > 0 ? 'Please review the attached files.' : ''))
     usableFiles.forEach((file) => form.append('files', file))
-    const response = await api.post(`/api/tickets/${ticketId}/messages`, form, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    })
+    const response = await api.post(`/api/tickets/${ticketId}/messages`, form)
     return response.data
   },
 }
@@ -266,6 +259,119 @@ const triggerBlobDownload = (blob: Blob, filename: string) => {
   link.click()
   link.remove()
   window.setTimeout(() => URL.revokeObjectURL(url), 60_000)
+}
+
+const getFilenameFromDisposition = (contentDisposition?: string | null, fallback = 'download.bin') => {
+  const match = contentDisposition?.match(/filename="?([^"]+)"?/)
+  return match?.[1] || fallback
+}
+
+export interface AdminPerformanceOverviewStats {
+  total_tickets: number
+  avg_response_time_hours: number | null
+  avg_resolution_time_days: number | null
+  sla_compliance_percent: number | null
+}
+
+export interface AdminPerformanceRow {
+  staff_id: number
+  staff_username: string
+  assigned: number
+  not_started: number
+  in_progress: number
+  resolved_30d: number
+  avg_response_time_hours: number | null
+  avg_resolution_time_days: number | null
+  sla_breaches: number
+}
+
+export interface AdminPerformanceOverviewResponse {
+  stats: AdminPerformanceOverviewStats
+  rows: AdminPerformanceRow[]
+}
+
+export interface AdminPerformanceTicketDetail {
+  ticket_id: number
+  reference_code: string
+  student_username: string | null
+  status: string
+  assigned_date: string | null
+  response_time_hours: number | null
+  resolution_time_days: number | null
+}
+
+export interface AdminPerformanceDetailResponse {
+  staff_id: number
+  staff_username: string
+  tickets: AdminPerformanceTicketDetail[]
+}
+
+export interface AdminAnalyticsTrendPoint {
+  label: string
+  value: number
+}
+
+export interface AdminAnalyticsOverview {
+  total_questions: number
+  answered: number
+  answered_rate: number
+  unanswered: number
+  unanswered_rate: number
+  escalation_rate: number
+  helpful_rate: number
+  kb_coverage: number
+}
+
+export interface AdminAnalyticsTopicRow {
+  topic: string
+  volume: number
+  share: number
+  escalation_rate: number
+  answer_rate: number
+}
+
+export interface AdminAnalyticsHotspotRow {
+  query: string
+  escalation_rate: number
+  tickets: number
+}
+
+export interface AdminAnalyticsNoAnswerArea {
+  topic: string
+  count: number
+}
+
+export interface AdminAnalyticsGapRow {
+  area: string
+  failed_query: string
+  suggested_document: string
+}
+
+export interface AdminAnalyticsUnansweredExample {
+  query: string
+}
+
+export interface AdminAnalyticsFollowUpInsight {
+  topic: string
+  tickets: number
+  delta: number
+}
+
+export interface AdminConversationAnalyticsResponse {
+  overview: AdminAnalyticsOverview
+  trends: Record<'daily' | 'weekly' | 'monthly', AdminAnalyticsTrendPoint[]>
+  peak_hours: AdminAnalyticsTrendPoint[]
+  peak_days: AdminAnalyticsTrendPoint[]
+  topics: AdminAnalyticsTopicRow[]
+  hotspots: AdminAnalyticsHotspotRow[]
+  feedback: {
+    helpful: number
+    notHelpful: number
+  }
+  no_answer_areas: AdminAnalyticsNoAnswerArea[]
+  gaps: AdminAnalyticsGapRow[]
+  unanswered_examples: AdminAnalyticsUnansweredExample[]
+  follow_up_insights: AdminAnalyticsFollowUpInsight[]
 }
 
 export const attachmentAPI = {
@@ -312,7 +418,16 @@ export const arAPI = {
   },
   resolveTicket: async (ticketId: number, resolution_summary?: string) => {
     const payload = resolution_summary ? { resolution_summary } : {}
+    console.info('[arAPI.resolveTicket] request', {
+      ticketId,
+      hasResolutionSummary: Boolean(resolution_summary),
+      resolutionSummaryLength: resolution_summary?.length || 0,
+    })
     const response = await api.post(`/api/ar/tickets/${ticketId}/resolve`, payload)
+    console.info('[arAPI.resolveTicket] response', {
+      ticketId,
+      status: response.status,
+    })
     return response.data
   },
 }
@@ -381,6 +496,8 @@ export const adminAPI = {
       role: u.role === 'staff' || u.role === 'ar' ? 'ar_staff' : (u.role ?? 'student'),
       email: u.email,
       name: u.name,
+      created_at: u.created_at,
+      last_active_at: u.last_active_at ?? null,
     }))
   },
   createUser: async (username: string, password: string, role: User['role']) => {
@@ -404,9 +521,7 @@ export const adminAPI = {
   uploadDocument: async (file: File) => {
     const form = new FormData()
     form.append('file', file)
-    const response = await api.post('/api/admin/documents/upload', form, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    })
+    const response = await api.post('/api/admin/documents/upload', form)
     return response.data as {
       message: string
       original_filename: string
@@ -419,6 +534,125 @@ export const adminAPI = {
   deleteDocument: async (documentId: number) => {
     const response = await api.delete(`/api/admin/documents/${documentId}`)
     return response.data
+  },
+  getPerformanceOverview: async (
+    rangeKey: '7' | '30' | '90' | 'custom',
+    startDate?: string,
+    endDate?: string,
+  ): Promise<AdminPerformanceOverviewResponse> => {
+    const response = await api.get('/api/admin/performance', {
+      params: {
+        range_key: rangeKey,
+        start_date: startDate || undefined,
+        end_date: endDate || undefined,
+      },
+    })
+    return response.data
+  },
+  getPerformanceDetail: async (
+    staffId: number,
+    rangeKey: '7' | '30' | '90' | 'custom',
+    startDate?: string,
+    endDate?: string,
+  ): Promise<AdminPerformanceDetailResponse> => {
+    const response = await api.get(`/api/admin/performance/${staffId}`, {
+      params: {
+        range_key: rangeKey,
+        start_date: startDate || undefined,
+        end_date: endDate || undefined,
+      },
+    })
+    return response.data
+  },
+  exportPerformanceCsv: async (
+    rangeKey: '7' | '30' | '90' | 'custom',
+    startDate?: string,
+    endDate?: string,
+  ) => {
+    const response = await api.get('/api/admin/performance/export/csv', {
+      params: {
+        range_key: rangeKey,
+        start_date: startDate || undefined,
+        end_date: endDate || undefined,
+      },
+      responseType: 'blob',
+    })
+    const filename = getFilenameFromDisposition(
+      response.headers['content-disposition'],
+      'staff_performance_analytics.csv',
+    )
+    triggerBlobDownload(response.data, filename)
+  },
+  exportPerformancePdf: async (
+    rangeKey: '7' | '30' | '90' | 'custom',
+    startDate?: string,
+    endDate?: string,
+  ) => {
+    const response = await api.get('/api/admin/performance/export/pdf', {
+      params: {
+        range_key: rangeKey,
+        start_date: startDate || undefined,
+        end_date: endDate || undefined,
+      },
+      responseType: 'blob',
+    })
+    const filename = getFilenameFromDisposition(
+      response.headers['content-disposition'],
+      'staff_performance_analytics.pdf',
+    )
+    triggerBlobDownload(response.data, filename)
+  },
+  getConversationAnalytics: async (
+    rangeKey: '7' | '30' | '90' | 'custom',
+    startDate?: string,
+    endDate?: string,
+  ): Promise<AdminConversationAnalyticsResponse> => {
+    const response = await api.get('/api/admin/analytics', {
+      params: {
+        range_key: rangeKey,
+        start_date: startDate || undefined,
+        end_date: endDate || undefined,
+      },
+    })
+    return response.data
+  },
+  exportConversationAnalyticsCsv: async (
+    rangeKey: '7' | '30' | '90' | 'custom',
+    startDate?: string,
+    endDate?: string,
+  ) => {
+    const response = await api.get('/api/admin/analytics/export/csv', {
+      params: {
+        range_key: rangeKey,
+        start_date: startDate || undefined,
+        end_date: endDate || undefined,
+      },
+      responseType: 'blob',
+    })
+    const filename = getFilenameFromDisposition(
+      response.headers['content-disposition'],
+      'conversation_analytics.csv',
+    )
+    triggerBlobDownload(response.data, filename)
+  },
+  exportConversationAnalyticsPdf: async (
+    rangeKey: '7' | '30' | '90' | 'custom',
+    startDate?: string,
+    endDate?: string,
+  ) => {
+    const response = await api.get('/api/admin/analytics/export/pdf', {
+      params: {
+        range_key: rangeKey,
+        start_date: startDate || undefined,
+        end_date: endDate || undefined,
+      },
+      responseType: 'blob',
+    })
+    const filename = getFilenameFromDisposition(
+      response.headers['content-disposition'],
+      'conversation_analytics.pdf',
+    )
+    triggerBlobDownload(response.data, filename)
   },
 }
 

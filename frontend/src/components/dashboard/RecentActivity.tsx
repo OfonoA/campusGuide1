@@ -31,11 +31,11 @@ const RecentActivity: React.FC<RecentActivityProps> = ({ activities }) => {
   const getIconColor = (type: ActivityItem['type']) => {
     switch (type) {
       case 'ticket':
-        return 'bg-blue-100 text-blue-600'
+        return 'bg-[#e8f1ec] text-[#0A4B33]'
       case 'document':
-        return 'bg-green-100 text-green-600'
+        return 'bg-[#e7f5ec] text-[#1E6B3B]'
       case 'warning':
-        return 'bg-yellow-100 text-yellow-600'
+        return 'bg-[#fff1c7] text-[#8c6500]'
       default:
         return 'bg-slate-100 text-slate-600'
     }

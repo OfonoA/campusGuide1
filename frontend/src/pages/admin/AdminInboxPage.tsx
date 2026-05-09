@@ -28,9 +28,9 @@ interface AdminTicket extends Ticket {
 type TicketFilter = 'all' | 'open' | 'assigned' | 'in_progress' | 'resolved' | 'closed'
 type AssignmentMode = 'recommend' | 'auto_review' | 'auto_assign'
 
-const panelClass = 'overflow-hidden rounded-[1.5rem] border border-white/70 bg-white/88 shadow-[0_22px_54px_rgba(15,23,42,0.08)]'
+const panelClass = 'overflow-hidden rounded-[8px] border border-slate-200 bg-white shadow-[0_2px_6px_rgba(0,0,0,0.05)]'
 const panelHeaderClass = 'flex flex-col items-stretch justify-between gap-4 px-5 py-5 sm:px-6 lg:flex-row lg:items-center lg:gap-5'
-const modalShellClass = 'w-full overflow-hidden bg-white shadow-[0_24px_60px_rgba(15,23,42,0.2)] sm:max-w-5xl sm:rounded-[1.25rem]'
+const modalShellClass = 'w-full overflow-hidden border-t-4 border-t-[#1E6B3B] bg-white shadow-[0_2px_6px_rgba(0,0,0,0.05)] sm:max-w-5xl sm:rounded-[8px]'
 
 const AdminInboxPage: React.FC = () => {
   const [tickets, setTickets] = useState<AdminTicket[]>([])
@@ -304,9 +304,9 @@ const AdminInboxPage: React.FC = () => {
   }, [tickets])
 
   const statusTone = (status: string) => {
-    if (status === 'resolved' || status === 'closed') return 'bg-[#e9e4fb] text-primary-700'
-    if (status === 'in_progress') return 'bg-accent-400 text-accent-900'
-    return 'bg-[#ffd88b] text-[#8c6500]'
+    if (status === 'resolved' || status === 'closed') return 'bg-slate-300 text-[#333333]'
+    if (status === 'in_progress') return 'bg-[#1E6B3B] text-white'
+    return 'bg-[#D4AF37] text-[#333333]'
   }
 
   const formatDate = (value: string) =>
@@ -318,7 +318,7 @@ const AdminInboxPage: React.FC = () => {
     })
 
   const cards = [
-    { label: 'Open Tickets', value: metrics.open, icon: TrendingUp, accent: 'border-l-[4px] border-primary-700', meta: '', metaClass: 'text-slate-400' },
+    { label: 'Open Tickets', value: metrics.open, icon: TrendingUp, accent: 'border-l-[4px] border-[#1E6B3B]', meta: '', metaClass: 'text-slate-400' },
     { label: 'Assigned Tickets', value: metrics.assigned, icon: CheckSquare, accent: '', meta: '', metaClass: 'text-slate-400' },
     { label: 'In Progress', value: metrics.inProgress, icon: Clock3, accent: '', meta: '', metaClass: 'text-slate-400' },
     {
@@ -335,6 +335,9 @@ const AdminInboxPage: React.FC = () => {
     <AdminShell
       title="Admin Operations"
       subtitle="Ticket assignment and support oversight"
+      theme="staff"
+      workspaceLabel="ADMIN WORKSPACE"
+      fullWidth
     >
       <FeedbackToastStack toasts={toasts} onDismiss={dismissToast} />
       <div className="space-y-5">
@@ -344,21 +347,21 @@ const AdminInboxPage: React.FC = () => {
             return (
               <div
                 key={card.label}
-                className={`metric-card ${card.accent}`}
+                className="metric-card border-t-4 border-t-[#1E6B3B]"
               >
                 <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">
                   {card.label}
                 </p>
                 <div className="mt-4 flex items-end justify-between gap-3">
                   <div className="flex items-end gap-3">
-                    <span className={`text-[2.1rem] font-semibold leading-none ${card.label === 'In Progress' ? 'text-[#c89b00]' : card.label === 'Resolved Today' ? 'text-[#8c6500]' : 'text-primary-700'}`}>
+                    <span className="text-[2.1rem] font-semibold leading-none text-[#D4AF37]">
                       {card.value}
                     </span>
                     {card.meta ? (
                       <span className={`${card.metaClass}`}>{card.meta}</span>
                     ) : null}
                   </div>
-                  <Icon className={`h-5 w-5 ${card.label === 'Open Tickets' ? 'text-primary-200' : card.label === 'In Progress' ? 'text-[#d2a735]' : card.label === 'Resolved Today' ? 'text-[#8c6500]/50' : 'text-slate-300'}`} />
+                  <Icon className="h-5 w-5 text-[#1E6B3B]" />
                 </div>
               </div>
             )
@@ -368,7 +371,7 @@ const AdminInboxPage: React.FC = () => {
         <section className={panelClass}>
           <div className={panelHeaderClass}>
             <div>
-              <h2 className="text-[1.7rem] font-semibold text-slate-950">Ticket Inbox</h2>
+              <h2 className="text-[1.7rem] font-semibold text-[#1E6B3B]">Ticket Inbox</h2>
               {isRefreshingTickets ? (
                 <p className="mt-1 text-sm text-slate-500">Refreshing ticket list...</p>
               ) : null}
@@ -385,13 +388,13 @@ const AdminInboxPage: React.FC = () => {
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-              <div className="inline-flex rounded-2xl border border-slate-200 bg-white/88 p-1 shadow-[0_10px_24px_rgba(15,23,42,0.04)]">
+              <div className="inline-flex rounded-[8px] border border-slate-200 bg-[#1E6B3B] p-1 shadow-[0_2px_6px_rgba(0,0,0,0.05)]">
                 <button
                   type="button"
                   onClick={() => void handleAssignmentModeChange('recommend')}
                   disabled={isSavingAssignmentMode}
-                  className={`rounded-xl px-3 py-2 text-sm font-semibold transition ${
-                    assignmentMode === 'recommend' ? 'bg-primary-700 text-white' : 'text-slate-600 hover:bg-slate-50'
+                  className={`rounded-[8px] px-3 py-2 text-sm font-semibold transition ${
+                    assignmentMode === 'recommend' ? 'bg-[#D4AF37] text-[#333333]' : 'text-white hover:bg-white/10'
                   } disabled:opacity-50`}
                 >
                   Recommendation Only
@@ -400,8 +403,8 @@ const AdminInboxPage: React.FC = () => {
                   type="button"
                   onClick={() => void handleAssignmentModeChange('auto_review')}
                   disabled={isSavingAssignmentMode}
-                  className={`rounded-xl px-3 py-2 text-sm font-semibold transition ${
-                    assignmentMode === 'auto_review' ? 'bg-primary-700 text-white' : 'text-slate-600 hover:bg-slate-50'
+                  className={`rounded-[8px] px-3 py-2 text-sm font-semibold transition ${
+                    assignmentMode === 'auto_review' ? 'bg-[#D4AF37] text-[#333333]' : 'text-white hover:bg-white/10'
                   } disabled:opacity-50`}
                 >
                   Auto-Assign + Review
@@ -410,24 +413,24 @@ const AdminInboxPage: React.FC = () => {
                   type="button"
                   onClick={() => void handleAssignmentModeChange('auto_assign')}
                   disabled={isSavingAssignmentMode}
-                  className={`rounded-xl px-3 py-2 text-sm font-semibold transition ${
-                    assignmentMode === 'auto_assign' ? 'bg-primary-700 text-white' : 'text-slate-600 hover:bg-slate-50'
+                  className={`rounded-[8px] px-3 py-2 text-sm font-semibold transition ${
+                    assignmentMode === 'auto_assign' ? 'bg-[#D4AF37] text-[#333333]' : 'text-white hover:bg-white/10'
                   } disabled:opacity-50`}
                 >
                   Full Auto-Assign
                 </button>
               </div>
               <div className="relative min-w-0 flex-1 sm:min-w-[260px]">
-                <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#1E6B3B]" />
                 <input
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Search reference..."
-                  className="w-full rounded-2xl border border-slate-200 bg-[#f6f7fc] px-12 py-2.5 text-sm text-slate-700 outline-none transition focus:border-primary-500 focus:ring-4 focus:ring-primary-100"
+                  className="w-full rounded-[8px] border border-slate-200 bg-[#F5F5F5] px-12 py-2.5 text-sm text-[#333333] outline-none transition focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/30"
                 />
               </div>
-              <div className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white/82 px-4 py-2.5 text-sm text-slate-700 transition hover:bg-slate-50">
+              <div className="inline-flex items-center gap-2 rounded-[8px] border border-slate-200 bg-white px-4 py-2.5 text-sm text-[#1E6B3B] transition hover:bg-[#F5F5F5]">
                 <Filter className="h-4 w-4" />
                 <select
                   value={statusFilter}
@@ -445,7 +448,7 @@ const AdminInboxPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="hidden grid-cols-[1fr_1.2fr_0.9fr_1.35fr_1.2fr_0.9fr_0.9fr_1fr] gap-5 bg-slate-100 px-7 py-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500 lg:grid">
+          <div className="hidden grid-cols-[1fr_1.2fr_0.9fr_1.35fr_1.2fr_0.9fr_0.9fr_1fr] gap-5 bg-[#F0F2F5] px-7 py-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#1E6B3B] lg:grid">
             <div>Reference</div>
             <div>Student</div>
             <div>Status</div>
@@ -467,15 +470,15 @@ const AdminInboxPage: React.FC = () => {
               <React.Fragment key={ticket.id}>
                 <div
                   className={`hidden grid-cols-[1fr_1.2fr_0.9fr_1.35fr_1.2fr_0.9fr_0.9fr_1fr] gap-5 border-b border-slate-100 px-7 py-6 lg:grid ${
-                    idx % 2 === 1 ? 'bg-[#f7f7fb]' : 'bg-white'
+                    ticket.status === 'open' ? 'bg-[#F5F5F5] border-l-4 border-l-[#D4AF37]' : 'bg-[#F5F5F5]'
                   }`}
                 >
-                  <div className="text-base font-semibold leading-tight text-primary-700">
+                  <div className="text-base font-semibold leading-tight text-[#1E6B3B]">
                     {shortTicketReference(ticket.reference_code)}
                   </div>
 
                   <div className="flex items-start gap-4">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#ddd8ff] text-xs font-semibold text-primary-700">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#FEF9E6] text-xs font-semibold text-[#1E6B3B]">
                       {(ticket.student_username || `S${ticket.student_id}`).slice(0, 2).toUpperCase()}
                     </div>
                     <div>
@@ -505,8 +508,8 @@ const AdminInboxPage: React.FC = () => {
 
                   <div>
                     {ticket.recommended_officer_username ? (
-                      <div className="rounded-2xl border border-primary-100 bg-primary-50/70 p-3 shadow-[0_8px_18px_rgba(37,99,235,0.06)]">
-                        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-primary-500">
+                      <div className="rounded-[8px] border border-[#D4AF37]/20 bg-[#FEF9E6] p-3 shadow-[0_2px_6px_rgba(0,0,0,0.05)]">
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#1E6B3B]">
                           System Recommendation
                         </p>
                         <div className="mt-2 space-y-2">
@@ -517,7 +520,7 @@ const AdminInboxPage: React.FC = () => {
                             {ticket.recommendation_reason || 'Recommendation available'}
                           </p>
                           {typeof ticket.recommendation_score === 'number' ? (
-                            <p className="text-[11px] font-medium text-primary-700">
+                            <p className="text-[11px] font-medium text-[#D4AF37]">
                               Active load {ticket.recommendation_score.toFixed(0)}
                             </p>
                           ) : null}
@@ -527,7 +530,7 @@ const AdminInboxPage: React.FC = () => {
                             <button
                               onClick={() => void handleAcceptRecommendation(ticket)}
                               disabled={isAcceptingRecommendationId === ticket.id || (ticket.auto_assigned && !ticket.assignment_reviewed)}
-                              className="rounded-[1rem] border border-primary-200 px-3 py-2 text-xs font-semibold text-primary-700 transition hover:bg-primary-50 disabled:opacity-50"
+                              className="rounded-[8px] bg-[#D4AF37] px-3 py-2 text-xs font-semibold text-[#333333] transition hover:bg-[#c49c27] disabled:opacity-50"
                             >
                               Accept Recommendation
                             </button>
@@ -536,7 +539,7 @@ const AdminInboxPage: React.FC = () => {
                             <button
                               onClick={() => void handleMarkAssignmentReviewed(ticket)}
                               disabled={isReviewingAssignmentId === ticket.id}
-                              className="rounded-[1rem] border border-emerald-200 px-3 py-2 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-50 disabled:opacity-50"
+                              className="rounded-[8px] border border-emerald-200 px-3 py-2 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-50 disabled:opacity-50"
                             >
                               Mark Reviewed
                             </button>
@@ -551,7 +554,7 @@ const AdminInboxPage: React.FC = () => {
                   <div>
                     {ticket.status === 'open' || ticket.status === 'assigned' ? (
                       <select
-                        className="w-full rounded-2xl border border-slate-200 bg-[#f6f7fc] px-4 py-2.5 text-sm text-slate-700 outline-none focus:ring-4 focus:ring-primary-100"
+                        className="w-full rounded-[8px] border border-slate-200 bg-[#F5F5F5] px-4 py-2.5 text-sm text-slate-700 outline-none focus:ring-4 focus:ring-[#D4AF37]/20"
                         value={assignments[ticket.id] || ticket.assigned_to || ''}
                         onChange={(e) => setAssignments((prev) => ({ ...prev, [ticket.id]: Number(e.target.value) }))}
                       >
@@ -579,14 +582,14 @@ const AdminInboxPage: React.FC = () => {
                       <div className="flex flex-wrap items-center gap-3">
                         <button
                           onClick={() => void openConversation(ticket)}
-                          className="text-sm font-semibold text-primary-700 hover:text-primary-800"
+                          className="text-sm font-semibold text-[#1E6B3B] hover:text-[#D4AF37]"
                         >
                           {ticket.status === 'open' ? 'View' : 'Review'}
                         </button>
                         <button
                           onClick={() => handleAssign(ticket.id)}
                           disabled={!(assignments[ticket.id] || ticket.assigned_to)}
-                          className="rounded-[1rem] bg-primary-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-800 disabled:opacity-50"
+                          className="rounded-[8px] bg-[#1E6B3B] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_2px_6px_rgba(0,0,0,0.05)] transition hover:border hover:border-[#D4AF37] disabled:opacity-50"
                         >
                           {ticket.status === 'assigned' ? 'Reassign' : 'Assign'}
                         </button>
@@ -594,7 +597,7 @@ const AdminInboxPage: React.FC = () => {
                           <button
                             onClick={() => void handleResolveFalseTicket(ticket)}
                             disabled={isResolvingFalseTicketId === ticket.id}
-                            className="rounded-[1rem] border border-rose-200 px-4 py-2.5 text-sm font-semibold text-rose-700 transition hover:bg-rose-50 disabled:opacity-50"
+                            className="rounded-[8px] border border-rose-200 px-4 py-2.5 text-sm font-semibold text-rose-700 transition hover:bg-rose-50 disabled:opacity-50"
                           >
                             False Ticket
                           </button>
@@ -604,7 +607,7 @@ const AdminInboxPage: React.FC = () => {
                       <div className="flex items-center gap-3">
                         <button
                           onClick={() => void openConversation(ticket)}
-                          className="text-sm font-semibold text-primary-700 hover:text-primary-800"
+                          className="text-sm font-semibold text-[#1E6B3B] hover:text-[#D4AF37]"
                         >
                           Review
                         </button>
@@ -612,7 +615,7 @@ const AdminInboxPage: React.FC = () => {
                           <button
                             onClick={() => void handleResolveFalseTicket(ticket)}
                             disabled={isResolvingFalseTicketId === ticket.id}
-                            className="rounded-[1rem] border border-rose-200 px-4 py-2.5 text-sm font-semibold text-rose-700 transition hover:bg-rose-50 disabled:opacity-50"
+                            className="rounded-[8px] border border-rose-200 px-4 py-2.5 text-sm font-semibold text-rose-700 transition hover:bg-rose-50 disabled:opacity-50"
                           >
                             False Ticket
                           </button>
@@ -622,10 +625,10 @@ const AdminInboxPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className={`border-b border-slate-100 px-5 py-5 lg:hidden ${idx % 2 === 1 ? 'bg-[#f7f7fb]' : 'bg-white'}`}>
+                <div className={`border-b border-slate-100 px-5 py-5 lg:hidden ${ticket.status === 'open' ? 'border-l-4 border-l-[#D4AF37] bg-[#F5F5F5]' : 'bg-[#F5F5F5]'}`}>
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-base font-semibold text-primary-700">
+                      <p className="text-base font-semibold text-[#1E6B3B]">
                         {shortTicketReference(ticket.reference_code)}
                       </p>
                       <p className="mt-1 text-sm font-medium text-slate-900">
@@ -658,7 +661,7 @@ const AdminInboxPage: React.FC = () => {
                       <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">Assigned Officer</p>
                       {ticket.status === 'open' || ticket.status === 'assigned' ? (
                         <select
-                          className="mt-1.5 w-full rounded-2xl border border-slate-200 bg-[#f6f7fc] px-4 py-2.5 text-sm text-slate-700 outline-none focus:ring-4 focus:ring-primary-100"
+                          className="mt-1.5 w-full rounded-[8px] border border-slate-200 bg-[#F5F5F5] px-4 py-2.5 text-sm text-slate-700 outline-none focus:ring-4 focus:ring-[#D4AF37]/20"
                           value={assignments[ticket.id] || ticket.assigned_to || ''}
                           onChange={(e) => setAssignments((prev) => ({ ...prev, [ticket.id]: Number(e.target.value) }))}
                         >
@@ -686,15 +689,15 @@ const AdminInboxPage: React.FC = () => {
                     <div className="sm:col-span-2">
                       <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">Recommendation</p>
                       {ticket.recommended_officer_username ? (
-                        <div className="mt-1.5 rounded-2xl border border-primary-100 bg-primary-50/70 p-3 shadow-[0_8px_18px_rgba(37,99,235,0.06)]">
-                          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-primary-500">
+                        <div className="mt-1.5 rounded-[8px] border border-[#D4AF37]/20 bg-[#FEF9E6] p-3 shadow-[0_2px_6px_rgba(0,0,0,0.05)]">
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#1E6B3B]">
                             System Recommendation
                           </p>
                           <div className="mt-2 space-y-2">
                             <p className="font-medium text-slate-900">{ticket.recommended_officer_username}</p>
                             <p className="text-xs text-slate-500">{ticket.recommendation_reason || 'Recommendation available'}</p>
                             {typeof ticket.recommendation_score === 'number' ? (
-                              <p className="text-xs font-medium text-primary-700">
+                              <p className="text-xs font-medium text-[#D4AF37]">
                                 Active load {ticket.recommendation_score.toFixed(0)}
                               </p>
                             ) : null}
@@ -704,7 +707,7 @@ const AdminInboxPage: React.FC = () => {
                               <button
                                 onClick={() => void handleAcceptRecommendation(ticket)}
                                 disabled={isAcceptingRecommendationId === ticket.id || (ticket.auto_assigned && !ticket.assignment_reviewed)}
-                                className="rounded-[1rem] border border-primary-200 px-3 py-2 text-xs font-semibold text-primary-700 transition hover:bg-primary-50 disabled:opacity-50"
+                                className="rounded-[8px] bg-[#D4AF37] px-3 py-2 text-xs font-semibold text-[#333333] transition hover:bg-[#c49c27] disabled:opacity-50"
                               >
                                 Accept Recommendation
                               </button>
@@ -713,7 +716,7 @@ const AdminInboxPage: React.FC = () => {
                               <button
                                 onClick={() => void handleMarkAssignmentReviewed(ticket)}
                                 disabled={isReviewingAssignmentId === ticket.id}
-                                className="rounded-[1rem] border border-emerald-200 px-3 py-2 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-50 disabled:opacity-50"
+                                className="rounded-[8px] border border-emerald-200 px-3 py-2 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-50 disabled:opacity-50"
                               >
                                 Mark Reviewed
                               </button>
@@ -729,7 +732,7 @@ const AdminInboxPage: React.FC = () => {
                   <div className="mt-4 flex items-center gap-3">
                     <button
                       onClick={() => void openConversation(ticket)}
-                      className="text-sm font-semibold text-primary-700 hover:text-primary-800"
+                      className="text-sm font-semibold text-[#1E6B3B] hover:text-[#D4AF37]"
                     >
                       {ticket.status === 'open' ? 'View' : 'Review'}
                     </button>
@@ -737,7 +740,7 @@ const AdminInboxPage: React.FC = () => {
                       <button
                         onClick={() => handleAssign(ticket.id)}
                         disabled={!(assignments[ticket.id] || ticket.assigned_to)}
-                        className="rounded-[1rem] bg-primary-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-800 disabled:opacity-50"
+                        className="rounded-[8px] bg-[#1E6B3B] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_2px_6px_rgba(0,0,0,0.05)] transition hover:border hover:border-[#D4AF37] disabled:opacity-50"
                       >
                         {ticket.status === 'assigned' ? 'Reassign' : 'Assign'}
                       </button>
@@ -746,7 +749,7 @@ const AdminInboxPage: React.FC = () => {
                       <button
                         onClick={() => void handleResolveFalseTicket(ticket)}
                         disabled={isResolvingFalseTicketId === ticket.id}
-                        className="rounded-[1rem] border border-rose-200 px-4 py-2.5 text-sm font-semibold text-rose-700 transition hover:bg-rose-50 disabled:opacity-50"
+                        className="rounded-[8px] border border-rose-200 px-4 py-2.5 text-sm font-semibold text-rose-700 transition hover:bg-rose-50 disabled:opacity-50"
                       >
                         False Ticket
                       </button>
@@ -776,8 +779,8 @@ const AdminInboxPage: React.FC = () => {
                   key={page}
                   type="button"
                   onClick={() => setCurrentPage(page)}
-                  className={`rounded px-3 py-2 ${
-                    currentPage === page ? 'bg-primary-700 text-white' : 'text-slate-700'
+                  className={`rounded-[8px] px-3 py-2 ${
+                    currentPage === page ? 'bg-[#1E6B3B] text-white' : 'text-slate-700 hover:text-[#D4AF37]'
                   }`}
                 >
                   {page}
@@ -813,7 +816,7 @@ const AdminInboxPage: React.FC = () => {
                     {selectedTicket.status.replace('_', ' ')}
                   </span>
                   {selectedTicket.recommended_officer_username ? (
-                    <span className="inline-flex rounded-md bg-primary-100 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-primary-700">
+                    <span className="inline-flex rounded-md bg-[#FEF9E6] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-[#1E6B3B]">
                       Recommended: {selectedTicket.recommended_officer_username}
                     </span>
                   ) : null}
@@ -843,7 +846,7 @@ const AdminInboxPage: React.FC = () => {
                     type="button"
                     onClick={() => void handleAcceptRecommendation(selectedTicket)}
                     disabled={isAcceptingRecommendationId === selectedTicket.id || (selectedTicket.auto_assigned && !selectedTicket.assignment_reviewed)}
-                    className="rounded-xl border border-primary-200 px-3 py-2 text-sm font-semibold text-primary-700 transition hover:bg-primary-50 disabled:opacity-50"
+                    className="rounded-[8px] bg-[#D4AF37] px-3 py-2 text-sm font-semibold text-[#333333] transition hover:bg-[#c49c27] disabled:opacity-50"
                   >
                     Accept Recommendation
                   </button>
@@ -853,7 +856,7 @@ const AdminInboxPage: React.FC = () => {
                     type="button"
                     onClick={() => void handleMarkAssignmentReviewed(selectedTicket)}
                     disabled={isReviewingAssignmentId === selectedTicket.id}
-                    className="rounded-xl border border-emerald-200 px-3 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50 disabled:opacity-50"
+                    className="rounded-[8px] border border-emerald-200 px-3 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50 disabled:opacity-50"
                   >
                     Mark Reviewed
                   </button>
@@ -863,7 +866,7 @@ const AdminInboxPage: React.FC = () => {
                     type="button"
                     onClick={() => void handleResolveFalseTicket(selectedTicket)}
                     disabled={isResolvingFalseTicketId === selectedTicket.id}
-                    className="rounded-xl border border-rose-200 px-3 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-50 disabled:opacity-50"
+                    className="rounded-[8px] border border-rose-200 px-3 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-50 disabled:opacity-50"
                   >
                     Resolve as False
                   </button>
@@ -879,7 +882,7 @@ const AdminInboxPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="min-h-0 flex-1 overflow-y-auto bg-[#f6f7fc] px-5 py-5 sm:px-7 sm:py-6">
+            <div className="min-h-0 flex-1 overflow-y-auto bg-[#F0F2F5] px-5 py-5 sm:px-7 sm:py-6">
               {isMessagesLoading ? (
                 <div className="text-sm text-slate-500">Loading conversation...</div>
               ) : messages.length === 0 ? (
@@ -896,7 +899,7 @@ const AdminInboxPage: React.FC = () => {
                       <div key={message.id} className={isOfficer ? 'flex justify-end' : 'flex justify-start'}>
                         <div className="max-w-[min(760px,100%)]">
                           <div className={`mb-2 flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] ${
-                            isOfficer ? 'justify-end text-primary-700' : isBot ? 'text-primary-700' : 'text-slate-500'
+                            isOfficer ? 'justify-end text-[#1E6B3B]' : isBot ? 'text-[#1E6B3B]' : 'text-slate-500'
                           }`}>
                             <span>{message.sender_alias || message.sender_role}</span>
                             <span className="font-normal tracking-normal text-slate-400">
@@ -908,11 +911,11 @@ const AdminInboxPage: React.FC = () => {
                               })}
                             </span>
                           </div>
-                          <div className={`rounded-[1.35rem] px-5 py-4 shadow-sm ${
+                          <div className={`rounded-[8px] px-5 py-4 shadow-[0_2px_6px_rgba(0,0,0,0.05)] ${
                             isOfficer
-                              ? 'bg-primary-700 text-white'
+                              ? 'bg-[#1E6B3B] text-white'
                               : isBot
-                                ? 'border border-primary-200 bg-white text-primary-800'
+                                ? 'border border-[#D4AF37]/25 bg-[#FEF9E6] text-[#1E6B3B]'
                                 : 'border border-slate-200 bg-white text-slate-800'
                           }`}>
                             <p className="text-sm leading-7 whitespace-pre-wrap break-words">

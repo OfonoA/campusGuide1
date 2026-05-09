@@ -1,0 +1,2571 @@
+{
+  "generated_at": "Wed May  6 13:46:25 2026",
+  "queries": [
+    {
+      "query": "tuition fees",
+      "retrieval_ms": 4398.7,
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.10697103277884035,
+          "preview": "and what portion the Institution retains. b) For avoidance of doubt, functional fees will be paid to the University. 4.7 Students of other institutions who enroll at MUST to study specific courses shall pay functional fees and the unit cost for the courses they are taking at the University. 4.8 Occasional students who enroll at the University shall pay fees as stipulated in the Occasional Students",
+          "metadata": {
+            "source": "Mbarara University Fees Policy.pdf",
+            "_vector_score": 0.2977357804775238,
+            "_rank_score": 0.8930289672211597,
+            "_retrieval_query": "school fees fees",
+            "_bm25_score": 14.877333055623536
+          },
+          "bm25_matches": [
+            {
+              "entry_index": 226,
+              "source": "Mbarara University Fees Policy.pdf",
+              "offset": 0,
+              "match_type": "exact"
+            },
+            {
+              "entry_index": 2076,
+              "source": "web_pdf",
+              "offset": 0,
+              "match_type": "exact"
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "score": 0.11073220936210448,
+          "preview": "portion the Institution retains.  b) For avoidance of doubt, functional fees will be paid to the University.  4.7 Students of other institutions who enroll at MUST to study specific courses  shall pay  functional fees and the unit cost for the courses they are taking at the University.  4.8 Occasional students who enroll at the University shall pay fees as stipulated in the  Occasional Students’ P",
+          "metadata": {
+            "source": "web_pdf",
+            "url": "https://www.must.ac.ug/downloads/policies/2023/Mbarara%20University%20Fees%20Policy.pdf",
+            "embedding_id": "b34bc9e7-9a77-420f-b63e-96772a1bd165",
+            "_vector_score": 0.31022268533706665,
+            "_rank_score": 0.8892677906378955,
+            "_retrieval_query": "school fees fees",
+            "_bm25_score": 14.958252711858604
+          },
+          "bm25_matches": [
+            {
+              "entry_index": 240,
+              "source": "Mbarara University Fees Policy.pdf",
+              "offset": 0,
+              "match_type": "exact"
+            },
+            {
+              "entry_index": 2090,
+              "source": "web_pdf",
+              "offset": 0,
+              "match_type": "exact"
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "score": 0.119509210911663,
+          "preview": "Students who default payment of fees or who are in debt to the University for any reason shall pay a surcharge, shall not be allowed to sit for their examinations or proceed further with their studies or to receive a University Transcript, degree or any Award. Such a student will be required to ask for a dead year and will be required to pay fees due before resuming studies after a dead year. 2.2.",
+          "metadata": {
+            "source": "policy",
+            "filename": "undergradute joining instructions.pdf",
+            "embedding_id": "bf5a30a1-0089-4909-872e-32d6f452b071",
+            "_vector_score": 0.2887195944786072,
+            "_rank_score": 0.880490789088337,
+            "_retrieval_query": "school fees fees",
+            "_bm25_score": 13.920504820165164
+          },
+          "bm25_matches": [
+            {
+              "entry_index": 8316,
+              "source": "policy",
+              "offset": 0,
+              "match_type": "exact"
+            }
+          ]
+        },
+        {
+          "rank": 4,
+          "score": 0.12180122528638038,
+          "preview": "i) The scheme shall be managed by the Director Human Resources who shall develop the relevant tools and processes in consultation with the Academic Registrar. 2.10.2.3 Tuition waiver a) Members of staff who are on Staff Development programmes may receive, upon request, a tuition fee waiver but must pay functional fees. b) The tuition fee waiver shall be for the duration of the programme, beyond wh",
+          "metadata": {
+            "source": "web_pdf",
+            "url": "http://www.must.ac.ug/downloads/policies/2023/MUST_HR  2018 (AMENDED 2023).pdf",
+            "embedding_id": "7ed72c9e-7b25-46aa-8c30-c8ecf52aa15d",
+            "_vector_score": 0.29884448647499084,
+            "_rank_score": 0.8781987747136196,
+            "_retrieval_query": "tuition tuition fees",
+            "_bm25_score": 15.783295684248596
+          },
+          "bm25_matches": [
+            {
+              "entry_index": 3154,
+              "source": "web_pdf",
+              "offset": 0,
+              "match_type": "exact"
+            }
+          ]
+        },
+        {
+          "rank": 5,
+          "score": 0.12206120027313516,
+          "preview": "Students who default payment of fees or who are in debt to the University for any reason shall pay a surcharge, shall not be allowed to sit for their examinations or proceed further with their studies or to receive a University Transcript, degree or any Award. Such a student will be required to ask for a dead year and will be required to pay fees due before resuming studies after a dead year. 2.2.",
+          "metadata": {
+            "source": "PG JOINING INSTRUCTIONS 2024.pdf",
+            "_vector_score": 0.2981882095336914,
+            "_rank_score": 0.8779387997268648,
+            "_retrieval_query": "school fees fees",
+            "_bm25_score": 14.00319941536115
+          },
+          "bm25_matches": [
+            {
+              "entry_index": 1340,
+              "source": "PG JOINING INSTRUCTIONS 2024.pdf",
+              "offset": 0,
+              "match_type": "exact"
+            }
+          ]
+        },
+        {
+          "rank": 6,
+          "score": 0.13872061317753093,
+          "preview": "students will be required to pay such fees that are stipulated viz: certificate, convocation, graduation and academic transcript fees. 1.10 Students who withdraw from a programme of study, are liable to fees payment which they still owe to the University. 1.11 A student who is dismissed for academic or disciplinary reasons, prior to the end of semester, shall forfeit all tuition and other fees pai",
+          "metadata": {
+            "source": "web_pdf",
+            "url": "http://www.must.ac.ug/downloads/policies/MUST%20FEE%20POLICY%20(2016).pdf",
+            "embedding_id": "85ff6263-3afc-4c12-a5b0-04a5a790469f",
+            "_vector_score": 0.27597010135650635,
+            "_rank_score": 0.8612793868224691,
+            "_retrieval_query": "school fees fees",
+            "_bm25_score": 12.475239405707454
+          },
+          "bm25_matches": [
+            {
+              "entry_index": 2059,
+              "source": "web_pdf",
+              "offset": 0,
+              "match_type": "exact"
+            }
+          ]
+        },
+        {
+          "rank": 7,
+          "score": 0.1440076501833022,
+          "preview": "i. In case a Programme to which a student has been admitted is not conducted in a particular academic year, the University shall refund full tuition fees paid by the student. ii. The University Council reserves the right to revise the fees any time with or without prior notice. iii. A student who is suspended, dismissed, or withdraws when under investigation for misconduct shall not have tuition r",
+          "metadata": {
+            "source": "web_pdf",
+            "url": "http://www.must.ac.ug/downloads/policies/MUST Postgraduate Handbook 2018.pdf",
+            "embedding_id": "33cc9027-237e-4aef-a5c6-d73ede79b1f8",
+            "_vector_score": 0.2964082360267639,
+            "_rank_score": 0.8559923498166978,
+            "_retrieval_query": "tuition tuition fees",
+            "_bm25_score": 14.25157889722558
+          },
+          "bm25_matches": [
+            {
+              "entry_index": 1179,
+              "source": "MUST Postgraduate Handbook 2018.pdf",
+              "offset": 0,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 1443,
+              "source": "policy",
+              "offset": 0,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 2407,
+              "source": "web_pdf",
+              "offset": 0,
+              "match_type": "exact"
+            }
+          ]
+        },
+        {
+          "rank": 8,
+          "score": 0.14679022507410022,
+          "preview": "i. In case a Programme to which a student has been admitted is not conducted in a particular academic year, the University shall refund full tuition fees paid by the student. ii. The University Council reserves the right to revise the fees any time with or without prior notice. iii. A student who is suspended, dismissed, or withdraws when under investigation for misconduct shall not have tuition r",
+          "metadata": {
+            "source": "MUST Postgraduate Handbook 2018.pdf",
+            "embedding_id": "44ee07e9-1aba-4984-b213-4886905dab21",
+            "_bm25_score": 14.201185642650511,
+            "_vector_score": 0.3012731671333313,
+            "_rank_score": 0.8532097749258998,
+            "_retrieval_query": "tuition tuition fees"
+          },
+          "bm25_matches": [
+            {
+              "entry_index": 1179,
+              "source": "MUST Postgraduate Handbook 2018.pdf",
+              "offset": 0,
+              "match_type": "exact"
+            },
+            {
+              "entry_index": 1443,
+              "source": "policy",
+              "offset": 0,
+              "match_type": "exact"
+            }
+          ]
+        }
+      ],
+      "llm": {
+        "elapsed_ms": 6602.21,
+        "response": {
+          "found_answer": true,
+          "answer": "Tuition fees must be paid according to the following schedule: At least 50% of the tuition fees should be paid by the 7th week of the semester, and the balance should be paid by the 14th week of the semester.",
+          "reason": "answered",
+          "citations": [
+            1,
+            5
+          ]
+        }
+      }
+    },
+    {
+      "query": "application deadline",
+      "retrieval_ms": 1567.01,
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.04959636735186168,
+          "preview": "Submission: Please submit this application form and supporting documents ON-LINE to your respective Faculty Deans through the Faculty Administrator by the deadline specified in the advertisement/call for applications. Incomplete applications and applications received after the deadline will not be considered. Note: The scholarship will be credited to the student's account in the University's finan",
+          "metadata": {
+            "source": "web_pdf",
+            "url": "https://www.must.ac.ug/downloads/policies/2023/GUIDELINES%20FOR%20MUST%20COUNCIL%20SCHOLARSHIP%20FUND%20FOR%20UNDERPRIVILEDGED%20STUDENTS.pdf",
+            "embedding_id": "9654067f-b264-494a-990b-127eb94043a6",
+            "_vector_score": 0.31992340087890625,
+            "_rank_score": 0.5303338053813473,
+            "_retrieval_query": "application closing date",
+            "_bm25_score": 12.48446901938711
+          },
+          "bm25_matches": [
+            {
+              "entry_index": 406,
+              "source": "GUIDELINES FOR MUST COUNCIL SCHOLARSHIP FUND FOR UNDERPRIVILEDGED STUDENTS.pdf",
+              "offset": 0,
+              "match_type": "exact"
+            },
+            {
+              "entry_index": 4290,
+              "source": "web_pdf",
+              "offset": 0,
+              "match_type": "exact"
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "score": 0.48194133169964415,
+          "preview": "5    iii)  Each application should include the names and addresses of three referees. Each  referee should be contacted by the applicant to forward direct to the Academic  Registrar/Secretary to the Search Committee, a confidential report in a properly  sealed envelope marked: “Post of Vice Chancellor : Referee’s Report”, at the top  left hand corner of the envelope.  iv) Each application must be ",
+          "metadata": {
+            "source": "web_pdf",
+            "url": "https://www.must.ac.ug/wp-content/uploads/2024/04/Detailed-Advert-of-the-Position-of-Vice-Chancellor-at-MUST-April-1-24.pdf",
+            "embedding_id": "1f134fa5-ff94-4858-b435-5c4bd92fd1a7",
+            "_vector_score": 0.35119831562042236,
+            "_rank_score": 0.5180586683003559,
+            "_retrieval_query": "application closing date"
+          },
+          "bm25_matches": [
+            {
+              "entry_index": 1560,
+              "source": "web_pdf",
+              "offset": 0,
+              "match_type": "exact"
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "score": 0.47151206628228604,
+          "preview": "This advert runs Monday 1st April, 2024  and closes on Tuesday, 30th April, 2024  at  5.00pm East African Time.    G. Submission of Application  Sealed applications should be addressed to:    The Chairperson Vice Chancellor Search Committee  c/o The Academic Registrar   Mbarara University of Science and Technology   P.O. Box 1410, Mbarara, UGANDA    Hard copy applications should be delivered to:  ",
+          "metadata": {
+            "source": "web_pdf",
+            "url": "https://www.must.ac.ug/wp-content/uploads/2024/04/Detailed-Advert-of-the-Position-of-Vice-Chancellor-at-MUST-April-1-24.pdf",
+            "embedding_id": "fbd9e630-e58a-481d-9851-e1825862d479",
+            "_vector_score": 0.3245335519313812,
+            "_rank_score": 0.528487933717714,
+            "_retrieval_query": "application closing date"
+          },
+          "bm25_matches": [
+            {
+              "entry_index": 1561,
+              "source": "web_pdf",
+              "offset": 0,
+              "match_type": "exact"
+            }
+          ]
+        },
+        {
+          "rank": 4,
+          "score": 0.4712800522450826,
+          "preview": "deadlines through application of tools and techniques 117",
+          "metadata": {
+            "source": "policy",
+            "filename": "BSc._Software_Engineering_August_2018_Accredite_by_NCHE.pdf",
+            "embedding_id": "d50cf205-8573-4d01-a1d7-0181c856b52c",
+            "_vector_score": 0.35158151388168335,
+            "_rank_score": 0.5179117891229738,
+            "_retrieval_query": "application closing date"
+          },
+          "bm25_matches": [
+            {
+              "entry_index": 15939,
+              "source": "policy",
+              "offset": 573,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15940,
+              "source": "policy",
+              "offset": 41,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15941,
+              "source": "policy",
+              "offset": 40,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15942,
+              "source": "policy",
+              "offset": 39,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15943,
+              "source": "policy",
+              "offset": 38,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15944,
+              "source": "policy",
+              "offset": 37,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15945,
+              "source": "policy",
+              "offset": 36,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15946,
+              "source": "policy",
+              "offset": 35,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15947,
+              "source": "policy",
+              "offset": 34,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15948,
+              "source": "policy",
+              "offset": 32,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15949,
+              "source": "policy",
+              "offset": 32,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15950,
+              "source": "policy",
+              "offset": 31,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15951,
+              "source": "policy",
+              "offset": 30,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15952,
+              "source": "policy",
+              "offset": 29,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15953,
+              "source": "policy",
+              "offset": 28,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15954,
+              "source": "policy",
+              "offset": 27,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15955,
+              "source": "policy",
+              "offset": 26,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15956,
+              "source": "policy",
+              "offset": 25,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15957,
+              "source": "policy",
+              "offset": 24,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15958,
+              "source": "policy",
+              "offset": 23,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15959,
+              "source": "policy",
+              "offset": 22,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15960,
+              "source": "policy",
+              "offset": 20,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15961,
+              "source": "policy",
+              "offset": 20,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15962,
+              "source": "policy",
+              "offset": 19,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15963,
+              "source": "policy",
+              "offset": 18,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15964,
+              "source": "policy",
+              "offset": 17,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15965,
+              "source": "policy",
+              "offset": 16,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15966,
+              "source": "policy",
+              "offset": 15,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15967,
+              "source": "policy",
+              "offset": 14,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15968,
+              "source": "policy",
+              "offset": 12,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15969,
+              "source": "policy",
+              "offset": 12,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15970,
+              "source": "policy",
+              "offset": 11,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15971,
+              "source": "policy",
+              "offset": 9,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15972,
+              "source": "policy",
+              "offset": 9,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15973,
+              "source": "policy",
+              "offset": 8,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15974,
+              "source": "policy",
+              "offset": 7,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15975,
+              "source": "policy",
+              "offset": 6,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15976,
+              "source": "policy",
+              "offset": 4,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15977,
+              "source": "policy",
+              "offset": 4,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15978,
+              "source": "policy",
+              "offset": 3,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15979,
+              "source": "policy",
+              "offset": 2,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15980,
+              "source": "policy",
+              "offset": 0,
+              "match_type": "exact"
+            },
+            {
+              "entry_index": 15981,
+              "source": "policy",
+              "offset": 0,
+              "match_type": "exact"
+            }
+          ]
+        },
+        {
+          "rank": 5,
+          "score": 0.4667967948016547,
+          "preview": "deadlines through application of tools and techniques 140",
+          "metadata": {
+            "source": "policy",
+            "filename": "BSc._Software_Engineering_August_2018_Accredite_by_NCHE.pdf",
+            "embedding_id": "a4afa1cc-8536-41ca-a3e1-4655b892edec",
+            "_vector_score": 0.35178279876708984,
+            "_rank_score": 0.5178346703615726,
+            "_retrieval_query": "application closing date"
+          },
+          "bm25_matches": [
+            {
+              "entry_index": 17346,
+              "source": "policy",
+              "offset": 576,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17347,
+              "source": "policy",
+              "offset": 41,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17348,
+              "source": "policy",
+              "offset": 40,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17349,
+              "source": "policy",
+              "offset": 39,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17350,
+              "source": "policy",
+              "offset": 38,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17351,
+              "source": "policy",
+              "offset": 37,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17352,
+              "source": "policy",
+              "offset": 36,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17353,
+              "source": "policy",
+              "offset": 35,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17354,
+              "source": "policy",
+              "offset": 34,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17355,
+              "source": "policy",
+              "offset": 32,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17356,
+              "source": "policy",
+              "offset": 32,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17357,
+              "source": "policy",
+              "offset": 31,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17358,
+              "source": "policy",
+              "offset": 30,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17359,
+              "source": "policy",
+              "offset": 29,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17360,
+              "source": "policy",
+              "offset": 28,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17361,
+              "source": "policy",
+              "offset": 27,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17362,
+              "source": "policy",
+              "offset": 26,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17363,
+              "source": "policy",
+              "offset": 25,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17364,
+              "source": "policy",
+              "offset": 24,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17365,
+              "source": "policy",
+              "offset": 23,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17366,
+              "source": "policy",
+              "offset": 22,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17367,
+              "source": "policy",
+              "offset": 20,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17368,
+              "source": "policy",
+              "offset": 20,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17369,
+              "source": "policy",
+              "offset": 19,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17370,
+              "source": "policy",
+              "offset": 18,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17371,
+              "source": "policy",
+              "offset": 17,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17372,
+              "source": "policy",
+              "offset": 16,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17373,
+              "source": "policy",
+              "offset": 15,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17374,
+              "source": "policy",
+              "offset": 14,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17375,
+              "source": "policy",
+              "offset": 12,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17376,
+              "source": "policy",
+              "offset": 12,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17377,
+              "source": "policy",
+              "offset": 11,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17378,
+              "source": "policy",
+              "offset": 9,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17379,
+              "source": "policy",
+              "offset": 9,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17380,
+              "source": "policy",
+              "offset": 8,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17381,
+              "source": "policy",
+              "offset": 7,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17382,
+              "source": "policy",
+              "offset": 6,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17383,
+              "source": "policy",
+              "offset": 4,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17384,
+              "source": "policy",
+              "offset": 4,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17385,
+              "source": "policy",
+              "offset": 3,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17386,
+              "source": "policy",
+              "offset": 2,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17387,
+              "source": "policy",
+              "offset": 0,
+              "match_type": "exact"
+            },
+            {
+              "entry_index": 17388,
+              "source": "policy",
+              "offset": 0,
+              "match_type": "exact"
+            }
+          ]
+        },
+        {
+          "rank": 6,
+          "score": 0.4769919454705914,
+          "preview": "adlines through application of tools and techniques 140",
+          "metadata": {
+            "source": "policy",
+            "filename": "BSc._Software_Engineering_August_2018_Accredite_by_NCHE.pdf",
+            "embedding_id": "a2c0e4a6-4d80-460f-8a61-87a13f5e9acb",
+            "_vector_score": 0.35972315073013306,
+            "_rank_score": 0.5148106801183164,
+            "_retrieval_query": "application closing date"
+          },
+          "bm25_matches": [
+            {
+              "entry_index": 17346,
+              "source": "policy",
+              "offset": 578,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17347,
+              "source": "policy",
+              "offset": 43,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17348,
+              "source": "policy",
+              "offset": 42,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17349,
+              "source": "policy",
+              "offset": 41,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17350,
+              "source": "policy",
+              "offset": 40,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17351,
+              "source": "policy",
+              "offset": 39,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17352,
+              "source": "policy",
+              "offset": 38,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17353,
+              "source": "policy",
+              "offset": 37,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17354,
+              "source": "policy",
+              "offset": 36,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17355,
+              "source": "policy",
+              "offset": 34,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17356,
+              "source": "policy",
+              "offset": 34,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17357,
+              "source": "policy",
+              "offset": 33,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17358,
+              "source": "policy",
+              "offset": 32,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17359,
+              "source": "policy",
+              "offset": 31,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17360,
+              "source": "policy",
+              "offset": 30,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17361,
+              "source": "policy",
+              "offset": 29,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17362,
+              "source": "policy",
+              "offset": 28,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17363,
+              "source": "policy",
+              "offset": 27,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17364,
+              "source": "policy",
+              "offset": 26,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17365,
+              "source": "policy",
+              "offset": 25,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17366,
+              "source": "policy",
+              "offset": 24,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17367,
+              "source": "policy",
+              "offset": 22,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17368,
+              "source": "policy",
+              "offset": 22,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17369,
+              "source": "policy",
+              "offset": 21,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17370,
+              "source": "policy",
+              "offset": 20,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17371,
+              "source": "policy",
+              "offset": 19,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17372,
+              "source": "policy",
+              "offset": 18,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17373,
+              "source": "policy",
+              "offset": 17,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17374,
+              "source": "policy",
+              "offset": 16,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17375,
+              "source": "policy",
+              "offset": 14,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17376,
+              "source": "policy",
+              "offset": 14,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17377,
+              "source": "policy",
+              "offset": 13,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17378,
+              "source": "policy",
+              "offset": 11,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17379,
+              "source": "policy",
+              "offset": 11,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17380,
+              "source": "policy",
+              "offset": 10,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17381,
+              "source": "policy",
+              "offset": 9,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17382,
+              "source": "policy",
+              "offset": 8,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17383,
+              "source": "policy",
+              "offset": 6,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17384,
+              "source": "policy",
+              "offset": 6,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17385,
+              "source": "policy",
+              "offset": 5,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17386,
+              "source": "policy",
+              "offset": 4,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17387,
+              "source": "policy",
+              "offset": 2,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17388,
+              "source": "policy",
+              "offset": 2,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17389,
+              "source": "policy",
+              "offset": 1,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 17390,
+              "source": "policy",
+              "offset": 0,
+              "match_type": "exact"
+            }
+          ]
+        },
+        {
+          "rank": 7,
+          "score": 0.48080578202293445,
+          "preview": "adlines through application of tools and techniques 117",
+          "metadata": {
+            "source": "policy",
+            "filename": "BSc._Software_Engineering_August_2018_Accredite_by_NCHE.pdf",
+            "embedding_id": "e7d859d1-ffd5-4da1-ab71-aa129a80c4dc",
+            "_vector_score": 0.3602721691131592,
+            "_rank_score": 0.514602897783589,
+            "_retrieval_query": "application closing date"
+          },
+          "bm25_matches": [
+            {
+              "entry_index": 15939,
+              "source": "policy",
+              "offset": 575,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15940,
+              "source": "policy",
+              "offset": 43,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15941,
+              "source": "policy",
+              "offset": 42,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15942,
+              "source": "policy",
+              "offset": 41,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15943,
+              "source": "policy",
+              "offset": 40,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15944,
+              "source": "policy",
+              "offset": 39,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15945,
+              "source": "policy",
+              "offset": 38,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15946,
+              "source": "policy",
+              "offset": 37,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15947,
+              "source": "policy",
+              "offset": 36,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15948,
+              "source": "policy",
+              "offset": 34,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15949,
+              "source": "policy",
+              "offset": 34,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15950,
+              "source": "policy",
+              "offset": 33,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15951,
+              "source": "policy",
+              "offset": 32,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15952,
+              "source": "policy",
+              "offset": 31,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15953,
+              "source": "policy",
+              "offset": 30,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15954,
+              "source": "policy",
+              "offset": 29,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15955,
+              "source": "policy",
+              "offset": 28,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15956,
+              "source": "policy",
+              "offset": 27,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15957,
+              "source": "policy",
+              "offset": 26,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15958,
+              "source": "policy",
+              "offset": 25,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15959,
+              "source": "policy",
+              "offset": 24,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15960,
+              "source": "policy",
+              "offset": 22,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15961,
+              "source": "policy",
+              "offset": 22,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15962,
+              "source": "policy",
+              "offset": 21,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15963,
+              "source": "policy",
+              "offset": 20,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15964,
+              "source": "policy",
+              "offset": 19,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15965,
+              "source": "policy",
+              "offset": 18,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15966,
+              "source": "policy",
+              "offset": 17,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15967,
+              "source": "policy",
+              "offset": 16,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15968,
+              "source": "policy",
+              "offset": 14,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15969,
+              "source": "policy",
+              "offset": 14,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15970,
+              "source": "policy",
+              "offset": 13,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15971,
+              "source": "policy",
+              "offset": 11,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15972,
+              "source": "policy",
+              "offset": 11,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15973,
+              "source": "policy",
+              "offset": 10,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15974,
+              "source": "policy",
+              "offset": 9,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15975,
+              "source": "policy",
+              "offset": 8,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15976,
+              "source": "policy",
+              "offset": 6,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15977,
+              "source": "policy",
+              "offset": 6,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15978,
+              "source": "policy",
+              "offset": 5,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15979,
+              "source": "policy",
+              "offset": 4,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15980,
+              "source": "policy",
+              "offset": 2,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15981,
+              "source": "policy",
+              "offset": 2,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15982,
+              "source": "policy",
+              "offset": 1,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 15983,
+              "source": "policy",
+              "offset": 0,
+              "match_type": "exact"
+            }
+          ]
+        },
+        {
+          "rank": 8,
+          "score": 0.48642804566432407,
+          "preview": "rtified copies of academic documents  Detailed information about the specific entry requirements for each programme can be obtained from the university website, https://must.ac.ug/announcement/detailed-entry-requirements-2026-2027 , or contact the Academic Registrar's office.  Applicants whose first language is not English or did not go through an education system with English as a medium of ins",
+          "metadata": {
+            "source": "policy",
+            "filename": "call for applications 2026.pdf",
+            "embedding_id": "61c468a6-d527-41b6-996f-a98ec5f9ec74",
+            "_vector_score": 0.3630027770996094,
+            "_rank_score": 0.5135719543356759,
+            "_retrieval_query": "application deadline"
+          },
+          "bm25_matches": [
+            {
+              "entry_index": 8159,
+              "source": "policy",
+              "offset": 0,
+              "match_type": "exact"
+            }
+          ]
+        }
+      ],
+      "llm": {
+        "elapsed_ms": 10233.48,
+        "response": {
+          "found_answer": true,
+          "answer": "The application deadline is Tuesday, 30th April, 2024, at 5.00pm East African Time.",
+          "reason": "answered",
+          "citations": [
+            4,
+            5
+          ]
+        }
+      }
+    },
+    {
+      "query": "how to get transcript",
+      "retrieval_ms": 3184.33,
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.057654171947307487,
+          "preview": "ity. If this persists please visit AIMS help desk. 6.7 FAQs on Transcripts, Certificates and Graduation I have completed my studies, how can I get a transcript? 1.Pay graduation fees in the bank 2.Present the bank deposit slip/ receipt to accounts office to get a system generated receipt. 3.Photocopy the receipt and present it and the clearance form to records office in the AR’s department. 4.You ",
+          "metadata": {
+            "source": "policy",
+            "filename": "undergradute joining instructions.pdf",
+            "embedding_id": "e833d553-5da5-4f8d-9386-94ffaf6cfce6",
+            "_vector_score": 0.2926599979400635,
+            "_rank_score": 0.9415190391251332,
+            "_retrieval_query": "how to get academic transcript",
+            "_bm25_score": 19.566786314349798
+          },
+          "bm25_matches": [
+            {
+              "entry_index": 8386,
+              "source": "policy",
+              "offset": 0,
+              "match_type": "exact"
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "score": 0.06453972070475367,
+          "preview": "University. If this persists please visit AIMS help desk. 6.7 FAQs on Transcripts, Certificates and Graduation I have completed my studies, how can I get a transcript? Pay graduation fees in the bank1. Present the bank deposit slip/ receipt to accounts office to get a system generated receipt. 2. Photocopy the receipt and present it and the clearance form to records office in the AR’s department. ",
+          "metadata": {
+            "source": "PG JOINING INSTRUCTIONS 2024.pdf",
+            "_vector_score": 0.3018036186695099,
+            "_rank_score": 0.9354602792952463,
+            "_retrieval_query": "how to get academic transcript",
+            "_bm25_score": 19.41969409302187
+          },
+          "bm25_matches": [
+            {
+              "entry_index": 1382,
+              "source": "PG JOINING INSTRUCTIONS 2024.pdf",
+              "offset": 0,
+              "match_type": "exact"
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "score": 0.16352343557252902,
+          "preview": "What can I do if I lose my transcript and need a replacement? 1.Report loss of the transcript to police 2.Pay fees for a new transcript in the bank 3.Present bank deposit slip to accounts office to get a system generated receipt 4.Present photocopies of the police letter and the receipt to records office in the AR’s department. 5.You will be informed when to pick the document when it’s ready. What",
+          "metadata": {
+            "source": "policy",
+            "filename": "undergradute joining instructions.pdf",
+            "embedding_id": "db237097-b075-458a-8c35-4d2dba481c2d",
+            "_vector_score": 0.3670976161956787,
+            "_rank_score": 0.8308047371041549,
+            "_retrieval_query": "how to get academic transcript",
+            "_bm25_score": 14.268822867257313
+          },
+          "bm25_matches": [
+            {
+              "entry_index": 8389,
+              "source": "policy",
+              "offset": 0,
+              "match_type": "exact"
+            }
+          ]
+        },
+        {
+          "rank": 4,
+          "score": 0.1652351001921193,
+          "preview": "What can I do if I lose my transcript and need a replacement? Report loss of the transcript to police1. Pay fees for a new transcript in the bank2. Present bank deposit slip to accounts office to get a system generated receipt3. Present photocopies of the police letter and the receipt to records office in the AR’s department. 4. You will be informed when to pick the document when it’s ready.5. Wha",
+          "metadata": {
+            "source": "PG JOINING INSTRUCTIONS 2024.pdf",
+            "_vector_score": 0.37204062938690186,
+            "_rank_score": 0.8283558270600656,
+            "_retrieval_query": "how to get academic transcript",
+            "_bm25_score": 14.22941402954939
+          },
+          "bm25_matches": [
+            {
+              "entry_index": 1383,
+              "source": "PG JOINING INSTRUCTIONS 2024.pdf",
+              "offset": 0,
+              "match_type": "exact"
+            }
+          ]
+        },
+        {
+          "rank": 5,
+          "score": 0.2638726777964635,
+          "preview": "I have just completed my degree, can I apply for a Master’s before I graduate? Yes, provided you have an official transcript showing your final academic results. How do I know that I have been admitted? Feedback on applications is published on the website www.must.ac.ug. How do I get my admission letter? Admission letter can be picked from the office of the Academic Registrar of Undergraduates and",
+          "metadata": {
+            "source": "policy",
+            "filename": "undergradute joining instructions.pdf",
+            "embedding_id": "31aeee47-50eb-4d43-b5d5-9bc4b14f74fe",
+            "_vector_score": 0.39816561341285706,
+            "_rank_score": 0.7361273222035365,
+            "_retrieval_query": "how to get academic transcript",
+            "_bm25_score": 8.835794867148577
+          },
+          "bm25_matches": [
+            {
+              "entry_index": 8374,
+              "source": "policy",
+              "offset": 0,
+              "match_type": "exact"
+            }
+          ]
+        },
+        {
+          "rank": 6,
+          "score": 0.2645198494979083,
+          "preview": "I have just completed my degree, can I apply for a Master’s before I graduate? Yes, provided you have an official transcript showing your final academic results. How do I know that I have been admitted? Feedback on applications is published on the website www.must.ac.ug. How do I get my admission letter? Admission letter can be picked from the office of the Academic Registrar of Undergraduates and",
+          "metadata": {
+            "source": "PG JOINING INSTRUCTIONS 2024.pdf",
+            "_vector_score": 0.4079797863960266,
+            "_rank_score": 0.7354801505020917,
+            "_retrieval_query": "how to get academic transcript",
+            "_bm25_score": 9.021196529959223
+          },
+          "bm25_matches": [
+            {
+              "entry_index": 1374,
+              "source": "PG JOINING INSTRUCTIONS 2024.pdf",
+              "offset": 0,
+              "match_type": "exact"
+            }
+          ]
+        },
+        {
+          "rank": 7,
+          "score": 0.27810414053803534,
+          "preview": "2.5.8 Guidelines for Transfer of Credits A candidate who wishes to transfer credits from another institution of Higher Learning to MUST shall make a formal application to DRGT. The application shall be reviewed by the Faculty to establish suitability of the candidate before it is considered by DRGT Board, and consequently the Admissions Committee. The guidelines shall include the following: i. Mus",
+          "metadata": {
+            "source": "web_pdf",
+            "url": "http://www.must.ac.ug/downloads/policies/MUST Postgraduate Handbook 2018.pdf",
+            "embedding_id": "5cba3be5-4a2f-44fa-a5de-86f8d6dbeecd",
+            "_vector_score": 0.42296820878982544,
+            "_rank_score": 0.7218958594619647,
+            "_retrieval_query": "how to get academic transcript",
+            "_bm25_score": 8.476748421096698
+          },
+          "bm25_matches": [
+            {
+              "entry_index": 1167,
+              "source": "MUST Postgraduate Handbook 2018.pdf",
+              "offset": 0,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 1431,
+              "source": "policy",
+              "offset": 0,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 2395,
+              "source": "web_pdf",
+              "offset": 0,
+              "match_type": "exact"
+            }
+          ]
+        },
+        {
+          "rank": 8,
+          "score": 0.27867884260247366,
+          "preview": "2.5.8 Guidelines for Transfer of Credits A candidate who wishes to transfer credits from another institution of Higher Learning to MUST shall make a formal application to DRGT. The application shall be reviewed by the Faculty to establish suitability of the candidate before it is considered by DRGT Board, and consequently the Admissions Committee. The guidelines shall include the following: i. Mus",
+          "metadata": {
+            "source": "policy",
+            "filename": "MUST Postgraduate Handbook 2018__v2.pdf",
+            "embedding_id": "19358e24-3edd-48d9-a5f9-caabff7299eb",
+            "_vector_score": 0.42334455251693726,
+            "_rank_score": 0.7213211573975263,
+            "_retrieval_query": "how to get academic transcript",
+            "_bm25_score": 8.44774835910214
+          },
+          "bm25_matches": [
+            {
+              "entry_index": 1167,
+              "source": "MUST Postgraduate Handbook 2018.pdf",
+              "offset": 0,
+              "match_type": "exact"
+            },
+            {
+              "entry_index": 1431,
+              "source": "policy",
+              "offset": 0,
+              "match_type": "exact"
+            }
+          ]
+        }
+      ],
+      "llm": {
+        "elapsed_ms": 5430.2,
+        "response": {
+          "found_answer": true,
+          "answer": "To get your transcript after completing your studies, follow these steps:\n1. **Pay graduation fees** in the bank.\n2. Present the **bank deposit slip/receipt** to the accounts office to get a system-generated receipt.\n3. **Photocopy the receipt** and present it along with the **clearance form** to the records office in the AR’s department.\n4. You will be informed when to pick up the document when it’s ready.\n5. Present your **ID** and pick the transcript from the Assistant Registrar’s office.",
+          "reason": "answered",
+          "citations": [
+            1,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "query": "payment reference number PRN",
+      "retrieval_ms": 3351.5,
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.11465705930948533,
+          "preview": "Students who default payment of fees or who are in debt to the University for any reason shall pay a surcharge, shall not be allowed to sit for their examinations or proceed further with their studies or to receive a University Transcript, degree or any Award. Such a student will be required to ask for a dead year and will be required to pay fees due before resuming studies after a dead year. 2.2.",
+          "metadata": {
+            "source": "policy",
+            "filename": "undergradute joining instructions.pdf",
+            "embedding_id": "bf5a30a1-0089-4909-872e-32d6f452b071",
+            "_vector_score": 0.4341084361076355,
+            "_rank_score": 0.8853429406905147,
+            "_retrieval_query": "payment reference number PRN",
+            "_bm25_score": 10.736647725745861
+          },
+          "bm25_matches": [
+            {
+              "entry_index": 8316,
+              "source": "policy",
+              "offset": 0,
+              "match_type": "exact"
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "score": 0.11741768964643973,
+          "preview": "Students who default payment of fees or who are in debt to the University for any reason shall pay a surcharge, shall not be allowed to sit for their examinations or proceed further with their studies or to receive a University Transcript, degree or any Award. Such a student will be required to ask for a dead year and will be required to pay fees due before resuming studies after a dead year. 2.2.",
+          "metadata": {
+            "source": "PG JOINING INSTRUCTIONS 2024.pdf",
+            "_vector_score": 0.4505297541618347,
+            "_rank_score": 0.8825823103535603,
+            "_retrieval_query": "payment reference number PRN",
+            "_bm25_score": 10.836531591746223
+          },
+          "bm25_matches": [
+            {
+              "entry_index": 1340,
+              "source": "PG JOINING INSTRUCTIONS 2024.pdf",
+              "offset": 0,
+              "match_type": "exact"
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "score": 0.1939131309150519,
+          "preview": "2.2.4 Procedure for payment of NCHE fees Step 1: Go to URA web portal www.ura.go.ug. Step 2: Click on E-Services and under “Payments” select “Payment Registration” Step 3: Select “Other NTR” and full the Taxpayer Details form. Ensure to put your name and the university details. Step 4: Under section of Details of other NTR Payments - Click on \"Select\" and a list of institutions to whom payment is ",
+          "metadata": {
+            "source": "policy",
+            "filename": "undergradute joining instructions.pdf",
+            "embedding_id": "ab30a29e-10f1-49f6-95dd-087be6f3bdce",
+            "_vector_score": 0.45810192823410034,
+            "_rank_score": 0.8060868690849481,
+            "_retrieval_query": "payment reference number PRN",
+            "_bm25_score": 8.163906667550421
+          },
+          "bm25_matches": [
+            {
+              "entry_index": 8321,
+              "source": "policy",
+              "offset": 0,
+              "match_type": "exact"
+            }
+          ]
+        },
+        {
+          "rank": 4,
+          "score": 0.505408280441716,
+          "preview": "or registration number as username and the new password that you have set. Step 7: Click ENROL now and follow the prompts to complete the process. This will generate an invoice which is found under FINANCE -> My invoice. Step 8: Select the invoice you want to pay, then click pay invoice then specify the amount of money you would like to pay. Step 9: Click Continue -> Get ref Step 10:Copy the “Zeep",
+          "metadata": {
+            "source": "policy",
+            "filename": "undergradute joining instructions.pdf",
+            "embedding_id": "0bea3938-4a8a-4cdf-9013-091138b7c537",
+            "_vector_score": 0.41530877351760864,
+            "_rank_score": 0.49459171955828396,
+            "_retrieval_query": "payment reference number PRN"
+          },
+          "bm25_matches": [
+            {
+              "entry_index": 8318,
+              "source": "policy",
+              "offset": 0,
+              "match_type": "exact"
+            }
+          ]
+        },
+        {
+          "rank": 5,
+          "score": 0.5106702319862567,
+          "preview": "1. Indicate your registration number “2024/BCS/000/PS” in the box at the extreme right 2. Enter given text in the box (Note that it is case sensitive. So, enter correctly) 3. Click “Accept and Register”4. Step 5: Your payment registration slip will appear. Print and use it to pay your fees to any of the commercial banks. Step 6: For registration purposes, students MUST present the following:  i). ",
+          "metadata": {
+            "source": "PG JOINING INSTRUCTIONS 2024.pdf",
+            "_vector_score": 0.4305281341075897,
+            "_rank_score": 0.4893297680137433,
+            "_retrieval_query": "payment reference number PRN"
+          },
+          "bm25_matches": [
+            {
+              "entry_index": 1344,
+              "source": "PG JOINING INSTRUCTIONS 2024.pdf",
+              "offset": 0,
+              "match_type": "exact"
+            }
+          ]
+        },
+        {
+          "rank": 6,
+          "score": 0.515196016368503,
+          "preview": "Step 6: Click ENROL now and follow the prompts to complete the process. This will generate an invoice which is found under FINANCE -> My invoice. Step 7: Select the invoice you want to pay, then click pay invoice then specify the amount of money you would like to pay. Step 8: Click Continue -> Get refStep 9: Copy the “Zeepay Ref” which you will use in the bank for payment. This process can be done",
+          "metadata": {
+            "source": "PG JOINING INSTRUCTIONS 2024.pdf",
+            "_vector_score": 0.4438825249671936,
+            "_rank_score": 0.48480398363149707,
+            "_retrieval_query": "payment reference number PRN"
+          },
+          "bm25_matches": [
+            {
+              "entry_index": 1342,
+              "source": "PG JOINING INSTRUCTIONS 2024.pdf",
+              "offset": 0,
+              "match_type": "exact"
+            }
+          ]
+        },
+        {
+          "rank": 7,
+          "score": 0.5166707749883238,
+          "preview": "/000/PS” in the box at the extreme right 3.Enter given text in the box (Note that it is case sensitive. So, enter correctly) 4.Click “Accept and Register” Step 6: Your payment registration slip will appear. Print and use it to pay your fees to any of the commercial banks. 2.3 Documents for Registration For registration purposes, students MUST present the following: i). Admission letter and a copy ",
+          "metadata": {
+            "source": "policy",
+            "filename": "undergradute joining instructions.pdf",
+            "embedding_id": "24c2100a-0223-4748-ae8b-c4835fe9109e",
+            "_vector_score": 0.4482881724834442,
+            "_rank_score": 0.4833292250116762,
+            "_retrieval_query": "payment reference number PRN"
+          },
+          "bm25_matches": [
+            {
+              "entry_index": 8322,
+              "source": "policy",
+              "offset": 0,
+              "match_type": "exact"
+            }
+          ]
+        },
+        {
+          "rank": 8,
+          "score": 0.49344510733469227,
+          "preview": "n practice 56",
+          "metadata": {
+            "source": "policy",
+            "filename": "BSc._Software_Engineering_August_2018_Accredite_by_NCHE.pdf",
+            "embedding_id": "45859800-3b86-4afb-ac1f-811c22146b60",
+            "_vector_score": 0.38188380002975464,
+            "_rank_score": 0.5065548926653077,
+            "_retrieval_query": "prn PRN"
+          },
+          "bm25_matches": [
+            {
+              "entry_index": 12362,
+              "source": "policy",
+              "offset": 748,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12363,
+              "source": "policy",
+              "offset": 85,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12364,
+              "source": "policy",
+              "offset": 83,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12365,
+              "source": "policy",
+              "offset": 83,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12366,
+              "source": "policy",
+              "offset": 82,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12367,
+              "source": "policy",
+              "offset": 80,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12368,
+              "source": "policy",
+              "offset": 80,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12369,
+              "source": "policy",
+              "offset": 79,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12370,
+              "source": "policy",
+              "offset": 78,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12371,
+              "source": "policy",
+              "offset": 77,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12372,
+              "source": "policy",
+              "offset": 76,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12373,
+              "source": "policy",
+              "offset": 75,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12374,
+              "source": "policy",
+              "offset": 74,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12375,
+              "source": "policy",
+              "offset": 73,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12376,
+              "source": "policy",
+              "offset": 72,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12377,
+              "source": "policy",
+              "offset": 70,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12378,
+              "source": "policy",
+              "offset": 70,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12379,
+              "source": "policy",
+              "offset": 69,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12380,
+              "source": "policy",
+              "offset": 68,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12381,
+              "source": "policy",
+              "offset": 66,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12382,
+              "source": "policy",
+              "offset": 66,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12383,
+              "source": "policy",
+              "offset": 65,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12384,
+              "source": "policy",
+              "offset": 64,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12385,
+              "source": "policy",
+              "offset": 63,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12386,
+              "source": "policy",
+              "offset": 61,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12387,
+              "source": "policy",
+              "offset": 61,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12388,
+              "source": "policy",
+              "offset": 60,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12389,
+              "source": "policy",
+              "offset": 59,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12390,
+              "source": "policy",
+              "offset": 58,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12391,
+              "source": "policy",
+              "offset": 57,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12392,
+              "source": "policy",
+              "offset": 56,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12393,
+              "source": "policy",
+              "offset": 55,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12394,
+              "source": "policy",
+              "offset": 54,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12395,
+              "source": "policy",
+              "offset": 53,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12396,
+              "source": "policy",
+              "offset": 52,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12397,
+              "source": "policy",
+              "offset": 50,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12398,
+              "source": "policy",
+              "offset": 50,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12399,
+              "source": "policy",
+              "offset": 49,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12400,
+              "source": "policy",
+              "offset": 47,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12401,
+              "source": "policy",
+              "offset": 47,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12402,
+              "source": "policy",
+              "offset": 46,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12403,
+              "source": "policy",
+              "offset": 45,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12404,
+              "source": "policy",
+              "offset": 44,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12405,
+              "source": "policy",
+              "offset": 43,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12406,
+              "source": "policy",
+              "offset": 42,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12407,
+              "source": "policy",
+              "offset": 41,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12408,
+              "source": "policy",
+              "offset": 40,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12409,
+              "source": "policy",
+              "offset": 38,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12410,
+              "source": "policy",
+              "offset": 38,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12411,
+              "source": "policy",
+              "offset": 37,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12412,
+              "source": "policy",
+              "offset": 36,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12413,
+              "source": "policy",
+              "offset": 34,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12414,
+              "source": "policy",
+              "offset": 34,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12415,
+              "source": "policy",
+              "offset": 33,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12416,
+              "source": "policy",
+              "offset": 32,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12417,
+              "source": "policy",
+              "offset": 31,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12418,
+              "source": "policy",
+              "offset": 30,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12419,
+              "source": "policy",
+              "offset": 29,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12420,
+              "source": "policy",
+              "offset": 28,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12421,
+              "source": "policy",
+              "offset": 26,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12422,
+              "source": "policy",
+              "offset": 26,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12423,
+              "source": "policy",
+              "offset": 25,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12424,
+              "source": "policy",
+              "offset": 24,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12425,
+              "source": "policy",
+              "offset": 23,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12426,
+              "source": "policy",
+              "offset": 22,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12427,
+              "source": "policy",
+              "offset": 21,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12428,
+              "source": "policy",
+              "offset": 20,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12429,
+              "source": "policy",
+              "offset": 19,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12430,
+              "source": "policy",
+              "offset": 18,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12431,
+              "source": "policy",
+              "offset": 17,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12432,
+              "source": "policy",
+              "offset": 16,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12433,
+              "source": "policy",
+              "offset": 15,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12434,
+              "source": "policy",
+              "offset": 13,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12435,
+              "source": "policy",
+              "offset": 13,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12436,
+              "source": "policy",
+              "offset": 12,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12437,
+              "source": "policy",
+              "offset": 11,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12438,
+              "source": "policy",
+              "offset": 10,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12439,
+              "source": "policy",
+              "offset": 9,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12440,
+              "source": "policy",
+              "offset": 8,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12441,
+              "source": "policy",
+              "offset": 7,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12442,
+              "source": "policy",
+              "offset": 6,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12443,
+              "source": "policy",
+              "offset": 5,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12444,
+              "source": "policy",
+              "offset": 4,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12445,
+              "source": "policy",
+              "offset": 3,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12446,
+              "source": "policy",
+              "offset": 1,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12447,
+              "source": "policy",
+              "offset": 1,
+              "match_type": "substring"
+            },
+            {
+              "entry_index": 12448,
+              "source": "policy",
+              "offset": 0,
+              "match_type": "exact"
+            }
+          ]
+        }
+      ],
+      "llm": {
+        "elapsed_ms": 5124.24,
+        "response": {
+          "found_answer": true,
+          "answer": "To generate a Payment Reference Number (PRN), go to the Uganda Revenue Authority (URA) web portal at www.ura.go.ug, click on E-Services, and under 'Payments', select 'Payment Registration'. Fill in the Taxpayer Details form and follow the prompts to complete the process.",
+          "reason": "answered",
+          "citations": [
+            1,
+            5
+          ]
+        }
+      }
+    },
+    {
+      "query": "exam timetable",
+      "retrieval_ms": 846.97,
+      "results": [
+        {
+          "rank": 1,
+          "score": 0.0612354939298424,
+          "preview": "by the specified dates.  l) Abide by the final timetable as published by the Academic Registrar.  m) Arrive at the exam venue at least 30 minutes to the start of the examination  n) Be the main/chief invigilator for his/her examination during administering the  examinations.",
+          "metadata": {
+            "source": "web_pdf",
+            "url": "http://www.must.ac.ug/downloads/policies/2023/EXAMINATION REGULATIONS, POLICIES AND GUIDELINES_new.pdf",
+            "embedding_id": "c9cfc792-5671-4122-85ba-c867ace49395",
+            "_vector_score": 0.2992689609527588,
+            "_rank_score": 0.9387645060701576,
+            "_retrieval_query": "exam timetable",
+            "_bm25_score": 14.654547466570705
+          },
+          "bm25_matches": [
+            {
+              "entry_index": 782,
+              "source": "751-1533-1-SM.pdf",
+              "offset": 0,
+              "match_type": "exact"
+            },
+            {
+              "entry_index": 2021,
+              "source": "web_pdf",
+              "offset": 0,
+              "match_type": "exact"
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "score": 0.22213753759451493,
+          "preview": "Failure to report to the  Examination Room at least 30  Minutes before Commencement  of the Examination as Stipulated  in the University Examination  Regulations Section 2.4.6         Failure to Set an Examination        Failure for to Submit the Course  File         Failure to follow the timetable",
+          "metadata": {
+            "source": "web_pdf",
+            "url": "http://www.must.ac.ug/downloads/policies/2023/EXAMINATION REGULATIONS, POLICIES AND GUIDELINES_new.pdf",
+            "embedding_id": "89ae4aee-34ab-458c-8f76-0bc754937682",
+            "_vector_score": 0.3428724408149719,
+            "_rank_score": 0.7778624624054851,
+            "_retrieval_query": "exam timetable",
+            "_bm25_score": 7.649273465446742
+          },
+          "bm25_matches": [
+            {
+              "entry_index": 809,
+              "source": "751-1533-1-SM.pdf",
+              "offset": 0,
+              "match_type": "exact"
+            },
+            {
+              "entry_index": 2045,
+              "source": "web_pdf",
+              "offset": 0,
+              "match_type": "exact"
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "score": 0.2634367822331285,
+          "preview": "7  2.4.2 Examinations Timetable Committee    The Academic Registrar shall a  Central Timetabling Committee, coordinated by the   Academic Registrar.   2.4.3 Examination Timetable   University Examinations shall be administered according to a n examination timetable  drafted by the Central Timetabling Committee and approved by the Academic Registrar.  Any exceptions shall be approved by the Faculty",
+          "metadata": {
+            "source": "web_pdf",
+            "url": "http://www.must.ac.ug/downloads/policies/2023/EXAMINATION REGULATIONS, POLICIES AND GUIDELINES_new.pdf",
+            "embedding_id": "0987ce2a-a28c-40c8-948d-f09b23a0e75c",
+            "_vector_score": 0.28567761182785034,
+            "_rank_score": 0.7365632177668715,
+            "_retrieval_query": "exam timetable",
+            "_bm25_score": 4.499104491471467
+          },
+          "bm25_matches": [
+            {
+              "entry_index": 706,
+              "source": "751-1533-1-SM.pdf",
+              "offset": 0,
+              "match_type": "exact"
+            },
+            {
+              "entry_index": 1945,
+              "source": "web_pdf",
+              "offset": 0,
+              "match_type": "exact"
+            }
+          ]
+        },
+        {
+          "rank": 4,
+          "score": 0.2668395482721524,
+          "preview": "2.4.2 Examinations Timetable Committee The Academic Registrar shall a Central Timetabling Committee, coordinated by the Academic Registrar. 2.4.3 Examination Timetable University Examinations shall be administered according to an examination timetable drafted by the Central Timetabling Committee and approved by the Academic Registrar. Any exceptions shall be approved by the Faculty Dean or Institu",
+          "metadata": {
+            "source": "751-1533-1-SM.pdf",
+            "_vector_score": 0.28107577562332153,
+            "_rank_score": 0.7331604517278476,
+            "_retrieval_query": "exam timetable",
+            "_bm25_score": 4.237347095568671
+          },
+          "bm25_matches": [
+            {
+              "entry_index": 621,
+              "source": "751-1533-1-SM.pdf",
+              "offset": 0,
+              "match_type": "exact"
+            },
+            {
+              "entry_index": 1862,
+              "source": "web_pdf",
+              "offset": 0,
+              "match_type": "exact"
+            }
+          ]
+        },
+        {
+          "rank": 5,
+          "score": 0.2855879731148191,
+          "preview": "University of Virginia for Biomedical  Engineering.  The academic registrars Department a Central  Timetabling data collection tool template which we  use to feed them with information that is used to  develop timetables in liaison with Faculties.  Time table is done centrally in liaison with the Faculty University Examinations shall be administered  according to an examination timetable prepared ",
+          "metadata": {
+            "source": "web_pdf",
+            "url": "https://www.must.ac.ug/downloads/annualreports/MUST Annual Report 2020 (Website).pdf",
+            "embedding_id": "94394808-c856-4b48-a33f-503dfd6893ea",
+            "_vector_score": 0.32765671610832214,
+            "_rank_score": 0.7144120268851809,
+            "_retrieval_query": "exam timetable",
+            "_bm25_score": 4.2579912166145135
+          },
+          "bm25_matches": [
+            {
+              "entry_index": 7107,
+              "source": "web_pdf",
+              "offset": 0,
+              "match_type": "exact"
+            }
+          ]
+        },
+        {
+          "rank": 6,
+          "score": 0.4611264614913696,
+          "preview": "to feed them with information that is used to develop  timetables in liaison with faculties. We are in the fifth  week of study and most lecturers have given assessment  tests. Time table is done centrally in liaison with the faculty. University Examinations shall be administered  according to an examination timetable prepared by the  Central Timetabling Committee and approved by the  Academic Reg",
+          "metadata": {
+            "source": "web_pdf",
+            "url": "https://www.must.ac.ug/downloads/annualreports/MUST AnR 2019 (New).pdf",
+            "embedding_id": "44e6e0d4-0bf7-4411-b683-800d6acbd45f",
+            "_vector_score": 0.29900607466697693,
+            "_rank_score": 0.5388735385086304,
+            "_retrieval_query": "exam timetable"
+          },
+          "bm25_matches": [
+            {
+              "entry_index": 6470,
+              "source": "web_pdf",
+              "offset": 0,
+              "match_type": "exact"
+            }
+          ]
+        },
+        {
+          "rank": 7,
+          "score": 0.4625233794903405,
+          "preview": "iv  2.2.4 Coursework scripts .................................................................................................. 6  2.2.5 Publication of Coursework Marks ........................................................................... 6  2.3 Attendance of Class .................................................................................................... 6  2.3.1 Qualification to s",
+          "metadata": {
+            "source": "web_pdf",
+            "url": "http://www.must.ac.ug/downloads/policies/2023/EXAMINATION REGULATIONS, POLICIES AND GUIDELINES_new.pdf",
+            "embedding_id": "7a383780-e8d7-4d79-936c-780731f53da0",
+            "_vector_score": 0.302382230758667,
+            "_rank_score": 0.5374766205096595,
+            "_retrieval_query": "exam timetable"
+          },
+          "bm25_matches": [
+            {
+              "entry_index": 658,
+              "source": "751-1533-1-SM.pdf",
+              "offset": 0,
+              "match_type": "exact"
+            },
+            {
+              "entry_index": 1898,
+              "source": "web_pdf",
+              "offset": 0,
+              "match_type": "exact"
+            }
+          ]
+        },
+        {
+          "rank": 8,
+          "score": 0.4668792361444134,
+          "preview": "Upon registration, you are expected to attend all lectures. It is important to note that a student who attends less than 80% is not eligible to sit for the end of semester exams. 3.0 TEACHING AND LEARNING 3.2 Lectures Timetables are published on the web portal http://timetable.must.ac.ug. It is your responsibility to ensure that you access the timetables and keep abreast of the different times and",
+          "metadata": {
+            "source": "PG JOINING INSTRUCTIONS 2024.pdf",
+            "_vector_score": 0.31302332878112793,
+            "_rank_score": 0.5331207638555866,
+            "_retrieval_query": "exam timetable"
+          },
+          "bm25_matches": [
+            {
+              "entry_index": 1350,
+              "source": "PG JOINING INSTRUCTIONS 2024.pdf",
+              "offset": 0,
+              "match_type": "exact"
+            }
+          ]
+        }
+      ],
+      "llm": {
+        "elapsed_ms": 3630.03,
+        "response": {
+          "found_answer": true,
+          "answer": "The examination timetable is drafted by the Central Timetabling Committee and approved by the Academic Registrar. It is published at least four weeks before the examination period.\n\nTo access this directly, visit the MUST Timetable Portal: https://timetable.must.ac.ug",
+          "reason": "answered",
+          "citations": [
+            3,
+            4
+          ]
+        }
+      }
+    }
+  ]
+}

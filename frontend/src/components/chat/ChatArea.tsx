@@ -46,7 +46,6 @@ const ChatArea: React.FC<ChatAreaProps> = ({ chat, onChatUpdate }) => {
     if (!chat) return
     const displayContent = withAttachmentNote(content, files)
 
-    // Add user message immediately
     const userMessage: ChatMessageType = {
       id: Date.now(),
       sender: 'user',
@@ -88,7 +87,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({ chat, onChatUpdate }) => {
           return
         }
       }
-      // Build proper history (pairs)
+
       const historyPairs: [string, string][] = []
       for (let i = 0; i < chat.messages.length - 1; i++) {
         const a = chat.messages[i]
@@ -150,7 +149,6 @@ const ChatArea: React.FC<ChatAreaProps> = ({ chat, onChatUpdate }) => {
       }
       onChatUpdate(immediateChat)
 
-      // Then refresh in the background so IDs and metadata match backend state.
       const freshMessages = await chatAPI.getChatMessages(response.chat_id || chat.id)
       onChatUpdate({
         ...immediateChat,
@@ -250,14 +248,14 @@ const ChatArea: React.FC<ChatAreaProps> = ({ chat, onChatUpdate }) => {
   if (!chat) {
     return (
       <div className="flex h-full items-center justify-center px-6 py-12">
-        <div className="max-w-xl rounded-[2rem] border border-white/80 bg-white/82 px-10 py-14 text-center shadow-[0_28px_70px_rgba(15,23,42,0.1)] backdrop-blur-xl">
-          <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-[1.7rem] bg-primary-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.5)]">
-            <Bot className="h-10 w-10 text-primary-700" />
+        <div className="max-w-xl rounded-[8px] border border-[#E6B422]/30 bg-white px-10 py-14 text-center shadow-[0_2px_6px_rgba(0,0,0,0.05)]">
+          <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-[8px] bg-[#FEF9E6]">
+            <Bot className="h-10 w-10 text-[#1E6B3B]" />
           </div>
-          <p className="eyebrow-label">Student assistant</p>
-          <h3 className="section-heading mt-3 text-slate-950">Welcome to ArASSIST</h3>
-          <p className="mt-3 text-lg text-slate-600">Your academic support assistant is ready to help.</p>
-          <p className="mt-2 text-sm uppercase tracking-[0.22em] text-slate-400">
+          <p className="eyebrow-label" style={{ color: '#1E6B3B' }}>Student assistant</p>
+          <h3 className="section-heading mt-3 text-[#1E6B3B]">Welcome to ArASSIST</h3>
+          <p className="mt-3 text-lg text-[#333333]">Your academic support assistant is ready to help.</p>
+          <p className="mt-2 text-sm uppercase tracking-[0.22em] text-[#1E6B3B]/70">
             Select a conversation or start a new inquiry
           </p>
         </div>
@@ -269,19 +267,19 @@ const ChatArea: React.FC<ChatAreaProps> = ({ chat, onChatUpdate }) => {
     <div className="flex h-full min-h-0 flex-col">
       <FeedbackToastStack toasts={toasts} onDismiss={dismissToast} />
       {ticketNotice && (
-        <div className="flex items-center gap-3 border-b border-accent-300 bg-accent-400/95 px-5 py-4 text-sm font-semibold uppercase tracking-[0.12em] text-slate-900 md:px-10">
-          <AlertCircle className="h-5 w-5 shrink-0 text-accent-900" />
+        <div className="flex items-center gap-3 border-b border-[#E6B422] bg-[#FEF9E6] px-5 py-4 text-sm font-semibold uppercase tracking-[0.12em] text-[#1E6B3B] md:px-10">
+          <AlertCircle className="h-5 w-5 shrink-0 text-[#1E6B3B]" />
           <span>{ticketNotice}</span>
         </div>
       )}
 
-      <div className="flex-1 overflow-y-auto overflow-x-hidden px-5 py-8 md:px-10 md:py-10">
+      <div className="chat-scroll-area flex-1 overflow-y-auto overflow-x-hidden px-5 py-8 md:px-10 md:py-10">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
         {chat.messages.length === 0 ? (
-          <div className="rounded-[2rem] border border-dashed border-white/70 bg-white/70 px-8 py-20 text-center backdrop-blur">
-            <Bot className="mx-auto h-14 w-14 text-slate-300" />
-            <p className="mt-4 text-lg font-medium text-slate-600">Start a conversation with ArASSIST</p>
-            <p className="mt-2 text-sm text-slate-400">Ask about academic procedures, fees, offices, regulations, or deadlines.</p>
+          <div className="rounded-[8px] border border-dashed border-[#E6B422]/40 bg-white px-8 py-20 text-center">
+            <Bot className="mx-auto h-14 w-14 text-[#1E6B3B]/40" />
+            <p className="mt-4 text-lg font-medium text-[#333333]">Start a conversation with ArASSIST</p>
+            <p className="mt-2 text-sm text-[#333333]/70">Ask about academic procedures, fees, offices, regulations, or deadlines.</p>
           </div>
         ) : (
           chat.messages.map((message) => (
@@ -300,16 +298,15 @@ const ChatArea: React.FC<ChatAreaProps> = ({ chat, onChatUpdate }) => {
         {isLoading && (
           <div className="flex justify-start">
             <div className="flex items-start gap-4">
-              <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+              <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-[8px] bg-[#FEF9E6] shadow-[0_2px_6px_rgba(0,0,0,0.05)] ring-1 ring-[#E6B422]/20">
                 <img src={mustLogo} alt="ArASSIST avatar" className="h-7 w-7 object-contain" />
               </div>
-              <div className="rounded-[1.5rem] border border-white/80 bg-white/86 px-5 py-4 shadow-[0_18px_36px_rgba(15,23,42,0.08)] backdrop-blur">
+              <div className="rounded-[20px] border border-[#E6B422]/30 bg-[#FEF9E6] px-5 py-4 shadow-[0_2px_6px_rgba(0,0,0,0.05)]">
                 <div className="flex gap-1.5">
-                  <div className="h-2.5 w-2.5 rounded-full bg-slate-300 animate-bounce"></div>
-                  <div className="h-2.5 w-2.5 rounded-full bg-slate-300 animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                  <div className="h-2.5 w-2.5 rounded-full bg-slate-300 animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  <div className="h-2.5 w-2.5 rounded-full bg-[#1E6B3B] animate-bounce"></div>
+                  <div className="h-2.5 w-2.5 rounded-full bg-[#1E6B3B] animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                  <div className="h-2.5 w-2.5 rounded-full bg-[#1E6B3B] animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                 </div>
-                <p className="mt-3 text-sm text-slate-500">ArASSIST is generating a response...</p>
               </div>
             </div>
           </div>
@@ -319,46 +316,48 @@ const ChatArea: React.FC<ChatAreaProps> = ({ chat, onChatUpdate }) => {
         </div>
       </div>
 
-      <div className="border-t border-white/70 bg-white/68 px-5 py-5 backdrop-blur-xl md:px-10">
-        <div className="mx-auto max-w-6xl">
-          {retryMessage ? (
-            <div className="mb-4 flex flex-col gap-3 rounded-[1.2rem] border border-amber-200 bg-amber-50/92 px-4 py-3 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="font-semibold">Last message did not send</p>
-                <p className="mt-1 text-amber-800">Retry the request after your connection stabilizes.</p>
+      <div className="px-4 pb-4 pt-2 md:px-6 md:pb-5">
+        <div className="mx-auto max-w-6xl rounded-[2rem] border border-white/85 bg-white shadow-[0_24px_60px_rgba(15,23,42,0.1)]">
+          <div className="px-4 py-4 md:px-6">
+            {retryMessage ? (
+              <div className="mb-4 flex flex-col gap-3 rounded-[1.2rem] border border-amber-200 bg-amber-50/92 px-4 py-3 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="font-semibold">Last message did not send</p>
+                  <p className="mt-1 text-amber-800">Retry the request after your connection stabilizes.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => void handleSendMessage(retryMessage.content, retryMessage.files)}
+                  className="rounded-xl bg-amber-500 px-4 py-2 font-semibold text-white transition hover:bg-amber-600"
+                >
+                  Retry message
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => void handleSendMessage(retryMessage.content, retryMessage.files)}
-                className="rounded-xl bg-amber-500 px-4 py-2 font-semibold text-white transition hover:bg-amber-600"
-              >
-                Retry message
-              </button>
-            </div>
-          ) : null}
-          <ChatInput
-            onSendMessage={handleSendMessage}
-            disabled={isLoading || !!ticketNotice}
-            placeholder="Ask ArASSIST"
-            onAttachmentAccepted={(files) => {
-              if (files.length > 0) {
-                showInfo({
-                  title: 'Attachment added',
-                  message: `${files.length} file${files.length > 1 ? 's were' : ' was'} attached to your message.`,
-                  duration: 2600,
+            ) : null}
+            <ChatInput
+              onSendMessage={handleSendMessage}
+              disabled={isLoading || !!ticketNotice}
+              placeholder="Ask ArASSIST"
+              onAttachmentAccepted={(files) => {
+                if (files.length > 0) {
+                  showInfo({
+                    title: 'Attachment added',
+                    message: `${files.length} file${files.length > 1 ? 's were' : ' was'} attached to your message.`,
+                    duration: 2600,
+                  })
+                }
+              }}
+              onAttachmentRejected={(message) => {
+                showError({
+                  title: 'Attachment rejected',
+                  message,
                 })
-              }
-            }}
-            onAttachmentRejected={(message) => {
-              showError({
-                title: 'Attachment rejected',
-                message,
-              })
-            }}
-          />
-          <p className="mt-6 text-center text-xs uppercase tracking-[0.28em] text-slate-400">
-            Official Assistant of Mbarara University of Science and Technology
-          </p>
+              }}
+            />
+            <p className="mt-4 text-center text-[11px] uppercase tracking-[0.24em] text-slate-400">
+              Official Assistant of Mbarara University of Science and Technology
+            </p>
+          </div>
         </div>
       </div>
     </div>

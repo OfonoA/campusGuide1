@@ -32,3 +32,4 @@ playwright>=1.40.0
 # More robust PDF text extraction
 rank-bm25
 sentence-transformers
+reportlab

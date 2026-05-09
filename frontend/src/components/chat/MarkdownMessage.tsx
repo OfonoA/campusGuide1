@@ -4,7 +4,16 @@ interface MarkdownMessageProps {
   content: string
 }
 
-const INLINE_TOKEN = /(\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|\*\*([^*]+)\*\*|\*([^*]+)\*)/g
+const INLINE_TOKEN =
+  /(\[([^\]]+)\]\(((?:https?:\/\/|mailto:)[^\s)]+)\)|((?:https?:\/\/|www\.)[^\s<]+)|(\+?\d[\d\s().-]{7,}\d)|([A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,})|\*\*([^*]+)\*\*|\*([^*]+)\*)/gi
+
+const normalizeStructuredContent = (content: string): string => {
+  return content
+    .replace(/:\s+(\d+\.\s)/g, ':\n$1')
+    .replace(/\s+(\d+\.\s)/g, '\n$1')
+    .replace(/\.\s+(Note that|Important:|Please note|However,|Also,)/g, '.\n\n$1')
+    .trim()
+}
 
 const parseInline = (text: string): React.ReactNode[] => {
   const nodes: React.ReactNode[] = []
@@ -30,15 +39,59 @@ const parseInline = (text: string): React.ReactNode[] => {
         </a>
       )
     } else if (match[4]) {
+      const rawUrl = match[4]
+      const trimmedUrl = rawUrl.replace(/[),.;!?]+$/, '')
+      const trailing = rawUrl.slice(trimmedUrl.length)
+      const href = trimmedUrl.startsWith('www.') ? `https://${trimmedUrl}` : trimmedUrl
       nodes.push(
-        <strong key={`strong-${key}`} className="font-semibold text-slate-900">
-          {match[4]}
-        </strong>
+        <React.Fragment key={`url-${key}`}>
+          <a
+            href={href}
+            target="_blank"
+            rel="noreferrer"
+            className="font-medium text-primary-700 underline decoration-primary-300 underline-offset-2 hover:text-primary-800 break-all"
+          >
+            {trimmedUrl}
+          </a>
+          {trailing}
+        </React.Fragment>
       )
     } else if (match[5]) {
+      const rawPhone = match[5]
+      const trimmedPhone = rawPhone.replace(/[),.;!?]+$/, '')
+      const trailing = rawPhone.slice(trimmedPhone.length)
+      const telValue = trimmedPhone.replace(/[^\d+]/g, '')
+      nodes.push(
+        <React.Fragment key={`phone-${key}`}>
+          <a
+            href={`tel:${telValue}`}
+            className="font-medium text-primary-700 underline decoration-primary-300 underline-offset-2 hover:text-primary-800"
+          >
+            {trimmedPhone}
+          </a>
+          {trailing}
+        </React.Fragment>
+      )
+    } else if (match[6]) {
+      nodes.push(
+        <a
+          key={`email-${key}`}
+          href={`mailto:${match[6]}`}
+          className="font-medium text-primary-700 underline decoration-primary-300 underline-offset-2 hover:text-primary-800"
+        >
+          {match[6]}
+        </a>
+      )
+    } else if (match[7]) {
+      nodes.push(
+        <strong key={`strong-${key}`} className="font-semibold text-slate-900">
+          {match[7]}
+        </strong>
+      )
+    } else if (match[8]) {
       nodes.push(
         <em key={`em-${key}`} className="italic">
-          {match[5]}
+          {match[8]}
         </em>
       )
     }
@@ -55,7 +108,8 @@ const parseInline = (text: string): React.ReactNode[] => {
 }
 
 const MarkdownMessage: React.FC<MarkdownMessageProps> = ({ content }) => {
-  const lines = content.split(/\r?\n/)
+  const normalizedContent = normalizeStructuredContent(content)
+  const lines = normalizedContent.split(/\r?\n/)
   const blocks: React.ReactNode[] = []
   let index = 0
 
@@ -114,12 +168,40 @@ const MarkdownMessage: React.FC<MarkdownMessageProps> = ({ content }) => {
       continue
     }
 
+    if (/^[-*]\s+/.test(line)) {
+      const items: string[] = []
+      while (index < lines.length) {
+        const current = lines[index].trim()
+        if (!/^[-*]\s+/.test(current)) {
+          break
+        }
+        items.push(current.replace(/^[-*]\s+/, ''))
+        index += 1
+      }
+      blocks.push(
+        <ul key={`ul-${index}`} className="ml-5 list-disc space-y-2">
+          {items.map((item, itemIndex) => (
+            <li key={`bullet-${index}-${itemIndex}`} className="pl-1">
+              {parseInline(item)}
+            </li>
+          ))}
+        </ul>
+      )
+      continue
+    }
+
     const paragraphLines = [rawLine]
     index += 1
     while (index < lines.length) {
       const currentRaw = lines[index]
       const current = currentRaw.trim()
-      if (!current || /^(\*{3,}|-{3,})$/.test(current) || /^(#{1,6})\s+/.test(current) || /^\d+\.\s+/.test(current)) {
+      if (
+        !current ||
+        /^(\*{3,}|-{3,})$/.test(current) ||
+        /^(#{1,6})\s+/.test(current) ||
+        /^\d+\.\s+/.test(current) ||
+        /^[-*]\s+/.test(current)
+      ) {
         break
       }
       paragraphLines.push(currentRaw)

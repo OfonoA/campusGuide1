@@ -3,6 +3,13 @@ import { User, AuthState } from '../types'
 import { authAPI } from '../services/api'
 import { parseJwt } from '../utils/jwt'
 import { queuePersistentFeedback } from '../utils/appFeedback'
+import {
+  clearAuthSession,
+  getAuthToken,
+  getRefreshToken,
+  migrateLegacyAuthSession,
+  setAuthSession,
+} from '../utils/authStorage'
 
 interface AuthContextType extends AuthState {
   login: (username: string, password: string) => Promise<void>
@@ -66,8 +73,8 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
 
 const initialState: AuthState = {
   user: null,
-  token: localStorage.getItem('authToken'),
-  refreshToken: localStorage.getItem('refreshToken'),
+  token: getAuthToken(),
+  refreshToken: getRefreshToken(),
   isAuthenticated: false,
   isLoading: true,
 }
@@ -85,8 +92,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const clearAuthState = useCallback((reason?: 'logout' | 'session_expired') => {
     clearRefreshTimeout()
-    localStorage.removeItem('authToken')
-    localStorage.removeItem('refreshToken')
+    clearAuthSession()
     if (reason === 'logout') {
       queuePersistentFeedback({
         tone: 'info',
@@ -105,7 +111,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [clearRefreshTimeout, dispatch])
 
   const logout = useCallback(async () => {
-    const refreshToken = localStorage.getItem('refreshToken')
+    const refreshToken = getRefreshToken()
     try {
       if (refreshToken) {
         await authAPI.logout(refreshToken)
@@ -118,7 +124,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [clearAuthState])
 
   const refreshAccessToken = useCallback(async () => {
-    const refreshToken = localStorage.getItem('refreshToken')
+    const refreshToken = getRefreshToken()
     if (!refreshToken) {
       clearAuthState('session_expired')
       return
@@ -133,12 +139,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error('Missing token in refresh response')
       }
 
-      localStorage.setItem('authToken', token)
-      if (nextRefreshToken) {
-        localStorage.setItem('refreshToken', nextRefreshToken)
-      } else {
-        localStorage.removeItem('refreshToken')
-      }
+      setAuthSession(token, nextRefreshToken)
 
       const payload = parseJwt(token)
       if (!payload) throw new Error('Invalid token payload')
@@ -187,7 +188,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     const initialize = async () => {
-      const token = localStorage.getItem('authToken')
+      migrateLegacyAuthSession()
+      const token = getAuthToken()
       if (!token) {
         dispatch({ type: 'SET_LOADING', payload: false })
         return
@@ -206,10 +208,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         dispatch({
           type: 'AUTH_SUCCESS',
-          payload: { user, token, refreshToken: localStorage.getItem('refreshToken') },
+          payload: { user, token, refreshToken: getRefreshToken() },
         })
       } catch (error) {
-        const refreshToken = localStorage.getItem('refreshToken')
+        const refreshToken = getRefreshToken()
         if (refreshToken) {
           await refreshAccessToken()
         } else {
@@ -241,12 +243,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         role: normalizeRole(payload.role),
       }
 
-      localStorage.setItem('authToken', token)
-      if (refreshToken) {
-        localStorage.setItem('refreshToken', refreshToken)
-      } else {
-        localStorage.removeItem('refreshToken')
-      }
+      setAuthSession(token, refreshToken)
 
       dispatch({
         type: 'AUTH_SUCCESS',
@@ -274,12 +271,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         role: normalizeRole(payload.role),
       }
 
-      localStorage.setItem('authToken', token)
-      if (refreshToken) {
-        localStorage.setItem('refreshToken', refreshToken)
-      } else {
-        localStorage.removeItem('refreshToken')
-      }
+      setAuthSession(token, refreshToken)
 
       dispatch({
         type: 'AUTH_SUCCESS',

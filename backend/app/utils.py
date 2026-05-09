@@ -24,35 +24,71 @@ class RecursiveCharacterTextSplitter:
         self.length_function = length_function
 
     def _split_text(self, text: str) -> list[str]:
+        """Split text into chunks by sentences to preserve sentence integrity.
+
+        Heuristic sentence splitter (regex) avoids heavy dependencies and
+        builds chunks by joining sentences until reaching `chunk_size`. The
+        overlap is applied in sentence units approximated from average
+        sentence length to preserve context across chunk boundaries.
+        """
         text = (text or "").strip()
         if not text:
             return []
         if self.length_function(text) <= self.chunk_size:
             return [text]
 
+        # Simple sentence splitter (keeps delimiters)
+        import re
+
+        sentence_end_re = re.compile(r"(.+?(?:[\.\!\?][\)\]\"']*|\n)(?:\s+|$))", re.S)
+        sentences = [m.group(0).strip() for m in sentence_end_re.finditer(text)]
+        if not sentences:
+            # Fallback to character-based splitting if sentence tokenizer fails
+            sentences = [text]
+
+        total_sentences = len(sentences)
+        avg_sent_len = max(40, sum(len(s) for s in sentences) // max(1, total_sentences))
+        # approximate overlap in sentences
+        overlap_sentences = max(1, int(self.chunk_overlap // avg_sent_len))
+
         chunks: list[str] = []
-        start = 0
-        text_len = len(text)
-        while start < text_len:
-            end = min(start + self.chunk_size, text_len)
-            chunk = text[start:end]
-            if end < text_len:
-                best_break = -1
-                for separator in self.separators:
-                    if not separator:
-                        continue
-                    idx = chunk.rfind(separator)
-                    if idx > best_break:
-                        best_break = idx + len(separator)
-                if best_break > 0:
-                    chunk = chunk[:best_break]
-                    end = start + best_break
-            cleaned = chunk.strip()
-            if cleaned:
-                chunks.append(cleaned)
-            if end >= text_len:
+        start_idx = 0
+        while start_idx < total_sentences:
+            previous_start_idx = start_idx
+            cur_len = 0
+            end_idx = start_idx
+            while end_idx < total_sentences and cur_len + len(sentences[end_idx]) <= self.chunk_size:
+                cur_len += len(sentences[end_idx]) + 1
+                end_idx += 1
+
+            # If a single sentence is longer than chunk_size, force split character-wise
+            if end_idx == start_idx:
+                long_sentence = sentences[start_idx]
+                # fallback: split long sentence into char chunks
+                pos = 0
+                while pos < len(long_sentence):
+                    part = long_sentence[pos : pos + self.chunk_size]
+                    chunks.append(part.strip())
+                    pos += self.chunk_size - self.chunk_overlap if self.chunk_size > self.chunk_overlap else self.chunk_size
+                start_idx += 1
+                continue
+
+            chunk = " ".join(sentences[start_idx:end_idx]).strip()
+            if chunk:
+                chunks.append(chunk)
+
+            if end_idx >= total_sentences:
                 break
-            start = max(end - self.chunk_overlap, start + 1)
+
+            # move start_idx back by overlap_sentences to create overlap
+            start_idx = max(0, end_idx - overlap_sentences)
+
+            # avoid infinite loops
+            if start_idx <= previous_start_idx:
+                start_idx = end_idx
+            if start_idx >= total_sentences:
+                break
+
         return chunks
 
     def create_documents(self, texts: list[str]) -> list[_SimpleDocument]:
@@ -61,8 +97,8 @@ class RecursiveCharacterTextSplitter:
             docs.extend(_SimpleDocument(chunk) for chunk in self._split_text(text))
         return docs
 
-DEFAULT_CHUNK_SIZE = 1000
-DEFAULT_CHUNK_OVERLAP = 100
+DEFAULT_CHUNK_SIZE = 800
+DEFAULT_CHUNK_OVERLAP = 200
 
 
 class ContentBlock(TypedDict):

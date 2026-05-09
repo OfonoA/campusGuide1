@@ -44,7 +44,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="rounded-[1.8rem] border border-white/80 bg-white/82 p-3 shadow-[0_24px_54px_rgba(15,23,42,0.08)] backdrop-blur-xl">
+    <form onSubmit={handleSubmit} className="rounded-[8px] border border-[#D4AF37]/30 bg-white p-2 shadow-[0_2px_6px_rgba(0,0,0,0.05)]">
       <input
         ref={fileInputRef}
         type="file"
@@ -91,16 +91,16 @@ const ChatInput: React.FC<ChatInputProps> = ({
         }}
       />
       {selectedFiles.length > 0 && (
-        <div className="mb-3 flex flex-wrap gap-2 px-2">
+        <div className="mb-2 flex flex-wrap gap-2 px-1.5">
           {selectedFiles.map((file, index) => (
             <span
               key={`${file.name}-${index}`}
-              className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600"
+              className="inline-flex items-center gap-2 rounded-full bg-[#FEF9E6] px-3 py-1 text-xs font-medium text-[#333333]"
             >
               <span className="max-w-[180px] truncate">{file.name}</span>
               <button
                 type="button"
-                className="rounded-full text-slate-400 transition hover:text-slate-700"
+                className="rounded-full text-[#0A4B33]/60 transition hover:text-[#0A4B33]"
                 onClick={() => setSelectedFiles((prev) => prev.filter((_, itemIndex) => itemIndex !== index))}
               >
                 <X className="h-3.5 w-3.5" />
@@ -109,7 +109,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
           ))}
         </div>
       )}
-      <div className="flex items-end gap-3">
+      <div className="flex items-end gap-2">
         <div className="flex-1">
           <textarea
             value={message}
@@ -118,37 +118,37 @@ const ChatInput: React.FC<ChatInputProps> = ({
             placeholder={placeholder}
             disabled={disabled}
             rows={1}
-            className="w-full resize-none border-0 bg-transparent px-4 py-3 text-base text-slate-700 outline-none placeholder:text-slate-400 focus:ring-0 sm:text-lg"
+            className="w-full resize-none border-0 bg-transparent px-2.5 py-1.5 text-sm text-[#333333] outline-none placeholder:text-[#1E6B3B] focus:ring-0 sm:text-[15px]"
             style={{
-              minHeight: '52px',
-              maxHeight: '140px',
+              minHeight: '38px',
+              maxHeight: '104px',
             }}
             onInput={(e) => {
               const target = e.target as HTMLTextAreaElement
               target.style.height = 'auto'
-              target.style.height = `${Math.min(target.scrollHeight, 140)}px`
+              target.style.height = `${Math.min(target.scrollHeight, 104)}px`
             }}
           />
         </div>
 
         <button
           type="button"
-          className="mb-1 hidden rounded-2xl p-3 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 sm:inline-flex"
+          className="mb-0.5 hidden rounded-lg p-2 text-[#0A4B33] transition hover:bg-[#FEF9E6] hover:text-[#D4AF37] sm:inline-flex"
           title="Attach file"
           disabled={disabled}
           onClick={() => fileInputRef.current?.click()}
         >
-          <Paperclip className="h-5 w-5" />
+          <Paperclip className="h-4.5 w-4.5" />
         </button>
 
         <button
           type="submit"
           disabled={(!message.trim() && selectedFiles.length === 0) || disabled}
-          className="mb-1 inline-flex items-center gap-2 rounded-[1.25rem] bg-primary-700 px-7 py-4 text-sm font-semibold uppercase tracking-[0.16em] text-white shadow-[0_16px_30px_rgba(44,52,143,0.24)] transition hover:bg-primary-800 disabled:cursor-not-allowed disabled:opacity-50"
+          className="mb-0.5 inline-flex items-center gap-1.5 rounded-[8px] bg-[#0A4B33] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-white shadow-[0_2px_6px_rgba(0,0,0,0.05)] transition hover:border hover:border-[#D4AF37] hover:bg-[#0A4B33] disabled:cursor-not-allowed disabled:opacity-50 sm:px-5"
           title="Send message"
         >
           <span>Send</span>
-          <Send className="h-4 w-4" />
+          <Send className="h-3.5 w-3.5" />
         </button>
       </div>
     </form>

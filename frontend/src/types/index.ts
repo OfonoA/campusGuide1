@@ -4,6 +4,8 @@ export interface User {
   role: 'student' | 'ar_staff' | 'admin';
   email?: string;
   name?: string;
+  created_at?: string;
+  last_active_at?: string | null;
 }
 
 export interface Attachment {

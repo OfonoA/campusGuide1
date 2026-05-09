@@ -227,6 +227,7 @@ class AdminUserItem(BaseModel):
     username: str
     role: str
     created_at: datetime
+    last_active_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
@@ -256,3 +257,108 @@ class AdminUserCreateRequest(BaseModel):
 
 class AdminUserDeleteRequest(BaseModel):
     password: str
+
+
+class StaffPerformanceOverviewStats(BaseModel):
+    total_tickets: int
+    avg_response_time_hours: Optional[float] = None
+    avg_resolution_time_days: Optional[float] = None
+    sla_compliance_percent: Optional[float] = None
+
+
+class StaffPerformanceRow(BaseModel):
+    staff_id: int
+    staff_username: str
+    assigned: int
+    not_started: int
+    in_progress: int
+    resolved_30d: int
+    avg_response_time_hours: Optional[float] = None
+    avg_resolution_time_days: Optional[float] = None
+    sla_breaches: int
+
+
+class StaffPerformanceOverviewResponse(BaseModel):
+    stats: StaffPerformanceOverviewStats
+    rows: List[StaffPerformanceRow]
+
+
+class StaffPerformanceTicketDetail(BaseModel):
+    ticket_id: int
+    reference_code: str
+    student_username: Optional[str] = None
+    status: str
+    assigned_date: Optional[datetime] = None
+    response_time_hours: Optional[float] = None
+    resolution_time_days: Optional[float] = None
+
+
+class StaffPerformanceDetailResponse(BaseModel):
+    staff_id: int
+    staff_username: str
+    tickets: List[StaffPerformanceTicketDetail]
+
+
+class AnalyticsTrendPoint(BaseModel):
+    label: str
+    value: int
+
+
+class AnalyticsOverviewStats(BaseModel):
+    total_questions: int
+    answered: int
+    answered_rate: int
+    unanswered: int
+    unanswered_rate: int
+    escalation_rate: int
+    helpful_rate: int
+    kb_coverage: int
+
+
+class AnalyticsTopicRow(BaseModel):
+    topic: str
+    volume: int
+    share: float
+    escalation_rate: int
+    answer_rate: int
+
+
+class AnalyticsHotspotRow(BaseModel):
+    query: str
+    escalation_rate: int
+    tickets: int
+
+
+class AnalyticsNoAnswerArea(BaseModel):
+    topic: str
+    count: int
+
+
+class AnalyticsGapRow(BaseModel):
+    area: str
+    failed_query: str
+    suggested_document: str
+
+
+class AnalyticsUnansweredExample(BaseModel):
+    query: str
+
+
+class AnalyticsFollowUpInsight(BaseModel):
+    topic: str
+    tickets: int
+    delta: int
+
+
+class ConversationAnalyticsResponse(BaseModel):
+    overview: AnalyticsOverviewStats
+    trends: dict[str, List[AnalyticsTrendPoint]]
+    peak_hours: List[AnalyticsTrendPoint]
+    peak_days: List[AnalyticsTrendPoint]
+    topics: List[AnalyticsTopicRow]
+    hotspots: List[AnalyticsHotspotRow]
+    feedback: dict[str, int]
+    no_answer_areas: List[AnalyticsNoAnswerArea]
+    gaps: List[AnalyticsGapRow]
+    unanswered_examples: List[AnalyticsUnansweredExample]
+    follow_up_insights: List[AnalyticsFollowUpInsight]

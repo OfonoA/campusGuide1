@@ -11,6 +11,7 @@ from database.orm_models import (
     TicketMessage,
 )
 from app.auth import get_current_user
+from app.assignment import apply_ticket_recommendation, maybe_auto_assign_recommended_ticket
 from app.schemas import FeedbackRequest, FeedbackResponse, TicketResponse
 from app.utils import generate_reference_code
 
@@ -185,5 +186,11 @@ def request_officer(
     )
     db.add(initial_update)
     db.commit()
+
+    try:
+        apply_ticket_recommendation(db, ticket)
+        maybe_auto_assign_recommended_ticket(db, ticket)
+    except Exception as exc:
+        print(f"Ticket recommendation/assignment failed for ticket {ticket.id}: {exc}")
 
     return TicketResponse(id=ticket.id, reference_code=ticket.reference_code)

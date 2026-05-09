@@ -151,11 +151,11 @@ const TicketsPage: React.FC = () => {
   const statusTone = (status: Ticket['status']) => {
     switch (status) {
       case 'in_progress':
-        return 'bg-accent-400 text-accent-900'
+        return 'bg-[#0A4B33] text-white'
       case 'resolved':
-        return 'bg-[#e9e4fb] text-primary-700'
+        return 'bg-slate-300 text-[#333333]'
       case 'assigned':
-        return 'bg-primary-100 text-primary-700'
+        return 'bg-[#E6B422] text-[#1E6B3B]'
       default:
         return 'bg-slate-100 text-slate-600'
     }
@@ -169,16 +169,16 @@ const TicketsPage: React.FC = () => {
 
   const actorTone = (msg: TicketMessage) => {
     if (msg.sender_role === 'student') return 'text-slate-400'
-    if (msg.sender_role === 'bot') return 'text-primary-700'
+    if (msg.sender_role === 'bot') return 'text-[#1E6B3B]'
     return 'text-[#8c6500]'
   }
 
   const bubbleTone = (msg: TicketMessage) => {
     if (msg.sender_role === 'student') {
-      return 'border-primary-600 bg-slate-50 text-slate-800'
+      return 'border-[#E6B422]/30 bg-[rgba(230,180,34,0.2)] text-[#1E6B3B]'
     }
     if (msg.sender_role === 'bot') {
-      return 'border-primary-600 bg-white text-primary-800'
+      return 'border-[#E6B422]/25 bg-[#FEF9E6] text-[#1E6B3B]'
     }
     return 'border-[#e6c96b] bg-[#fff7dd] text-slate-800'
   }
@@ -235,14 +235,22 @@ const TicketsPage: React.FC = () => {
       <FeedbackToastStack toasts={toasts} onDismiss={dismissToast} />
       <div className="h-full overflow-hidden px-5 py-6 md:px-10 md:py-8">
         <div className="flex h-full flex-col gap-5">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-3 text-slate-500">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="flex flex-1 flex-wrap items-center gap-4 text-slate-500">
               <div>
                 <p className="eyebrow-label">Student cases</p>
                 <span className="mt-1 block font-serif text-[2.2rem] font-semibold tracking-[-0.05em] text-slate-950">My Tickets</span>
-                <p className="mt-2 max-w-xl text-sm leading-6 text-slate-500">
-                  Cases that need registrar review stay here, with all replies and attachments in one thread.
-                </p>
+              </div>
+              <div className="inline-flex max-w-full items-center gap-3 rounded-full border border-white/75 bg-white/72 px-4 py-2 shadow-[0_18px_34px_rgba(15,23,42,0.06)] backdrop-blur">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#1E6B3B] text-white shadow-[0_2px_6px_rgba(0,0,0,0.05)]">
+                  <ShieldAlert className="h-4 w-4" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#1E6B3B]">Human Intervention Required</p>
+                  <p className="truncate text-sm text-slate-600">
+                    Moved from AI support to human support for final verification by the Academic Registrar&apos;s Office.
+                  </p>
+                </div>
               </div>
             </div>
 
@@ -256,20 +264,6 @@ const TicketsPage: React.FC = () => {
                 </span>
               </div>
             )}
-          </div>
-
-          <div className="rounded-[1.5rem] border border-white/75 bg-white/72 px-4 py-4 shadow-[0_18px_34px_rgba(15,23,42,0.06)] backdrop-blur">
-            <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[1rem] bg-primary-700 text-white shadow-[0_14px_28px_rgba(44,52,143,0.22)]">
-                <ShieldAlert className="h-4 w-4" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.14em] text-primary-700">Human Intervention Required</p>
-                <p className="mt-1 text-sm leading-6 text-slate-600">
-                  This issue has moved from AI support to human support for final verification by the Academic Registrar&apos;s Office.
-                </p>
-              </div>
-            </div>
           </div>
 
           <div className="grid min-h-0 flex-1 gap-5 lg:grid-cols-[320px_minmax(0,1fr)]">
@@ -291,12 +285,12 @@ const TicketsPage: React.FC = () => {
                         onClick={() => handleSelectTicket(ticket)}
                         className={`w-full rounded-2xl border px-4 py-4 text-left transition ${
                           selectedTicket?.id === ticket.id
-                            ? 'border-primary-200 bg-[linear-gradient(180deg,#ffffff_0%,#f7f8ff_100%)] shadow-[0_16px_34px_rgba(15,23,42,0.08)]'
+                            ? 'border-[#E6B422]/30 border-l-4 border-l-[#E6B422] bg-[#FEF9E6] shadow-[0_2px_6px_rgba(0,0,0,0.05)]'
                             : 'border-white/70 bg-white/78 hover:border-slate-200 hover:bg-white'
                         }`}
                       >
                         <div className="flex items-start justify-between gap-3">
-                          <span className="text-sm font-semibold text-primary-700">
+                          <span className="text-sm font-semibold text-[#1E6B3B]">
                             {shortTicketReference(ticket.reference_code)}
                           </span>
                           <span className={`rounded px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.14em] ${statusTone(ticket.status)}`}>
@@ -331,28 +325,28 @@ const TicketsPage: React.FC = () => {
                           <button
                             type="button"
                             onClick={handleBackToTicketList}
-                            className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:border-primary-200 hover:text-primary-700 lg:hidden"
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:border-[#E6B422] hover:text-[#1E6B3B] lg:hidden"
                             aria-label="Back to ticket list"
                           >
                             <ArrowLeft className="h-4 w-4" />
                           </button>
                         ) : null}
-                        <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-white shadow ring-1 ring-primary-100">
+                        <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-white shadow ring-1 ring-[#E6B422]/30">
                           <img src={mustLogo} alt="Staff avatar" className="h-6 w-6 object-contain" />
                         </div>
                         <div>
-                          <h2 className="section-heading text-primary-700">AR Staff</h2>
+                          <h2 className="section-heading text-[#1E6B3B]">AR Staff</h2>
                           <p className="mt-1 text-sm text-slate-500">Official replies from registrar support appear here.</p>
                         </div>
                       </div>
                       <div className="text-right text-xs text-slate-500">
                         <p>Created {formatDate(selectedTicket.created_at)}</p>
-                        <p className="mt-1 font-semibold text-primary-700">Ref: {shortTicketReference(selectedTicket.reference_code)}</p>
+                        <p className="mt-1 font-semibold text-[#1E6B3B]">Ref: {shortTicketReference(selectedTicket.reference_code)}</p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex-1 overflow-y-auto bg-[linear-gradient(180deg,#f7f9fd_0%,#eef3fa_100%)] px-5 py-6 sm:px-6">
+                  <div className="flex-1 overflow-y-auto bg-[linear-gradient(180deg,#FEF9E6_0%,#F5F5F5_55%,#F0F2F5_100%)] px-5 py-6 sm:px-6">
                     {messages.length === 0 ? (
                       <div className="rounded-[1.8rem] border border-dashed border-white/70 bg-white/58 px-8 py-16 text-center text-slate-500">
                         <MessageSquare className="mx-auto mb-3 h-10 w-10 text-slate-300" />

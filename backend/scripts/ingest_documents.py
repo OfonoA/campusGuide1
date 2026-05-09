@@ -24,6 +24,18 @@ def extract_content_with_table_handling(pdf_path):
     Returns a list of content blocks.
     """
     content_blocks = []
+    def _fallback_loader_content() -> list[dict]:
+        from langchain_community.document_loaders import PyPDFLoader
+
+        fallback_blocks = []
+        loader = PyPDFLoader(pdf_path)
+        documents = loader.load()
+        for doc in documents:
+            text = (doc.page_content or "").strip()
+            if text:
+                fallback_blocks.append({"type": "text", "content": text})
+        return fallback_blocks
+
     try:
         with pdfplumber.open(pdf_path) as pdf:
             for page in pdf.pages:
@@ -61,14 +73,11 @@ def extract_content_with_table_handling(pdf_path):
                         table_string += "| " + " | ".join(clean_row) + " |\n"
                     table_string += "TABLE END"
                     content_blocks.append({"type": "table", "content": table_string})
+        if not any((block.get("content") or "").strip() for block in content_blocks):
+            return _fallback_loader_content()
     except Exception as e:
         print(f"Error processing {pdf_path}: {e}")
-        # Fallback: basic text extraction
-        from langchain_community.document_loaders import PyPDFLoader
-        loader = PyPDFLoader(pdf_path)
-        documents = loader.load()
-        for doc in documents:
-            content_blocks.append({"type": "text", "content": doc.page_content})
+        content_blocks = _fallback_loader_content()
     return content_blocks
 
 # --- Ingestion ---
@@ -80,25 +89,51 @@ def ingest_documents(directory="university_documents", index_path="faiss_index")
     all_texts = []
     metadatas = []
 
-    for filename in os.listdir(directory):
-        if filename.endswith(".pdf"):
-            file_path = os.path.join(directory, filename)
-            print(f"Processing: {file_path}")
-            try:
-                content_blocks = extract_content_with_table_handling(file_path)
-                if content_blocks:
-                    texts = chunk_content_blocks(content_blocks)
-                    all_texts.extend(texts)
-                    metadatas.extend([{"source": filename} for _ in texts])
-            except Exception as e:
-                print(f"Error processing {file_path}: {e}")
+    # Resolve directory: accept either repo-root-relative or backend-relative paths
+    if not os.path.isabs(directory):
+        # try given path as-is, then try relative to this script's parent (backend/)
+        if not os.path.exists(directory):
+            alt = os.path.join(os.path.dirname(__file__), '..', directory)
+            alt = os.path.abspath(alt)
+            if os.path.exists(alt):
+                directory = alt
+    directory = os.path.abspath(directory)
+
+    # gather pdf files first so we can show progress
+    try:
+        filenames = [f for f in os.listdir(directory) if f.lower().endswith('.pdf')]
+    except Exception as e:
+        print(f"Error listing directory {directory}: {e}")
+        filenames = []
+
+    total = len(filenames)
+    print(f"Found {total} PDF(s) in {directory}")
+
+    for idx, filename in enumerate(filenames, start=1):
+        file_path = os.path.join(directory, filename)
+        start_t = perf_counter()
+        print(f"[{idx}/{total}] Processing: {file_path}")
+        try:
+            content_blocks = extract_content_with_table_handling(file_path)
+            if content_blocks:
+                texts = chunk_content_blocks(content_blocks)
+                all_texts.extend(texts)
+                metadatas.extend([{"source": filename} for _ in texts])
+            elapsed = (perf_counter() - start_t)
+            print(f"[{idx}/{total}] Done {filename} ({len(texts) if content_blocks else 0} chunks) in {elapsed:.2f}s")
+        except Exception as e:
+            elapsed = (perf_counter() - start_t)
+            print(f"Error processing {file_path}: {e} (after {elapsed:.2f}s)")
 
     if all_texts:
         try:
+            print(f"Total chunks: {len(all_texts)}. Computing embeddings and building FAISS index (this may take a while)...")
+            start_all = perf_counter()
             vector_store = FAISS.from_texts(all_texts, EMBEDDINGS, metadatas=metadatas)
             vector_store.save_local(index_path)
             save_bm25_corpus(all_texts, metadatas)
-            print("Document ingestion and indexing complete.")
+            total_elapsed = (perf_counter() - start_all)
+            print(f"Document ingestion and indexing complete. Elapsed: {total_elapsed:.2f}s")
         except Exception as e:
             print(f"Error saving FAISS index: {e}")
     else:
@@ -135,7 +170,14 @@ def add_new_document(file_path, index_path="faiss_index"):
     try:
         content_blocks = extract_content_with_table_handling(file_path)
         new_chunks = chunk_content_blocks(content_blocks)
-        vector_store = FAISS.load_local(index_path, EMBEDDINGS)
+        if not new_chunks:
+            print(f"Skipping {file_path}: no extractable text found.")
+            return
+        vector_store = FAISS.load_local(
+            index_path,
+            EMBEDDINGS,
+            allow_dangerous_deserialization=True,
+        )
         vector_store.add_texts(new_chunks, metadatas=[{"source": file_path} for _ in new_chunks])
         vector_store.save_local(index_path)
         for chunk in new_chunks:

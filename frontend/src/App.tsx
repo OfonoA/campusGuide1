@@ -18,6 +18,8 @@ const AdminInboxPage = lazy(() => import('./pages/admin/AdminInboxPage'))
 const AdminChatPage = lazy(() => import('./pages/admin/AdminChatPage'))
 const AdminUsersPage = lazy(() => import('./pages/admin/AdminUsersPage'))
 const AdminDocumentsPage = lazy(() => import('./pages/admin/AdminDocumentsPage'))
+const AdminAnalyticsPage = lazy(() => import('./pages/admin/AdminAnalyticsPage'))
+const AdminPerformancePage = lazy(() => import('./pages/admin/AdminPerformancePage'))
 
 const RouteFallback = () => (
   <div className="min-h-screen flex items-center justify-center">
@@ -55,6 +57,8 @@ function App() {
               <Route path="admin/chat" element={<RoleRoute role="admin"><AdminChatPage /></RoleRoute>} />
               <Route path="admin/users" element={<RoleRoute role="admin"><AdminUsersPage /></RoleRoute>} />
               <Route path="admin/documents" element={<RoleRoute role="admin"><AdminDocumentsPage /></RoleRoute>} />
+              <Route path="admin/analytics" element={<RoleRoute role="admin"><AdminAnalyticsPage /></RoleRoute>} />
+              <Route path="admin/performance" element={<RoleRoute role="admin"><AdminPerformancePage /></RoleRoute>} />
             </Route>
             
             {/* Fallback - redirect to login */}

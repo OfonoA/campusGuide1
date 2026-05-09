@@ -40,15 +40,15 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
   const getStatusColor = (status: Ticket['status']) => {
     switch (status) {
       case 'open':
-        return 'bg-blue-100 text-blue-800'
+        return 'bg-[#f3efe2] text-[#6f5311]'
       case 'assigned':
-        return 'bg-indigo-100 text-indigo-800'
+        return 'bg-[#e8f1ec] text-[#0A4B33]'
       case 'in_progress':
-        return 'bg-yellow-100 text-yellow-800'
+        return 'bg-[#fff1c7] text-[#8c6500]'
       case 'resolved':
-        return 'bg-green-100 text-green-800'
+        return 'bg-[#e7f5ec] text-[#1E6B3B]'
       default:
-        return 'bg-slate-100 text-slate-800'
+        return 'bg-slate-100 text-slate-700'
     }
   }
 

@@ -38,6 +38,7 @@ SECRET_KEY = _get_secret_key()
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "30"))
+LAST_ACTIVE_WRITE_INTERVAL = timedelta(minutes=5)
 
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
@@ -71,10 +72,21 @@ def get_current_user(db: Session = Depends(get_db), authorization: str | None = 
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
 
+    _touch_user_last_active(db, user)
     return user
 
 
 current_user_dependency = Annotated[User, Depends(get_current_user)]
+
+
+def _touch_user_last_active(db: Session, user: User, at: datetime | None = None) -> None:
+    now = at or datetime.utcnow()
+    if user.last_active_at and (now - user.last_active_at) < LAST_ACTIVE_WRITE_INTERVAL:
+        return
+    user.last_active_at = now
+    db.add(user)
+    db.commit()
+    db.refresh(user)
 
 
 def _hash_refresh_token(token: str) -> str:
@@ -85,12 +97,16 @@ def create_refresh_token(db: Session, user: User) -> str:
     raw_token = secrets.token_urlsafe(64)
     hashed = _hash_refresh_token(raw_token)
     expire = datetime.utcnow() + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+    now = datetime.utcnow()
     refresh_record = RefreshToken(
         token_id=str(uuid.uuid4()),
         user_id=user.id,
         hashed_token=hashed,
         expires_at=expire,
+        last_used_at=now,
     )
+    user.last_active_at = now
+    db.add(user)
     db.add(refresh_record)
     db.commit()
     db.refresh(refresh_record)
@@ -109,7 +125,10 @@ def consume_refresh_token(db: Session, refresh_token: str) -> RefreshToken | Non
         .first()
     )
     if token_record:
-        token_record.last_used_at = datetime.utcnow()
+        now = datetime.utcnow()
+        token_record.last_used_at = now
+        token_record.user.last_active_at = now
+        db.add(token_record.user)
         db.add(token_record)
         db.commit()
         db.refresh(token_record)

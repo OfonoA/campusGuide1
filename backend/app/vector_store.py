@@ -23,13 +23,39 @@ def _is_openai_provider_error(exc: Exception) -> bool:
     return isinstance(exc, (APIError, APIStatusError, AuthenticationError, RateLimitError))
 
 
+def _int_env(name: str, default: int) -> int:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    try:
+        return int(value)
+    except ValueError:
+        logger.warning("Invalid integer for %s=%r; using default %d", name, value, default)
+        return default
+
+
+def _float_env(name: str, default: float) -> float:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    try:
+        return float(value)
+    except ValueError:
+        logger.warning("Invalid float for %s=%r; using default %.1f", name, value, default)
+        return default
+
+
 class VectorStoreManager:
     _instance = None
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
             cls._instance = super(VectorStoreManager, cls).__new__(cls)
-            cls._instance.embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
+            cls._instance.embeddings = OpenAIEmbeddings(
+                openai_api_key=OPENAI_API_KEY,
+                request_timeout=_float_env("OPENAI_EMBEDDING_TIMEOUT_SECONDS", 20.0),
+                max_retries=_int_env("OPENAI_EMBEDDING_MAX_RETRIES", 1),
+            )
             cls._instance.vector_store = None
             cls._instance.index_path = DEFAULT_INDEX_PATH
             cls._instance._id_map_wrapped = False
@@ -116,7 +142,12 @@ class VectorStoreManager:
             logger.info("Added text to FAISS index with embedding_id=%s", embedding_id)
             return embedding_id
         except Exception as exc:  # pragma: no cover - operational
-            logger.error("Failed to add text to vector store: %s", exc)
+            logger.exception(
+                "Failed to add text to vector store (text_len=%d, metadata=%s): %s",
+                len(text or ""),
+                metadata,
+                exc,
+            )
             return ""
 
     def search(self, query: str, k: int = 5):

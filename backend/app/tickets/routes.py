@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Request
+import logging
+from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from database.database import get_db
@@ -9,6 +11,7 @@ from app.utils import build_stored_message_content, strip_attachment_ingestion_c
 from app.attachments import build_attachment_note, process_message_uploads
 
 router = APIRouter(prefix="/api/tickets", tags=["Tickets"])
+logger = logging.getLogger("must.tickets")
 
 
 def _ticket_alias(ticket: Ticket, role: str) -> str:
@@ -63,6 +66,12 @@ def _build_ticket_message_content(content: str, files: list[UploadFile]) -> tupl
 
     base_content = content.strip() or "Please review the attached files."
     visible_content = f"{base_content}{build_attachment_note(file_names)}".strip()
+    logger.info(
+        "ticket_message_content_built attachments=%d extracted_sections=%d visible_len=%d",
+        len(processed),
+        len(extracted_sections),
+        len(visible_content),
+    )
     if not extracted_sections:
         return visible_content, [
             {
@@ -86,6 +95,14 @@ def _build_ticket_message_content(content: str, files: list[UploadFile]) -> tupl
         }
         for item in processed
     ]
+
+
+def _normalize_uploaded_files(files: UploadFile | list[UploadFile] | None) -> list[UploadFile]:
+    if files is None:
+        return []
+    if isinstance(files, list):
+        return files
+    return [files]
 
 
 @router.get("/{ticket_id}/messages", response_model=list[TicketMessageOut])
@@ -199,11 +216,11 @@ def get_ticket_detail(
 
 
 @router.post("/{ticket_id}/messages", response_model=TicketMessageOut)
-def create_ticket_message(
+async def create_ticket_message(
     ticket_id: int,
-    payload: TicketMessageCreate | None = None,
+    request: Request,
     content: str | None = Form(None),
-    files: list[UploadFile] | None = File(None),
+    files: UploadFile | list[UploadFile] | None = File(None),
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
@@ -236,13 +253,35 @@ def create_ticket_message(
         )
         auto_started = True
 
-    usable_files = [file for file in (files or []) if file.filename]
+    payload_content = ""
+    if content is None and "application/json" in request.headers.get("content-type", ""):
+        try:
+            body = await request.json()
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail="Invalid JSON body") from exc
+        if not isinstance(body, dict):
+            raise HTTPException(status_code=422, detail="Invalid request body")
+        try:
+            payload_content = TicketMessageCreate(**body).content
+        except ValidationError as exc:
+            raise HTTPException(status_code=422, detail=exc.errors()) from exc
+
+    usable_files = [file for file in _normalize_uploaded_files(files) if file.filename]
     message_content, attachment_records = _build_ticket_message_content(
-        content if content is not None else payload.content if payload else "",
+        content if content is not None else payload_content,
         usable_files,
     )
     if not message_content:
         raise HTTPException(status_code=400, detail="Message content is required")
+
+    logger.info(
+        "ticket_message_create_start ticket_id=%d sender_role=%s files=%d message_len=%d hidden_payload=%s",
+        ticket.id,
+        sender_role,
+        len(attachment_records),
+        len(message_content),
+        str("[Attachment ingestion content]" in message_content).lower(),
+    )
 
     msg = TicketMessage(
         ticket_id=ticket.id,
@@ -270,6 +309,15 @@ def create_ticket_message(
     if attachment_records:
         db.commit()
         db.refresh(msg)
+
+    logger.info(
+        "ticket_message_create_done ticket_id=%d message_id=%d attachments=%d stored_attachment_chars=%d visible_len=%d",
+        ticket.id,
+        msg.id,
+        len(msg.attachments),
+        sum(len((attachment.extracted_text or "").strip()) for attachment in msg.attachments),
+        len(strip_attachment_ingestion_content(msg.content)),
+    )
 
     if auto_started:
         db.refresh(ticket)

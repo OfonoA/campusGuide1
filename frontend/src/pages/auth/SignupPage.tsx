@@ -58,9 +58,9 @@ const SignupPage: React.FC = () => {
       title="Create Account"
       subtitle="Set up your institutional support access and start using ArASSIST."
       footerPrompt={(
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-[#333333]/70">
           Already have an account?{' '}
-          <Link to="/login" className="font-semibold text-primary-700 hover:text-primary-800">
+          <Link to="/login" className="font-semibold text-[#0A4B33] transition hover:text-[#D4AF37]">
             Sign In
           </Link>
         </p>
@@ -75,18 +75,18 @@ const SignupPage: React.FC = () => {
         )}
 
         <div className="space-y-2">
-          <label htmlFor="username" className="block text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+          <label htmlFor="username" className="block text-[11px] font-semibold uppercase tracking-[0.2em] text-[#0A4B33]/72">
             Username
           </label>
           <div className="relative">
-            <User className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <User className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#0A4B33]/60" />
             <input
               id="username"
               name="username"
               type="text"
               value={formData.username}
               onChange={handleChange}
-              className="w-full rounded-2xl border border-slate-200 bg-white py-3.5 pl-11 pr-4 text-base text-slate-900 outline-none transition focus:border-primary-500 focus:ring-4 focus:ring-primary-100"
+              className="w-full rounded-[8px] border border-[#D4AF37]/25 bg-[#F8F8F8] py-3.5 pl-11 pr-4 text-base text-[#333333] outline-none transition focus:border-[#D4AF37] focus:ring-4 focus:ring-[#D4AF37]/15"
               placeholder="e.g. sarah.namara"
               disabled={isLoading}
             />
@@ -94,53 +94,53 @@ const SignupPage: React.FC = () => {
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="password" className="block text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+          <label htmlFor="password" className="block text-[11px] font-semibold uppercase tracking-[0.2em] text-[#0A4B33]/72">
             Password
           </label>
           <div className="relative">
-            <Lock className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Lock className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#0A4B33]/60" />
             <input
               id="password"
               name="password"
               type={showPassword ? 'text' : 'password'}
               value={formData.password}
               onChange={handleChange}
-              className="w-full rounded-2xl border border-slate-200 bg-white py-3.5 pl-11 pr-14 text-base text-slate-900 outline-none transition focus:border-primary-500 focus:ring-4 focus:ring-primary-100"
+              className="w-full rounded-[8px] border border-[#D4AF37]/25 bg-[#F8F8F8] py-3.5 pl-11 pr-14 text-base text-[#333333] outline-none transition focus:border-[#D4AF37] focus:ring-4 focus:ring-[#D4AF37]/15"
               placeholder="Create a secure password"
               disabled={isLoading}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-2 text-[#0A4B33]/55 transition hover:bg-[#FEF9E6] hover:text-[#0A4B33]"
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
-          <p className="text-xs text-slate-500">Minimum 6 characters.</p>
+          <p className="text-xs text-[#333333]/65">Minimum 6 characters.</p>
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="confirmPassword" className="block text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+          <label htmlFor="confirmPassword" className="block text-[11px] font-semibold uppercase tracking-[0.2em] text-[#0A4B33]/72">
             Confirm Password
           </label>
           <div className="relative">
-            <ShieldCheck className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <ShieldCheck className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#0A4B33]/60" />
             <input
               id="confirmPassword"
               name="confirmPassword"
               type={showConfirmPassword ? 'text' : 'password'}
               value={formData.confirmPassword}
               onChange={handleChange}
-              className="w-full rounded-2xl border border-slate-200 bg-white py-3.5 pl-11 pr-14 text-base text-slate-900 outline-none transition focus:border-primary-500 focus:ring-4 focus:ring-primary-100"
+              className="w-full rounded-[8px] border border-[#D4AF37]/25 bg-[#F8F8F8] py-3.5 pl-11 pr-14 text-base text-[#333333] outline-none transition focus:border-[#D4AF37] focus:ring-4 focus:ring-[#D4AF37]/15"
               placeholder="Re-enter your password"
               disabled={isLoading}
             />
             <button
               type="button"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-2 text-[#0A4B33]/55 transition hover:bg-[#FEF9E6] hover:text-[#0A4B33]"
               aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
             >
               {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -151,7 +151,7 @@ const SignupPage: React.FC = () => {
         <button
           type="submit"
           disabled={isLoading}
-          className="flex w-full items-center justify-center gap-2.5 rounded-[1.25rem] bg-primary-700 px-5 py-3.5 text-lg font-semibold text-white shadow-[0_16px_28px_rgba(51,51,153,0.22)] transition hover:bg-primary-800 disabled:cursor-not-allowed disabled:opacity-60"
+          className="flex w-full items-center justify-center gap-2.5 rounded-[8px] border border-transparent bg-[#0A4B33] px-5 py-3.5 text-lg font-semibold text-white shadow-[0_2px_6px_rgba(0,0,0,0.05)] transition hover:border-[#D4AF37] hover:bg-[#0D5C45] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isLoading ? 'Creating Account...' : 'Create Account'}
           {!isLoading && <ArrowRight className="h-5 w-5" />}
