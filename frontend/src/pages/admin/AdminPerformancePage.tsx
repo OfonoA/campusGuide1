@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Download, FileText, Loader2, X } from 'lucide-react'
+import { BarChart3, CalendarRange, Download, FileText, Loader2, Users, X } from 'lucide-react'
 import AdminShell from '../../components/admin/AdminShell'
 import FeedbackToastStack from '../../components/feedback/FeedbackToastStack'
 import { useFeedbackToasts } from '../../hooks/useFeedbackToasts'
@@ -41,8 +41,8 @@ const formatDate = (value: string | null | undefined) => {
 const statusBadgeClass = (status: string) => {
   const normalized = status.toLowerCase()
   if (normalized === 'assigned') return 'bg-[#F5EDD6] text-[#B8860B]'
-  if (normalized === 'in_progress') return 'bg-[#E0F0EA] text-[#0D5C45]'
-  if (normalized === 'resolved') return 'bg-[#E0F0EA] text-[#0D5C45]'
+  if (normalized === 'in_progress') return 'bg-[#E0F0EA] text-[#1E6B3B]'
+  if (normalized === 'resolved') return 'bg-[#E0F0EA] text-[#1E6B3B]'
   return 'bg-[#F0F2F5] text-[#666666]'
 }
 
@@ -66,7 +66,7 @@ const statCardItems = (overview: AdminPerformanceOverviewResponse | null) => [
   {
     label: 'Response Target Compliance',
     value: formatPercent(overview?.stats.sla_compliance_percent),
-    tone: 'Tickets resolved within SLA targets',
+    tone: 'Tickets resolved within target time',
   },
 ]
 
@@ -280,7 +280,8 @@ const AdminPerformancePage: React.FC = () => {
   return (
     <AdminShell
       title="Staff Performance"
-      subtitle="Track ticket handling speed, workload, and SLA performance across officers"
+      subtitle="Track ticket handling speed, workload, and response target performance across officers"
+      titleIcon={<BarChart3 />}
       workspaceLabel="Administration"
       fullWidth
       headerAction={
@@ -288,7 +289,7 @@ const AdminPerformancePage: React.FC = () => {
           <button
             type="button"
             onClick={() => handleExport('CSV')}
-            className="inline-flex items-center gap-2 rounded-[8px] border border-[#0D5C45]/15 bg-white px-3.5 py-2 text-sm font-semibold text-[#0D5C45] shadow-[0_2px_6px_rgba(0,0,0,0.05)] transition hover:bg-[#F0F2F5]"
+            className="inline-flex items-center gap-2 rounded-[8px] border border-[#1E6B3B]/15 bg-white px-3.5 py-2 text-sm font-semibold text-[#1E6B3B] shadow-[0_2px_6px_rgba(0,0,0,0.05)] transition hover:bg-[#F0F2F5]"
           >
             <Download className="h-4 w-4" />
             Export CSV
@@ -305,11 +306,18 @@ const AdminPerformancePage: React.FC = () => {
       }
     >
       <div className="space-y-6">
+        <h2 className="section-heading">
+          Performance Snapshot
+          <span className="section-subtitle">Review response speed, workload balance, and target pressure at a glance.</span>
+        </h2>
         <section className={`${cardClass} p-4 sm:p-5`}>
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#999999]">Date Range</p>
-              <p className="mt-2 text-sm text-[#333333]">Use the range filter to compare workload, response times, and resolution performance.</p>
+              <h2 className="card-title">
+                <CalendarRange className="h-4 w-4" />
+                Date Range
+              </h2>
+              <p className="section-subtitle">Use the range filter to compare workload, response times, and resolution performance.</p>
             </div>
             <div className="flex flex-wrap gap-2">
               {(['7', '30', '90', 'custom'] as RangeKey[]).map((item) => (
@@ -319,8 +327,8 @@ const AdminPerformancePage: React.FC = () => {
                   onClick={() => handleRangeChange(item)}
                   className={`rounded-[8px] px-4 py-2 text-sm font-semibold transition ${
                     range === item
-                      ? 'bg-[#0D5C45] text-white'
-                      : 'border border-[#0D5C45]/15 bg-white text-[#0D5C45] hover:bg-[#F0F2F5]'
+                      ? 'bg-[#1E6B3B] text-white'
+                      : 'border border-[#1E6B3B]/15 bg-white text-[#1E6B3B] hover:bg-[#F0F2F5]'
                   }`}
                 >
                   {rangeLabels[item]}
@@ -336,7 +344,7 @@ const AdminPerformancePage: React.FC = () => {
                   type="date"
                   value={startDate}
                   onChange={(event) => setStartDate(event.target.value)}
-                  className="rounded-[8px] border border-[#0D5C45]/15 bg-white px-3 py-2 text-sm outline-none ring-0"
+                  className="rounded-[8px] border border-[#1E6B3B]/15 bg-white px-3 py-2 text-sm outline-none ring-0"
                 />
               </label>
               <label className="flex flex-1 flex-col gap-2 text-sm font-medium text-[#333333]">
@@ -345,7 +353,7 @@ const AdminPerformancePage: React.FC = () => {
                   type="date"
                   value={endDate}
                   onChange={(event) => setEndDate(event.target.value)}
-                  className="rounded-[8px] border border-[#0D5C45]/15 bg-white px-3 py-2 text-sm outline-none ring-0"
+                  className="rounded-[8px] border border-[#1E6B3B]/15 bg-white px-3 py-2 text-sm outline-none ring-0"
                 />
               </label>
             </div>
@@ -354,7 +362,7 @@ const AdminPerformancePage: React.FC = () => {
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {statCardItems(overview).map((item) => (
-            <article key={item.label} className={`${cardClass} border-t-4 border-t-[#0D5C45] p-5`}>
+            <article key={item.label} className={`${cardClass} border-t-4 border-t-[#1E6B3B] p-5`}>
               <p className="text-sm font-medium text-[#999999]">{item.label}</p>
               <p className="mt-3 text-[1.8rem] font-semibold leading-none text-[#B8860B]">{item.value}</p>
               <p className="mt-3 text-sm text-[#666666]">{item.tone}</p>
@@ -364,8 +372,11 @@ const AdminPerformancePage: React.FC = () => {
 
         <section className={`${cardClass} overflow-hidden`}>
           <div className="border-b border-[#F0F2F5] px-5 py-4">
-            <h2 className="text-lg font-semibold text-[#0D5C45]">Officer Workload Overview</h2>
-            <p className="mt-1 text-sm text-[#666666]">Tap a workload number to open that officer's ticket detail in a pop-up.</p>
+            <h2 className="card-title">
+              <Users className="h-4 w-4" />
+              Officer Workload Overview
+            </h2>
+            <p className="section-subtitle">Tap a workload number to open that officer's ticket detail in a pop-up.</p>
           </div>
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">
@@ -393,7 +404,7 @@ const AdminPerformancePage: React.FC = () => {
                     <button type="button" onClick={() => handleSort('avg_resolution_time_days')}>Avg Resolution</button>
                   </th>
                   <th className="px-5 py-3 font-semibold">
-                    <button type="button" onClick={() => handleSort('sla_breaches')}>SLA Breaches</button>
+                    <button type="button" onClick={() => handleSort('sla_breaches')}>Target Breaches</button>
                   </th>
                 </tr>
               </thead>
@@ -402,7 +413,7 @@ const AdminPerformancePage: React.FC = () => {
                   <tr>
                     <td colSpan={8} className="px-5 py-12 text-center text-[#666666]">
                       <div className="inline-flex items-center gap-3">
-                        <Loader2 className="h-4 w-4 animate-spin text-[#0D5C45]" />
+                        <Loader2 className="h-4 w-4 animate-spin text-[#1E6B3B]" />
                         Loading performance data...
                       </div>
                     </td>
@@ -423,22 +434,22 @@ const AdminPerformancePage: React.FC = () => {
                     >
                       <td className="px-5 py-4 font-semibold text-[#333333]">{row.staff_username}</td>
                       <td className="px-5 py-4">
-                        <button type="button" onClick={() => openDetail(row.staff_id)} className="font-semibold text-[#0D5C45] underline-offset-2 hover:underline">
+                        <button type="button" onClick={() => openDetail(row.staff_id)} className="font-semibold text-[#1E6B3B] underline-offset-2 hover:underline">
                           {row.assigned}
                         </button>
                       </td>
                       <td className="px-5 py-4">
-                        <button type="button" onClick={() => openDetail(row.staff_id)} className="font-semibold text-[#0D5C45] underline-offset-2 hover:underline">
+                        <button type="button" onClick={() => openDetail(row.staff_id)} className="font-semibold text-[#1E6B3B] underline-offset-2 hover:underline">
                           {row.not_started}
                         </button>
                       </td>
                       <td className="px-5 py-4">
-                        <button type="button" onClick={() => openDetail(row.staff_id)} className="font-semibold text-[#0D5C45] underline-offset-2 hover:underline">
+                        <button type="button" onClick={() => openDetail(row.staff_id)} className="font-semibold text-[#1E6B3B] underline-offset-2 hover:underline">
                           {row.in_progress}
                         </button>
                       </td>
                       <td className="px-5 py-4">
-                        <button type="button" onClick={() => openDetail(row.staff_id)} className="font-semibold text-[#0D5C45] underline-offset-2 hover:underline">
+                        <button type="button" onClick={() => openDetail(row.staff_id)} className="font-semibold text-[#1E6B3B] underline-offset-2 hover:underline">
                           {row.resolved_30d}
                         </button>
                       </td>
@@ -469,10 +480,10 @@ const AdminPerformancePage: React.FC = () => {
           <section className={`${cardClass} relative z-10 max-h-[85vh] w-full max-w-5xl overflow-hidden border-t-4 border-t-[#B8860B]`}>
             <div className="flex items-start justify-between gap-4 border-b border-[#F0F2F5] px-5 py-4">
               <div>
-                <h2 className="text-lg font-semibold text-[#0D5C45]">
+                <h2 className="card-title border-b-0 pb-0">
                   {selectedStaff ? `${selectedStaff.staff_username} Ticket Detail` : 'Ticket Detail'}
                 </h2>
-                <p className="mt-1 text-sm text-[#666666]">Ticket-level breakdown for the selected officer.</p>
+                <p className="section-subtitle">Ticket-level breakdown for the selected officer.</p>
               </div>
               <button
                 type="button"
@@ -499,7 +510,7 @@ const AdminPerformancePage: React.FC = () => {
                     <tr>
                       <td colSpan={6} className="px-5 py-12 text-center text-[#666666]">
                         <div className="inline-flex items-center gap-3">
-                          <Loader2 className="h-4 w-4 animate-spin text-[#0D5C45]" />
+                          <Loader2 className="h-4 w-4 animate-spin text-[#1E6B3B]" />
                           Loading ticket detail...
                         </div>
                       </td>

@@ -33,3 +33,4 @@ playwright>=1.40.0
 rank-bm25
 sentence-transformers
 reportlab
+manim>=0.20,<0.21

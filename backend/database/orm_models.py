@@ -16,6 +16,10 @@ class User(Base):
     role = Column(Enum("student", "ar_staff", "admin"), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     last_active_at = Column(DateTime(timezone=True), nullable=True)
+    assignment_areas = Column(Text, nullable=True)
+    max_concurrent_load = Column(Integer, nullable=True)
+    is_available = Column(Boolean, nullable=False, default=True)
+    priority_weight = Column(Float, nullable=False, default=1.0)
     refresh_tokens = relationship("RefreshToken", back_populates="user")
 
 class Conversation(Base):
@@ -64,6 +68,9 @@ class Ticket(Base):
     recommendation_score = Column(Float, nullable=True)
     recommendation_reason = Column(Text, nullable=True)
     recommendation_created_at = Column(DateTime(timezone=True), nullable=True)
+    assignment_area = Column(String(100), nullable=True)
+    assignment_area_confidence = Column(Float, nullable=True)
+    assignment_area_reason = Column(Text, nullable=True)
     auto_assigned = Column(Boolean, nullable=False, default=False)
     assignment_reviewed = Column(Boolean, nullable=False, default=False)
     status = Column(Enum("open", "assigned", "in_progress", "resolved", "closed"), default="open")

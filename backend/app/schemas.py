@@ -116,6 +116,9 @@ class AdminTicket(BaseModel):
     recommendation_score: Optional[float] = None
     recommendation_reason: Optional[str] = None
     recommendation_created_at: Optional[datetime] = None
+    assignment_area: Optional[str] = None
+    assignment_area_confidence: Optional[float] = None
+    assignment_area_reason: Optional[str] = None
     auto_assigned: bool = False
     assignment_reviewed: bool = False
     ar_assigned_id: Optional[int]
@@ -228,6 +231,10 @@ class AdminUserItem(BaseModel):
     role: str
     created_at: datetime
     last_active_at: Optional[datetime] = None
+    assignment_areas: List[str] = []
+    max_concurrent_load: Optional[int] = None
+    is_available: bool = True
+    priority_weight: float = 1.0
 
     class Config:
         from_attributes = True
@@ -235,6 +242,10 @@ class AdminUserItem(BaseModel):
 
 class RoleUpdateRequest(BaseModel):
     role: str
+    assignment_areas: Optional[List[str]] = None
+    max_concurrent_load: Optional[int] = None
+    is_available: bool = True
+    priority_weight: float = 1.0
 
 
 class AdminTicketModerationRequest(BaseModel):
@@ -253,6 +264,17 @@ class AdminUserCreateRequest(BaseModel):
     username: str
     password: str
     role: str
+    assignment_areas: Optional[List[str]] = None
+    max_concurrent_load: Optional[int] = None
+    is_available: bool = True
+    priority_weight: float = 1.0
+
+
+class AdminUserAssignmentProfileUpdateRequest(BaseModel):
+    assignment_areas: List[str]
+    max_concurrent_load: Optional[int] = None
+    is_available: bool = True
+    priority_weight: float = 1.0
 
 
 class AdminUserDeleteRequest(BaseModel):

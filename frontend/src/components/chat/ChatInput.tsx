@@ -100,7 +100,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
               <span className="max-w-[180px] truncate">{file.name}</span>
               <button
                 type="button"
-                className="rounded-full text-[#0A4B33]/60 transition hover:text-[#0A4B33]"
+                className="rounded-full text-[#1E6B3B]/60 transition hover:text-[#1E6B3B]"
                 onClick={() => setSelectedFiles((prev) => prev.filter((_, itemIndex) => itemIndex !== index))}
               >
                 <X className="h-3.5 w-3.5" />
@@ -133,7 +133,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
 
         <button
           type="button"
-          className="mb-0.5 hidden rounded-lg p-2 text-[#0A4B33] transition hover:bg-[#FEF9E6] hover:text-[#D4AF37] sm:inline-flex"
+          className="mb-0.5 hidden rounded-lg p-2 text-[#1E6B3B] transition hover:bg-[#FEF9E6] hover:text-[#D4AF37] sm:inline-flex"
           title="Attach file"
           disabled={disabled}
           onClick={() => fileInputRef.current?.click()}
@@ -144,7 +144,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
         <button
           type="submit"
           disabled={(!message.trim() && selectedFiles.length === 0) || disabled}
-          className="mb-0.5 inline-flex items-center gap-1.5 rounded-[8px] bg-[#0A4B33] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-white shadow-[0_2px_6px_rgba(0,0,0,0.05)] transition hover:border hover:border-[#D4AF37] hover:bg-[#0A4B33] disabled:cursor-not-allowed disabled:opacity-50 sm:px-5"
+          className="mb-0.5 inline-flex items-center gap-1.5 rounded-[8px] bg-[#1E6B3B] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-white shadow-[0_2px_6px_rgba(0,0,0,0.05)] transition hover:border hover:border-[#D4AF37] hover:bg-[#1E6B3B] disabled:cursor-not-allowed disabled:opacity-50 sm:px-5"
           title="Send message"
         >
           <span>Send</span>

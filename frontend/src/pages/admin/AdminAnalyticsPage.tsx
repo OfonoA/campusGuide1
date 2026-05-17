@@ -1,6 +1,8 @@
 import React, { useEffect, useId, useMemo, useState } from 'react'
 import {
   AlertTriangle,
+  BarChart3,
+  CalendarRange,
   ChevronDown,
   ChevronUp,
   Download,
@@ -12,7 +14,7 @@ import {
   TrendingUp,
 } from 'lucide-react'
 import AdminShell from '../../components/admin/AdminShell'
-import { adminAPI, AdminConversationAnalyticsResponse } from '../../services/api'
+import { adminAPI, AdminAnalyticsTrendPoint, AdminConversationAnalyticsResponse } from '../../services/api'
 
 type RangeKey = '7' | '30' | '90' | 'custom'
 type TrendView = 'daily' | 'weekly' | 'monthly'
@@ -546,6 +548,13 @@ const rangeLabels: Record<RangeKey, string> = {
 
 const formatNumber = (value: number) => new Intl.NumberFormat('en-US').format(value)
 
+const normalizeTrendPoints = (points: AdminAnalyticsTrendPoint[] | TrendPoint[] | undefined): TrendPoint[] =>
+  Array.isArray(points)
+    ? points
+        .filter((point) => point && typeof point.label === 'string' && typeof point.value === 'number')
+        .map((point) => ({ label: point.label, value: point.value }))
+    : []
+
 const TrendLineChart: React.FC<{ points: TrendPoint[]; toneLabel: string }> = ({ points, toneLabel }) => {
   const chartId = useId()
   const width = 760
@@ -582,14 +591,14 @@ const TrendLineChart: React.FC<{ points: TrendPoint[]; toneLabel: string }> = ({
         <svg viewBox={`0 0 ${width} ${height}`} className="h-[260px] min-w-[640px] w-full">
           <defs>
             <linearGradient id={`${chartId}-fill`} x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stopColor="#0D5C45" stopOpacity="0.22" />
-              <stop offset="100%" stopColor="#0D5C45" stopOpacity="0.02" />
+              <stop offset="0%" stopColor="#1E6B3B" stopOpacity="0.22" />
+              <stop offset="100%" stopColor="#1E6B3B" stopOpacity="0.02" />
             </linearGradient>
           </defs>
           <line x1={left} y1={height - bottom} x2={width - left} y2={height - bottom} stroke="#D7DCE2" />
           <line x1={left} y1={top} x2={left} y2={height - bottom} stroke="#D7DCE2" />
           <path d={areaPath} fill={`url(#${chartId}-fill)`} />
-          <path d={path} fill="none" stroke="#0D5C45" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+          <path d={path} fill="none" stroke="#1E6B3B" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
           {points.map((point, index) => {
             const x = left + index * step
             const y = top + usableHeight - ((point.value - minValue) / spread) * usableHeight
@@ -620,20 +629,20 @@ const DistributionDonut: React.FC<{ helpful: number; notHelpful: number }> = ({ 
       <div
         className="mx-auto h-40 w-40 rounded-full"
         style={{
-          background: `conic-gradient(#0D5C45 0 ${helpfulPercent}%, #B8860B ${helpfulPercent}% 100%)`,
+          background: `conic-gradient(#1E6B3B 0 ${helpfulPercent}%, #B8860B ${helpfulPercent}% 100%)`,
         }}
       >
         <div className="m-[18px] flex h-[calc(100%-36px)] w-[calc(100%-36px)] items-center justify-center rounded-full bg-white">
           <div className="text-center">
             <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#999999]">Helpful</p>
-            <p className="mt-1 text-2xl font-semibold text-[#0D5C45]">{helpfulPercent}%</p>
+            <p className="mt-1 text-2xl font-semibold text-[#1E6B3B]">{helpfulPercent}%</p>
           </div>
         </div>
       </div>
 
       <div className="flex-1 space-y-3">
         <div className="rounded-[8px] bg-[#E0F0EA] px-4 py-3">
-          <p className="text-sm font-semibold text-[#0D5C45]">Helpful: {formatNumber(helpful)} ({helpfulPercent}%)</p>
+          <p className="text-sm font-semibold text-[#1E6B3B]">Helpful: {formatNumber(helpful)} ({helpfulPercent}%)</p>
         </div>
         <div className="rounded-[8px] bg-[#F5EDD6] px-4 py-3">
           <p className="text-sm font-semibold text-[#B8860B]">
@@ -657,6 +666,8 @@ const AdminAnalyticsPage: React.FC = () => {
   useEffect(() => {
     let isMounted = true
 
+    const fallbackDataset = analyticsData[range]
+
     const mapResponse = (response: AdminConversationAnalyticsResponse): AnalyticsDataset => ({
       overview: {
         totalQuestions: response.overview.total_questions,
@@ -669,12 +680,22 @@ const AdminAnalyticsPage: React.FC = () => {
         kbCoverage: response.overview.kb_coverage,
       },
       trends: {
-        daily: response.trends.daily,
-        weekly: response.trends.weekly,
-        monthly: response.trends.monthly,
+        daily: normalizeTrendPoints(response.trends?.daily).length > 0
+          ? normalizeTrendPoints(response.trends?.daily)
+          : fallbackDataset.trends.daily,
+        weekly: normalizeTrendPoints(response.trends?.weekly).length > 0
+          ? normalizeTrendPoints(response.trends?.weekly)
+          : fallbackDataset.trends.weekly,
+        monthly: normalizeTrendPoints(response.trends?.monthly).length > 0
+          ? normalizeTrendPoints(response.trends?.monthly)
+          : fallbackDataset.trends.monthly,
       },
-      peakHours: response.peak_hours,
-      peakDays: response.peak_days,
+      peakHours: normalizeTrendPoints(response.peak_hours).length > 0
+        ? normalizeTrendPoints(response.peak_hours)
+        : fallbackDataset.peakHours,
+      peakDays: normalizeTrendPoints(response.peak_days).length > 0
+        ? normalizeTrendPoints(response.peak_days)
+        : fallbackDataset.peakDays,
       topics: response.topics.map((row) => ({
         topic: row.topic,
         volume: row.volume,
@@ -726,7 +747,9 @@ const AdminAnalyticsPage: React.FC = () => {
   }, [customEnd, customStart, range])
 
   const dataset = remoteDataset || analyticsData[range]
-  const trendPoints = dataset.trends[trendView]
+  const trendPoints = dataset.trends[trendView].length > 0
+    ? dataset.trends[trendView]
+    : analyticsData[range].trends[trendView]
   const peakHourMax = Math.max(...dataset.peakHours.map((item) => item.value))
   const peakDayMax = Math.max(...dataset.peakDays.map((item) => item.value))
   const highestVolume = Math.max(...dataset.topics.map((row) => row.volume))
@@ -791,6 +814,7 @@ const AdminAnalyticsPage: React.FC = () => {
     <AdminShell
       title="Conversation Analytics"
       subtitle="Monitor student queries, AI performance, and knowledge gaps"
+      titleIcon={<BarChart3 />}
       workspaceLabel="Administration"
       fullWidth
       headerAction={
@@ -798,7 +822,7 @@ const AdminAnalyticsPage: React.FC = () => {
           <button
             type="button"
             onClick={() => handleExport('csv')}
-            className="inline-flex items-center gap-2 rounded-[8px] border border-[#0D5C45]/15 bg-white px-3.5 py-2 text-sm font-semibold text-[#0D5C45] shadow-[0_2px_6px_rgba(0,0,0,0.05)] transition hover:bg-[#F0F2F5]"
+            className="inline-flex items-center gap-2 rounded-[8px] border border-[#1E6B3B]/15 bg-white px-3.5 py-2 text-sm font-semibold text-[#1E6B3B] shadow-[0_2px_6px_rgba(0,0,0,0.05)] transition hover:bg-[#F0F2F5]"
           >
             <Download className="h-4 w-4" />
             Export Report CSV
@@ -815,11 +839,18 @@ const AdminAnalyticsPage: React.FC = () => {
       }
     >
       <div className="space-y-6">
+        <h2 className="section-heading">
+          Analytics Snapshot
+          <span className="section-subtitle">Compare demand, answer quality, and knowledge coverage across the selected period.</span>
+        </h2>
         <section className={`${cardClass} p-4 sm:p-5`}>
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#999999]">Date Range</p>
-              <p className="mt-2 text-sm text-[#333333]">Switch views to compare recent demand, answer quality, and escalation pressure.</p>
+              <h2 className="card-title">
+                <CalendarRange className="h-4 w-4" />
+                Date Range
+              </h2>
+              <p className="section-subtitle">Switch views to compare recent demand, answer quality, and escalation pressure.</p>
             </div>
             <div className="flex flex-wrap gap-2">
               {(['7', '30', '90', 'custom'] as RangeKey[]).map((item) => (
@@ -829,8 +860,8 @@ const AdminAnalyticsPage: React.FC = () => {
                   onClick={() => handleRangeChange(item)}
                   className={`rounded-[8px] px-4 py-2 text-sm font-semibold transition ${
                     range === item
-                      ? 'bg-[#0D5C45] text-white'
-                      : 'border border-[#0D5C45]/15 bg-white text-[#0D5C45] hover:bg-[#F0F2F5]'
+                      ? 'bg-[#1E6B3B] text-white'
+                      : 'border border-[#1E6B3B]/15 bg-white text-[#1E6B3B] hover:bg-[#F0F2F5]'
                   }`}
                 >
                   {rangeLabels[item]}
@@ -849,7 +880,7 @@ const AdminAnalyticsPage: React.FC = () => {
                     setCustomStart(event.target.value)
                     console.log('Conversation analytics custom start updated', event.target.value)
                   }}
-                  className="rounded-[8px] border border-[#0D5C45]/15 bg-white px-3 py-2 text-sm outline-none ring-0"
+                  className="rounded-[8px] border border-[#1E6B3B]/15 bg-white px-3 py-2 text-sm outline-none ring-0"
                 />
               </label>
               <label className="flex flex-1 flex-col gap-2 text-sm font-medium text-[#333333]">
@@ -861,7 +892,7 @@ const AdminAnalyticsPage: React.FC = () => {
                     setCustomEnd(event.target.value)
                     console.log('Conversation analytics custom end updated', event.target.value)
                   }}
-                  className="rounded-[8px] border border-[#0D5C45]/15 bg-white px-3 py-2 text-sm outline-none ring-0"
+                  className="rounded-[8px] border border-[#1E6B3B]/15 bg-white px-3 py-2 text-sm outline-none ring-0"
                 />
               </label>
             </div>
@@ -870,7 +901,7 @@ const AdminAnalyticsPage: React.FC = () => {
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {stats.map((item) => (
-            <article key={item.label} className={`${cardClass} border-t-4 border-t-[#0D5C45] p-5`}>
+            <article key={item.label} className={`${cardClass} border-t-4 border-t-[#1E6B3B] p-5`}>
               <p className="text-sm font-medium text-[#999999]">{item.label}</p>
               <p className="mt-3 text-[1.9rem] font-semibold leading-none text-[#B8860B]">{item.value}</p>
               <p className="mt-3 text-sm text-[#666666]">{item.tone}</p>
@@ -881,8 +912,11 @@ const AdminAnalyticsPage: React.FC = () => {
         <section className={`${cardClass} p-5`}>
           <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-[#0D5C45]">Query Volume Trends</h2>
-              <p className="mt-1 text-sm text-[#666666]">
+              <h2 className="card-title">
+                <BarChart3 className="h-4 w-4" />
+                Query Volume Trends
+              </h2>
+              <p className="section-subtitle">
                 {isLoading ? 'Refreshing analytics data...' : 'Track daily, weekly, or monthly demand across the selected range.'}
               </p>
             </div>
@@ -897,8 +931,8 @@ const AdminAnalyticsPage: React.FC = () => {
                   }}
                   className={`rounded-[8px] px-4 py-2 text-sm font-semibold capitalize transition ${
                     trendView === item
-                      ? 'bg-[#0D5C45] text-white'
-                      : 'border border-[#0D5C45]/15 bg-white text-[#0D5C45] hover:bg-[#F0F2F5]'
+                      ? 'bg-[#1E6B3B] text-white'
+                      : 'border border-[#1E6B3B]/15 bg-white text-[#1E6B3B] hover:bg-[#F0F2F5]'
                   }`}
                 >
                   {item}
@@ -911,8 +945,8 @@ const AdminAnalyticsPage: React.FC = () => {
 
         <section className="grid gap-4 xl:grid-cols-2">
           <article className={`${cardClass} p-5`}>
-            <h2 className="text-lg font-semibold text-[#0D5C45]">Peak Hours</h2>
-            <p className="mt-1 text-sm text-[#666666]">Busiest chat windows for student queries.</p>
+            <h2 className="card-title">Peak Hours</h2>
+            <p className="section-subtitle">Busiest chat windows for student queries.</p>
             <div className="mt-5 space-y-3">
               {dataset.peakHours.map((item) => {
                 const isPeak = item.value === peakHourMax
@@ -924,7 +958,7 @@ const AdminAnalyticsPage: React.FC = () => {
                         className="h-full rounded-full"
                         style={{
                           width: `${(item.value / peakHourMax) * 100}%`,
-                          backgroundColor: isPeak ? '#B8860B' : '#0D5C45',
+                          backgroundColor: isPeak ? '#B8860B' : '#1E6B3B',
                         }}
                         title={`${item.label}: ${formatNumber(item.value)} queries`}
                       />
@@ -937,8 +971,8 @@ const AdminAnalyticsPage: React.FC = () => {
           </article>
 
           <article className={`${cardClass} p-5`}>
-            <h2 className="text-lg font-semibold text-[#0D5C45]">Peak Days</h2>
-            <p className="mt-1 text-sm text-[#666666]">Day-of-week traffic for the selected period.</p>
+            <h2 className="card-title">Peak Days</h2>
+            <p className="section-subtitle">Day-of-week traffic for the selected period.</p>
             <div className="mt-5 space-y-3">
               {dataset.peakDays.map((item) => {
                 const isPeak = item.value === peakDayMax
@@ -950,7 +984,7 @@ const AdminAnalyticsPage: React.FC = () => {
                         className="h-full rounded-full"
                         style={{
                           width: `${(item.value / peakDayMax) * 100}%`,
-                          backgroundColor: isPeak ? '#B8860B' : '#0D5C45',
+                          backgroundColor: isPeak ? '#B8860B' : '#1E6B3B',
                         }}
                         title={`${item.label}: ${formatNumber(item.value)} queries`}
                       />
@@ -965,8 +999,8 @@ const AdminAnalyticsPage: React.FC = () => {
 
         <section className={`${cardClass} overflow-hidden`}>
           <div className="border-b border-[#F0F2F5] px-5 py-4">
-            <h2 className="text-lg font-semibold text-[#0D5C45]">Top Question Themes</h2>
-            <p className="mt-1 text-sm text-[#666666]">Most common topics, answer rates, and escalation pressure.</p>
+            <h2 className="card-title">Top Question Themes</h2>
+            <p className="section-subtitle">Most common topics, answer rates, and escalation pressure.</p>
           </div>
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">
@@ -986,7 +1020,7 @@ const AdminAnalyticsPage: React.FC = () => {
                     <td className="px-5 py-4">
                       <span
                         className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                          row.volume >= highestVolume * 0.45 ? 'bg-[#E0F0EA] text-[#0D5C45]' : 'bg-[#F0F2F5] text-[#666666]'
+                          row.volume >= highestVolume * 0.45 ? 'bg-[#E0F0EA] text-[#1E6B3B]' : 'bg-[#F0F2F5] text-[#666666]'
                         }`}
                       >
                         {formatNumber(row.volume)}
@@ -1015,8 +1049,8 @@ const AdminAnalyticsPage: React.FC = () => {
             <div className="flex items-start gap-3">
               <AlertTriangle className="mt-0.5 h-5 w-5 text-[#B8860B]" />
               <div>
-                <h2 className="text-lg font-semibold text-[#0D5C45]">Questions Most Likely to Become Tickets</h2>
-                <p className="mt-1 text-sm text-[#666666]">These patterns are the strongest escalation candidates in the current window.</p>
+                <h2 className="card-title border-b-0 pb-0">Questions Most Likely to Become Tickets</h2>
+                <p className="section-subtitle">These patterns are the strongest escalation candidates in the current window.</p>
               </div>
             </div>
             <div className="mt-5 space-y-3">
@@ -1033,8 +1067,8 @@ const AdminAnalyticsPage: React.FC = () => {
 
           <div className="grid gap-4">
             <article className={`${cardClass} p-5`}>
-              <h2 className="text-lg font-semibold text-[#0D5C45]">Feedback Distribution</h2>
-              <p className="mt-1 text-sm text-[#666666]">Student-rated answer quality in the selected range.</p>
+              <h2 className="card-title">Feedback Distribution</h2>
+              <p className="section-subtitle">Student-rated answer quality in the selected range.</p>
               <div className="mt-6">
                 <DistributionDonut
                   helpful={dataset.feedback.helpful}
@@ -1044,8 +1078,8 @@ const AdminAnalyticsPage: React.FC = () => {
             </article>
 
             <article className={`${cardClass} p-5`}>
-              <h2 className="text-lg font-semibold text-[#0D5C45]">Common No-Answer Areas</h2>
-              <p className="mt-1 text-sm text-[#666666]">Topics where the assistant still lacks reliable coverage.</p>
+              <h2 className="card-title">Common No-Answer Areas</h2>
+              <p className="section-subtitle">Topics where the assistant still lacks reliable coverage.</p>
               <div className="mt-5 space-y-3">
                 {dataset.noAnswerAreas.map((item) => (
                   <div key={item.topic} className="flex items-center justify-between gap-4 rounded-[8px] bg-[#F0F2F5] px-4 py-3">
@@ -1061,10 +1095,10 @@ const AdminAnalyticsPage: React.FC = () => {
         <section className={`${cardClass} overflow-hidden`}>
           <div className="border-b border-[#F0F2F5] px-5 py-4">
             <div className="flex items-start gap-3">
-              <Lightbulb className="mt-0.5 h-5 w-5 text-[#0D5C45]" />
+              <Lightbulb className="mt-0.5 h-5 w-5 text-[#1E6B3B]" />
               <div>
-                <h2 className="text-lg font-semibold text-[#0D5C45]">Knowledge Base Gaps</h2>
-                <p className="mt-1 text-sm text-[#666666]">Recurring failed questions mapped to the next document or article to add.</p>
+                <h2 className="card-title border-b-0 pb-0">Knowledge Base Gaps</h2>
+                <p className="section-subtitle">Recurring failed questions mapped to the next document or article to add.</p>
               </div>
             </div>
           </div>
@@ -1083,7 +1117,7 @@ const AdminAnalyticsPage: React.FC = () => {
                     <td className="px-5 py-4 font-semibold text-[#333333]">{row.area}</td>
                     <td className="px-5 py-4 text-[#666666]">{row.failedQuery}</td>
                     <td className="px-5 py-4">
-                      <span className="inline-flex rounded-full bg-[#E0F0EA] px-3 py-1 text-xs font-semibold text-[#0D5C45]">
+                      <span className="inline-flex rounded-full bg-[#E0F0EA] px-3 py-1 text-xs font-semibold text-[#1E6B3B]">
                         {row.suggestedDocument}
                       </span>
                     </td>
@@ -1101,10 +1135,10 @@ const AdminAnalyticsPage: React.FC = () => {
             className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
           >
             <div className="flex items-start gap-3">
-              <MessageSquare className="mt-0.5 h-5 w-5 text-[#0D5C45]" />
+              <MessageSquare className="mt-0.5 h-5 w-5 text-[#1E6B3B]" />
               <div>
-                <h2 className="text-lg font-semibold text-[#0D5C45]">View Recent Unanswered Queries</h2>
-                <p className="mt-1 text-sm text-[#666666]">Examples the assistant could not close confidently without staff support.</p>
+                <h2 className="card-title border-b-0 pb-0">View Recent Unanswered Queries</h2>
+                <p className="section-subtitle">Examples the assistant could not close confidently without staff support.</p>
               </div>
             </div>
             {unansweredOpen ? <ChevronUp className="h-5 w-5 text-[#666666]" /> : <ChevronDown className="h-5 w-5 text-[#666666]" />}
@@ -1119,14 +1153,14 @@ const AdminAnalyticsPage: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => handleUnansweredAction('escalate', item.query)}
-                        className="rounded-[8px] bg-[#0D5C45] px-3 py-2 text-xs font-semibold text-white"
+                        className="rounded-[8px] bg-[#1E6B3B] px-3 py-2 text-xs font-semibold text-white"
                       >
                         Escalate
                       </button>
                       <button
                         type="button"
                         onClick={() => handleUnansweredAction('mark_helpful', item.query)}
-                        className="rounded-[8px] bg-[#E0F0EA] px-3 py-2 text-xs font-semibold text-[#0D5C45]"
+                        className="rounded-[8px] bg-[#E0F0EA] px-3 py-2 text-xs font-semibold text-[#1E6B3B]"
                       >
                         Mark as Helpful
                       </button>
@@ -1147,10 +1181,10 @@ const AdminAnalyticsPage: React.FC = () => {
 
         <section className={`${cardClass} p-5`}>
           <div className="flex items-start gap-3">
-            <HelpCircle className="mt-0.5 h-5 w-5 text-[#0D5C45]" />
+            <HelpCircle className="mt-0.5 h-5 w-5 text-[#1E6B3B]" />
             <div>
-              <h2 className="text-lg font-semibold text-[#0D5C45]">Topics Requiring Human Help</h2>
-              <p className="mt-1 text-sm text-[#666666]">Escalation-heavy issues that still require direct officer handling.</p>
+              <h2 className="card-title border-b-0 pb-0">Topics Requiring Human Help</h2>
+              <p className="section-subtitle">Escalation-heavy issues that still require direct officer handling.</p>
             </div>
           </div>
           <div className="mt-5 grid gap-3 xl:grid-cols-2">
@@ -1165,7 +1199,7 @@ const AdminAnalyticsPage: React.FC = () => {
                   <div className="mt-3 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold"
                     style={{
                       backgroundColor: trendUp ? '#F5EDD6' : '#E0F0EA',
-                      color: trendUp ? '#B8860B' : '#0D5C45',
+                      color: trendUp ? '#B8860B' : '#1E6B3B',
                     }}
                   >
                     {trendUp ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}

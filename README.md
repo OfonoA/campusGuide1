@@ -1,229 +1,191 @@
 # ArASSIST
 
-ArASSIST is a React + FastAPI support platform for MUST (Mbarara University of Science and Technology) that combines:
+ArASSIST is an AI-powered academic support platform for MUST (Mbarara University of Science and Technology). It combines student chat support, knowledge-based answers, ticket escalation for complex cases, AR staff workflows, and admin analytics in one system.
 
-- Student AI chat support (RAG + OpenAI)
-- Automatic escalation to ticketing when answers are not found
-- AR staff workflow for assigned tickets
-- Admin tools for ticket assignment, user management, and document ingestion
+## What It Does
 
-## Architecture
+- Students ask academic support questions through chat.
+- The AI answers routine questions from verified institutional knowledge.
+- Unresolved or complex cases escalate into support tickets.
+- AR staff review, reply to, and resolve assigned cases.
+- Admins manage users, assignments, documents, ingestion, and performance visibility.
 
-- Frontend: React + TypeScript SPA in `frontend/`
-- Backend: FastAPI API in `backend/`
-- Development model: run Vite and FastAPI separately
-- Backend responsibility: API, auth, ticketing, RAG, ingestion, admin workflows
-- Frontend responsibility: all user-facing routes and UI
+## Stack
 
-The backend no longer serves `index.html`, `login.html`, or `signup.html`. All app pages are owned by the React frontend.
+- Frontend: React, TypeScript, Vite, Tailwind CSS, Recharts
+- Backend: FastAPI, SQLAlchemy, MySQL, JWT auth
+- AI and retrieval: OpenAI, FAISS, BM25, LangChain
+- Content pipeline: PDF ingestion, web scraping, scheduled freshness checks
 
-## Current System Overview
-
-### 1. Student Flow
-- Student signs up or logs in.
-- Student chats with ArASSIST.
-- If the system cannot answer confidently, a support ticket is created automatically.
-- Student continues communication through the ticket thread.
-
-### 2. AR Staff Flow
-- AR staff view assigned tickets.
-- AR staff can move tickets through lifecycle:
-  - `assigned -> in_progress -> resolved -> closed`
-- AR staff can resolve tickets with optional resolution details.
-
-### 3. Admin Flow
-- Admin views ticket inbox and assigns open tickets to AR staff.
-- Admin manages users and roles.
-- Admin uploads/deletes policy PDFs used by RAG.
-- Admin can trigger reinforcement ingestion.
-
----
-
-## Tech Stack
-
-### Backend
-- FastAPI
-- SQLAlchemy
-- MySQL (`pymysql`)
-- JWT auth (`python-jose`)
-- Password hashing (`passlib[bcrypt]`)
-- FAISS vector store
-- LangChain + OpenAI embeddings/completions
-
-### Frontend
-- React + TypeScript
-- Vite
-- Axios
-- Tailwind CSS
-- Recharts
-
----
-
-## Project Structure
+## Repo Layout
 
 ```text
-backend/
-  alembic/
-  app/
-    main.py
-    auth.py
-    llm.py
-    vector_store.py
-    admin/routes.py
-    ar/routes.py
-    feedback/routes.py
-    tickets/routes.py
-    reinforcement/routes.py
-  database/
-    database.py
-    orm_models.py
-    init_db.py
-  scripts/
-    ingest_documents.py
-    initial_crawl.py
-  university_documents/
-
-frontend/
-  index.html
-  package.json
-  src/
-    pages/
-    components/
-    contexts/
-    services/api.ts
+frontend/                 React SPA for students, AR staff, and admins
+backend/                  FastAPI app, database models, auth, retrieval, tickets
+backend/app/admin/        Admin routes, analytics, documents, assignment workflows
+backend/app/ar/           AR staff ticket workflows
+backend/app/feedback/     Student feedback and escalation routes
+backend/app/reinforcement/  Resolved-ticket ingestion pipeline
+backend/app/scraper/      Web crawling, extraction, freshness, scheduler
+backend/tests/            Backend API and retrieval tests
 ```
 
----
+## Core Product Flows
+
+### Student
+
+- Sign up or log in
+- Start a chat with ArASSIST
+- Receive an answer or trigger ticket escalation
+- Continue follow-up through the ticket thread when needed
+
+### AR Staff
+
+- View assigned tickets
+- Move tickets through `assigned`, `in_progress`, `resolved`, and `closed`
+- Reply with updates, guidance, and final resolution details
+
+### Admin
+
+- Review ticket inbox and assign cases
+- Manage users and AR staff assignment profiles
+- Upload and delete knowledge-base documents
+- Monitor analytics, staff performance, and ingestion status
 
 ## Environment Variables
 
-Create a `.env` file for the backend in the project root or `backend/`. Frontend variables should live in `frontend/.env` when needed.
-
-Required/used variables:
+Backend values are loaded with `python-dotenv`, so you can place them in a root `.env` or `backend/.env`.
 
 ```env
 # Backend
-OPENAI_API_KEY=your_openai_api_key
 DATABASE_URL=mysql+pymysql://root:password@localhost/campus_guide_ar
-SECRET_KEY=replace_with_secure_random_value
+OPENAI_API_KEY=your_openai_api_key
+OPENAI_CHAT_MODEL=gpt-4o-mini
+OPENAI_REQUEST_TIMEOUT_SECONDS=20
+SECRET_KEY=replace_with_a_secure_random_value
 REFRESH_TOKEN_EXPIRE_DAYS=30
 SQL_ECHO=false
-CORS_ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
+CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
 
-# Frontend (optional override)
+# Frontend
 VITE_API_BASE_URL=http://localhost:8000
 ```
 
 Notes:
-- `SECRET_KEY` is required in production. In local development, the backend currently falls back to a development key if it is unset.
-- `DATABASE_URL` is required at startup.
-- `SQL_ECHO` is optional and defaults to `false`.
-- `CORS_ALLOWED_ORIGINS` is optional; if unset, the backend allows local Vite and local backend origins only.
 
----
+- `DATABASE_URL` is required.
+- `OPENAI_API_KEY` is required for live AI and embedding features.
+- `SECRET_KEY` is required in production. In local development the backend falls back to a development key if unset.
+- Frontend overrides go in [frontend/.env.example](</Users/ofono/Desktop/campg V1.0/frontend/.env.example:1>) format, usually as `frontend/.env`.
 
-## Setup Instructions
+## Local Setup
 
-### 1) Clone and enter project
-```bash
-cd /path/to/campg\ V1.0
-```
+### 1. Install backend dependencies
 
-### 2) Python environment
 ```bash
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 3) Frontend dependencies
+### 2. Install frontend dependencies
+
 ```bash
 cd frontend
 npm install
 cd ..
 ```
 
-### 4) Initialize database tables
-Run from project root:
+### 3. Initialize the database
+
 ```bash
 python -m backend.database.init_db
 ```
 
----
+For a brand-new local database, `init_db` is enough to create tables.
 
-## Running the System
+If you already have an existing database, apply Alembic migrations as well so newer schema changes are added:
 
-Use two terminals in development.
+```bash
+cd backend
+alembic upgrade head
+```
 
-### Terminal A: Backend
+## Running the App
+
+Use two terminals.
+
+### Backend
+
 ```bash
 source venv/bin/activate
 cd backend
 uvicorn app.main:app --reload
 ```
 
-Backend default URL:
+Backend URL:
+
 - `http://127.0.0.1:8000`
 
-### Terminal B: Frontend
+### Frontend
+
 ```bash
 cd frontend
 npm run dev
 ```
 
-Frontend default URL (Vite):
-- `http://127.0.0.1:5173`
+Frontend URL:
 
-Open the app in the frontend URL, not the backend URL.
+- `http://localhost:3000`
 
----
+Open the frontend URL in the browser. The React app owns the UI; the backend is API-only.
 
-## Authentication and Roles
+## Roles
 
-Roles in the system:
 - `student`
 - `ar_staff`
 - `admin`
 
-Auth endpoints:
+The frontend uses role-based routing for convenience, but backend authorization remains the source of truth.
+
+## Main API Areas
+
+### Auth
+
 - `POST /api/signup`
 - `POST /api/login`
 - `GET /api/check_auth`
 - `POST /api/refresh`
 - `POST /api/logout`
 
-JWT access token is used in `Authorization: Bearer <token>`.
+### Student chat
 
-Role-based frontend routes are convenience only. Backend authorization remains the source of truth.
-
----
-
-## Core API Modules
-
-### Chat and Conversations
 - `POST /chat/`
 - `GET /api/chats`
 - `GET /api/chats/{chat_id}/messages`
 - `GET /api/chats/{chat_id}/active-ticket`
+- `POST /api/chat/{message_id}/feedback`
+- `POST /api/chat/{conversation_id}/request-officer`
 
-### Ticket Messaging (role-aware)
+### Tickets
+
 - `GET /api/tickets`
 - `GET /api/tickets/{ticket_id}`
 - `GET /api/tickets/{ticket_id}/messages`
 - `POST /api/tickets/{ticket_id}/messages`
+- `GET /api/attachments/{attachment_id}/download`
+- `GET /api/attachments/{attachment_id}/view`
 
-### AR Staff
+### AR staff
+
 - `GET /api/ar/tickets`
 - `GET /api/ar/tickets/{ticket_id}/conversation`
 - `POST /api/ar/tickets/{ticket_id}/start`
 - `POST /api/ar/tickets/{ticket_id}/resolve`
 - `POST /api/ar/tickets/{ticket_id}/close`
 
-### Student Feedback / Escalation
-- `POST /api/chat/{message_id}/feedback`
-- `POST /api/chat/{conversation_id}/request-officer`
-
 ### Admin
+
 - `GET /api/admin/tickets`
 - `POST /api/admin/tickets/{ticket_id}/assign`
 - `GET /api/admin/users`
@@ -232,49 +194,34 @@ Role-based frontend routes are convenience only. Backend authorization remains t
 - `GET /api/admin/documents`
 - `POST /api/admin/documents/upload`
 - `DELETE /api/admin/documents/{document_id}`
+- `GET /api/admin/ingestion-status`
 
-### Reinforcement
-- `POST /api/admin/ingest-reinforcement`
+## Testing
 
----
+Backend tests live in `backend/tests/`.
 
-## RAG / Document Ingestion
+Run the test suite from the project root:
 
-Policy and institutional PDFs are ingested into FAISS and used as context for AI responses.
-
-Script:
 ```bash
-cd backend
-python scripts/ingest_documents.py
+pytest backend/tests
 ```
 
-Startup behavior:
-- Backend attempts to load existing FAISS index (`faiss_index`) on startup.
+The end-to-end test in [backend/tests/test_backend_e2e.py](</Users/ofono/Desktop/campg V1.0/backend/tests/test_backend_e2e.py:1>) expects a running backend, seeded credentials, and `OPENAI_API_KEY` for live AI behavior.
 
-## Development Notes
+## Knowledge and Ingestion Tooling
 
-- This repository uses a single frontend implementation: the React SPA in `frontend/`.
-- Legacy static frontend files have been removed to avoid duplicate login/signup/chat implementations.
-- Do not commit generated directories such as `frontend/node_modules`, `frontend/dist`, Python caches, or local FAISS/database artifacts.
+- PDF ingestion scripts live in `backend/scripts/`
+- Web crawling and freshness scheduling live in `backend/app/scraper/`
+- Reinforcement ingestion for resolved tickets lives in `backend/app/reinforcement/`
 
----
+Useful scripts include:
 
-## Test Notes
+- `python backend/scripts/ingest_documents.py`
+- `python backend/scripts/initial_crawl.py`
+- `python backend/scripts/accuracy_report.py`
 
-There is an end-to-end backend test file:
-- `backend/tests/test_backend_e2e.py`
+## Current Notes
 
-It uses environment variables like:
-- `BASE_URL`
-- `ADMIN_USER`
-- `ADMIN_PASS`
-- `OPENAI_API_KEY`
-- optional `RUN_DOC_UPLOAD`
-
----
-
-## Known Development Notes
-
-- Some test and build commands depend on your local Python and Node versions.
-- Ensure the configured MySQL database exists before running table initialization.
-- Some endpoints/UI areas are guarded in both frontend and backend, but backend enforcement is the security boundary.
+- The backend starts a scraper scheduler during app startup.
+- Attachments are supported in chat and ticket workflows.
+- The React frontend is the only UI entrypoint; legacy server-rendered pages are no longer used.

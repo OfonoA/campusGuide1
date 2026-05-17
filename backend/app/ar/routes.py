@@ -134,6 +134,9 @@ def list_open_tickets(
             resolved_at=ticket.resolved_at,
             preview_text=_build_ticket_preview(db, ticket),
             student_identifier=getattr(ticket.student, "username", None),
+            assignment_area=ticket.assignment_area,
+            assignment_area_confidence=ticket.assignment_area_confidence,
+            assignment_area_reason=ticket.assignment_area_reason,
         )
         for ticket in tickets
     ]

@@ -146,8 +146,13 @@ const DashboardPage: React.FC = () => {
     <AdminShell
       title="Admin Monitoring"
       subtitle="Operational oversight for ingestion status and Assistant Registrar activity."
+      titleIcon={<Activity />}
     >
       <div className="space-y-6">
+        <h2 className="section-heading">
+          Operations Snapshot
+          <span className="section-subtitle">Monitor queue pressure, ingestion volume, and registrar activity from one view.</span>
+        </h2>
         <section className="overflow-hidden rounded-[2rem] border border-white/40 bg-[linear-gradient(135deg,#1a2355_0%,#2a3583_62%,#3b46a0_100%)] px-6 py-7 text-white shadow-[0_26px_70px_rgba(20,30,70,0.28)]">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-2xl">
@@ -204,9 +209,11 @@ const DashboardPage: React.FC = () => {
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
           <section className="dashboard-panel overflow-hidden">
             <div className="flex items-center justify-between border-b border-slate-200/70 px-7 py-6">
-              <div className="flex items-center gap-4">
-                <Database className="h-6 w-6 text-primary-700" />
-                <h2 className="section-heading text-primary-700">Ingestion Status</h2>
+              <div>
+                <h2 className="card-title">
+                  <Database className="h-4 w-4" />
+                  Ingestion Status
+                </h2>
               </div>
               <button className="text-sm font-semibold uppercase tracking-[0.18em] text-primary-700">
                 View All Records
@@ -253,12 +260,13 @@ const DashboardPage: React.FC = () => {
           <div className="space-y-6">
             <section className="dashboard-panel overflow-hidden">
               <div className="flex items-center justify-between border-b border-slate-200/70 px-6 py-5">
-                <div className="flex items-center gap-3">
-                  <Users className="h-5 w-5 text-primary-700" />
-                  <h2 className="section-heading text-primary-700">AR Activity</h2>
-                </div>
-                <span className="rounded-full bg-accent-400 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-accent-900">
-                  Live
+                <h2 className="card-title">
+                  <Users className="h-4 w-4" />
+                  AR Activity
+                </h2>
+                <span className="status-heading">
+                  <span className="status-dot-green" />
+                  <span className="status-badge">Live</span>
                 </span>
               </div>
 

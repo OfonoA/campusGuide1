@@ -12,6 +12,13 @@ from .extractor import extract_html_page
 logger = logging.getLogger("must.scraper.freshness")
 
 FRESHNESS_URL_MAP = {
+    "dvc aa": "https://www.must.ac.ug/about-us/governance/university-management/",
+    "dvc-aa": "https://www.must.ac.ug/about-us/governance/university-management/",
+    "deputy vice chancellor for academic affairs": "https://www.must.ac.ug/about-us/governance/university-management/",
+    "deputy vice chancellor academic affairs": "https://www.must.ac.ug/about-us/governance/university-management/",
+    "vice chancellor": "https://www.must.ac.ug/about-us/governance/university-management/",
+    "university management": "https://www.must.ac.ug/about-us/governance/university-management/",
+    "management": "https://www.must.ac.ug/about-us/governance/university-management/",
     "entry requirements": "https://www.must.ac.ug/study-at-must/admissions/application-guidelines/",
     "application deadline": "https://www.must.ac.ug/announcement_type/call-for-applications/",
     "deadline": "https://www.must.ac.ug/notice-board/",
@@ -53,6 +60,8 @@ FRESHNESS_SIGNALS = [
 def is_freshness_sensitive(query: str) -> bool:
     """Return True if query contains any freshness signal."""
     lowered = query.lower()
+    if any(topic in lowered for topic in FRESHNESS_URL_MAP):
+        return True
     if any(term in lowered for term in (
         "postgraduate program",
         "postgraduate programme",
@@ -76,10 +85,10 @@ def _pick_url(query: str) -> Optional[str]:
 
 def get_live_context(query: str) -> Optional[List[Document]]:
     """Return live chunks for freshness-sensitive queries."""
-    if not is_freshness_sensitive(query):
-        return None
     url = _pick_url(query)
-    if not url:
+    if url is None and not is_freshness_sensitive(query):
+        return None
+    if url is None:
         return None
     try:
         headers = {"User-Agent": "MUSTRagBot/1.0"}

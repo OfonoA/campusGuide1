@@ -9,6 +9,7 @@ import { useFeedbackToasts } from '../../hooks/useFeedbackToasts'
 import { chatAPI } from '../../services/api'
 import { Chat, ChatMessage } from '../../types'
 import { getErrorDetail } from '../../utils/errors'
+import mustLogo from '../../../images/logo.png'
 
 const AdminChatPage: React.FC = () => {
   const [chats, setChats] = useState<Chat[]>([])
@@ -194,13 +195,35 @@ const AdminChatPage: React.FC = () => {
     <AdminShell
       title="Inbox"
       subtitle="Chat with ArASSIST for administrative guidance."
-      theme="staff"
       workspaceLabel="ADMIN WORKSPACE"
       hidePageHeader
       fullWidth
     >
       <FeedbackToastStack toasts={toasts} onDismiss={dismissToast} />
-      <div className="grid min-h-[calc(100vh-240px)] grid-cols-1 overflow-hidden rounded-[8px] border border-slate-200 bg-white shadow-[0_2px_6px_rgba(0,0,0,0.05)] xl:grid-cols-[320px_minmax(0,1fr)]">
+      <div className="space-y-6">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="page-title-container">
+            <h1 className="page-title">
+              <span className="page-title-icon">
+                <MessageSquare className="h-7 w-7" />
+              </span>
+              <span>Inbox</span>
+            </h1>
+            <p className="page-subtitle">Chat with ArASSIST for administrative guidance.</p>
+          </div>
+          <div className="status-heading">
+            <span className="status-dot-green" />
+            <span>Assistant status</span>
+            <span className="status-badge">online</span>
+          </div>
+        </div>
+
+        <h2 className="section-heading">
+          Conversation Workspace
+          <span className="section-subtitle">Search prior chats, start a new guidance thread, or continue an existing one.</span>
+        </h2>
+
+        <div className="grid min-h-[calc(100vh-240px)] grid-cols-1 overflow-hidden rounded-[8px] border border-slate-200 bg-white shadow-[0_2px_6px_rgba(0,0,0,0.05)] xl:grid-cols-[320px_minmax(0,1fr)]">
         <section className="min-h-0 border-r border-slate-200 bg-[#F5F5F5] px-4 py-5 md:px-5">
           <div className="flex h-full flex-col">
             <div>
@@ -300,7 +323,15 @@ const AdminChatPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="chat-scroll-area flex-1 overflow-y-auto bg-[#F0F2F5] px-5 py-6 sm:px-6">
+              <div className="chat-scroll-area relative flex-1 overflow-y-auto bg-[#F0F2F5] px-5 py-6 sm:px-6">
+                <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                  <img
+                    src={mustLogo}
+                    alt=""
+                    aria-hidden="true"
+                    className="h-48 w-48 select-none object-contain opacity-[0.05] md:h-64 md:w-64"
+                  />
+                </div>
                 {selectedChat.messages.length === 0 ? (
                   <div className="flex h-full items-center justify-center px-6 py-12">
                     <div className="max-w-xl rounded-[8px] border border-slate-200 bg-white px-10 py-14 text-center shadow-[0_2px_6px_rgba(0,0,0,0.05)]">
@@ -314,7 +345,7 @@ const AdminChatPage: React.FC = () => {
                     </div>
                   </div>
                 ) : (
-                  <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
+                  <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-6">
                     {selectedChat.messages.map((msg) => (
                       <div key={msg.id} className={`flex w-full ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
                         <div className={msg.sender === 'user' ? 'w-full max-w-[min(58ch,100%)]' : 'w-full max-w-4xl'}>
@@ -408,6 +439,7 @@ const AdminChatPage: React.FC = () => {
             </>
           )}
         </section>
+        </div>
       </div>
     </AdminShell>
   )

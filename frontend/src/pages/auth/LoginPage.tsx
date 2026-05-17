@@ -168,14 +168,6 @@ const LoginPage: React.FC = () => {
           </div>
         </div>
 
-        <label className="flex items-center gap-3 text-sm text-[#333333]">
-          <input
-            type="checkbox"
-            className="h-4 w-4 rounded border-[#D4AF37]/40 text-[#0A4B33] focus:ring-[#D4AF37]"
-          />
-          <span>Remember this device for 30 days</span>
-        </label>
-
         <button
           type="submit"
           disabled={isLoading}

@@ -33,9 +33,14 @@ from app.assignment import (
     ASSIGNMENT_MODE_AUTO_REVIEW,
     ASSIGNMENT_MODE_RECOMMEND,
     ASSIGNMENT_MODE_AUTO_ASSIGN,
+    ASSIGNMENT_AREAS,
+    ASSIGNMENT_AREA_GENERAL,
     apply_ticket_recommendation,
+    get_user_assignment_areas,
     get_assignment_mode,
     maybe_auto_assign_recommended_ticket,
+    normalize_assignment_areas,
+    serialize_assignment_areas,
     set_assignment_mode,
 )
 from app.schemas import (
@@ -49,6 +54,7 @@ from app.schemas import (
     AdminUserItem,
     RoleUpdateRequest,
     AdminUserCreateRequest,
+    AdminUserAssignmentProfileUpdateRequest,
     AdminUserDeleteRequest,
     ScrapeStatusItem,
     ScrapeUrlRequest,
@@ -101,6 +107,50 @@ GAP_DOCUMENT_SUGGESTIONS = {
     "Exams": "Add exam_regulations_summary.pdf",
     "General": "Add student_support_faq.md",
 }
+
+
+def _admin_user_item(user: User) -> AdminUserItem:
+    return AdminUserItem(
+        id=user.id,
+        username=user.username,
+        role=user.role,
+        created_at=user.created_at,
+        last_active_at=user.last_active_at,
+        assignment_areas=get_user_assignment_areas(user) if user.role == "ar_staff" else [],
+        max_concurrent_load=user.max_concurrent_load,
+        is_available=bool(getattr(user, "is_available", True)),
+        priority_weight=float(getattr(user, "priority_weight", 1.0) or 1.0),
+    )
+
+
+def _apply_assignment_profile_to_user(
+    user: User,
+    assignment_areas: list[str] | None,
+    max_concurrent_load: int | None,
+    is_available: bool,
+    priority_weight: float,
+) -> None:
+    normalized_areas = normalize_assignment_areas(assignment_areas)
+    if normalized_areas and any(area not in ASSIGNMENT_AREAS for area in normalized_areas):
+        raise HTTPException(status_code=400, detail="Invalid assignment areas")
+    if max_concurrent_load is not None and max_concurrent_load < 1:
+        raise HTTPException(status_code=400, detail="max_concurrent_load must be at least 1")
+    if priority_weight <= 0:
+        raise HTTPException(status_code=400, detail="priority_weight must be greater than 0")
+
+    if user.role == "ar_staff":
+        if not normalized_areas:
+            normalized_areas = [ASSIGNMENT_AREA_GENERAL]
+        user.assignment_areas = serialize_assignment_areas(normalized_areas)
+        user.max_concurrent_load = max_concurrent_load
+        user.is_available = bool(is_available)
+        user.priority_weight = float(priority_weight)
+        return
+
+    user.assignment_areas = ""
+    user.max_concurrent_load = None
+    user.is_available = True
+    user.priority_weight = 1.0
 
 
 def _classify_topic(text: str | None) -> str:
@@ -1148,6 +1198,9 @@ def tickets_overview(current_user: User = Depends(get_current_user), db: Session
                 recommendation_score=ticket.recommendation_score,
                 recommendation_reason=ticket.recommendation_reason,
                 recommendation_created_at=ticket.recommendation_created_at,
+                assignment_area=ticket.assignment_area,
+                assignment_area_confidence=ticket.assignment_area_confidence,
+                assignment_area_reason=ticket.assignment_area_reason,
                 auto_assigned=bool(ticket.auto_assigned),
                 assignment_reviewed=bool(ticket.assignment_reviewed),
                 ar_assigned_id=ticket.assigned_to,
@@ -1730,7 +1783,7 @@ def list_users(
     """List all users with roles."""
     require_admin(current_user)
     users = db.query(User).order_by(User.created_at.desc()).all()
-    return [AdminUserItem.from_orm(u) for u in users]
+    return [_admin_user_item(u) for u in users]
 
 
 @router.put("/users/{user_id}/role", response_model=AdminUserItem)
@@ -1751,11 +1804,21 @@ def update_user_role(
         raise HTTPException(status_code=404, detail="User not found")
 
     user.role = payload.role
+    if user.role == "ar_staff":
+        _apply_assignment_profile_to_user(
+            user,
+            payload.assignment_areas if payload.assignment_areas is not None else get_user_assignment_areas(user),
+            payload.max_concurrent_load if payload.assignment_areas is not None else user.max_concurrent_load,
+            payload.is_available if payload.assignment_areas is not None else bool(getattr(user, "is_available", True)),
+            payload.priority_weight if payload.assignment_areas is not None else float(getattr(user, "priority_weight", 1.0) or 1.0),
+        )
+    else:
+        _apply_assignment_profile_to_user(user, [], None, True, 1.0)
     db.add(user)
     db.commit()
     db.refresh(user)
 
-    return AdminUserItem.from_orm(user)
+    return _admin_user_item(user)
 
 
 @router.post("/users", response_model=AdminUserItem)
@@ -1776,11 +1839,46 @@ def create_user(
 
     hashed = bcrypt.hash(payload.password)
     user = User(username=payload.username, hashed_password=hashed, role=payload.role)
+    _apply_assignment_profile_to_user(
+        user,
+        payload.assignment_areas,
+        payload.max_concurrent_load,
+        payload.is_available,
+        payload.priority_weight,
+    )
     db.add(user)
     db.commit()
     db.refresh(user)
 
-    return AdminUserItem.from_orm(user)
+    return _admin_user_item(user)
+
+
+@router.put("/users/{user_id}/assignment-profile", response_model=AdminUserItem)
+def update_user_assignment_profile(
+    user_id: int,
+    payload: AdminUserAssignmentProfileUpdateRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    require_admin(current_user)
+
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if user.role != "ar_staff":
+        raise HTTPException(status_code=400, detail="Assignment profiles apply only to AR staff")
+
+    _apply_assignment_profile_to_user(
+        user,
+        payload.assignment_areas,
+        payload.max_concurrent_load,
+        payload.is_available,
+        payload.priority_weight,
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return _admin_user_item(user)
 
 
 @router.delete("/users/{user_id}")

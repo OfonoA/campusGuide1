@@ -273,8 +273,16 @@ const ChatArea: React.FC<ChatAreaProps> = ({ chat, onChatUpdate }) => {
         </div>
       )}
 
-      <div className="chat-scroll-area flex-1 overflow-y-auto overflow-x-hidden px-5 py-8 md:px-10 md:py-10">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
+      <div className="chat-scroll-area relative flex-1 overflow-y-auto overflow-x-hidden px-5 py-8 md:px-10 md:py-10">
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <img
+            src={mustLogo}
+            alt=""
+            aria-hidden="true"
+            className="h-48 w-48 select-none object-contain opacity-[0.05] md:h-64 md:w-64"
+          />
+        </div>
+        <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-6">
         {chat.messages.length === 0 ? (
           <div className="rounded-[8px] border border-dashed border-[#E6B422]/40 bg-white px-8 py-20 text-center">
             <Bot className="mx-auto h-14 w-14 text-[#1E6B3B]/40" />

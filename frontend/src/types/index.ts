@@ -6,6 +6,10 @@ export interface User {
   name?: string;
   created_at?: string;
   last_active_at?: string | null;
+  assignment_areas?: string[];
+  max_concurrent_load?: number | null;
+  is_available?: boolean;
+  priority_weight?: number;
 }
 
 export interface Attachment {
@@ -60,6 +64,9 @@ export interface Ticket {
   recommendation_score?: number | null;
   recommendation_reason?: string | null;
   recommendation_created_at?: string | null;
+  assignment_area?: string | null;
+  assignment_area_confidence?: number | null;
+  assignment_area_reason?: string | null;
   auto_assigned?: boolean;
   assignment_reviewed?: boolean;
 }

@@ -26,6 +26,18 @@ const normalizeRole = (role?: string): User['role'] => {
   return 'student'
 }
 
+const buildUser = (source: any, fallback?: { username?: string; role?: string; userId?: number }): User => ({
+  id: source?.id || fallback?.userId || 0,
+  username: source?.username || fallback?.username || source?.sub || 'user',
+  role: normalizeRole(source?.role || fallback?.role),
+  email: source?.email,
+  name: source?.name,
+  assignment_areas: Array.isArray(source?.assignment_areas) ? source.assignment_areas : [],
+  max_concurrent_load: source?.max_concurrent_load ?? null,
+  is_available: typeof source?.is_available === 'boolean' ? source.is_available : true,
+  priority_weight: typeof source?.priority_weight === 'number' ? source.priority_weight : 1,
+})
+
 type AuthAction =
   | { type: 'LOGIN_START' }
   | { type: 'AUTH_SUCCESS'; payload: { user: User; token: string; refreshToken: string | null } }
@@ -143,12 +155,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const payload = parseJwt(token)
       if (!payload) throw new Error('Invalid token payload')
-
-      const user: User = {
-        id: payload.user_id || 0,
-        username: payload.username || payload.sub || 'user',
-        role: normalizeRole(payload.role),
-      }
+      const authCheck = await authAPI.checkAuth()
+      const user = buildUser(authCheck?.user, {
+        userId: payload.user_id,
+        username: payload.username || payload.sub,
+        role: payload.role,
+      })
 
       dispatch({
         type: 'AUTH_SUCCESS',
@@ -196,15 +208,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       try {
-        await authAPI.checkAuth()
+        const response = await authAPI.checkAuth()
         const payload = parseJwt(token)
         if (!payload) throw new Error('Invalid token')
-
-        const user: User = {
-          id: payload.user_id || 0,
-          username: payload.username || payload.sub || 'user',
-          role: normalizeRole(payload.role),
-        }
+        const user = buildUser(response?.user, {
+          userId: payload.user_id,
+          username: payload.username || payload.sub,
+          role: payload.role,
+        })
 
         dispatch({
           type: 'AUTH_SUCCESS',
@@ -237,11 +248,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (!payload) throw new Error('Invalid token payload')
 
       const refreshToken = response.refresh_token || null
-      const user: User = {
-        id: payload.user_id || 0,
+      const user = buildUser(response.user, {
+        userId: payload.user_id,
         username: payload.username || payload.sub || username,
-        role: normalizeRole(payload.role),
-      }
+        role: payload.role,
+      })
 
       setAuthSession(token, refreshToken)
 

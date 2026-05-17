@@ -50,7 +50,7 @@ from app.utils import (
     strip_attachment_ingestion_content,
 )
 from app.attachments import build_attachment_note, process_message_uploads
-from app.assignment import apply_ticket_recommendation, maybe_auto_assign_recommended_ticket
+from app.assignment import apply_ticket_recommendation, get_user_assignment_areas, maybe_auto_assign_recommended_ticket
 
 # --- Database ---
 from database.database import get_db
@@ -90,6 +90,20 @@ CLARIFICATION_LOOP_FALLBACK = (
     "I need more specific information to help. Please rephrase or contact an officer."
 )
 _clarification_loop_state: dict[int, int] = {}
+
+
+def _serialize_auth_user(user: User) -> dict:
+    return {
+        "id": user.id,
+        "username": user.username,
+        "role": user.role,
+        "name": user.name,
+        "email": user.email,
+        "assignment_areas": get_user_assignment_areas(user) if user.role == "ar_staff" else [],
+        "max_concurrent_load": user.max_concurrent_load,
+        "is_available": user.is_available,
+        "priority_weight": user.priority_weight,
+    }
 
 
 def _get_allowed_origins() -> list[str]:
@@ -431,18 +445,15 @@ async def login(user: UserCreate, db: Session = Depends(get_db)):
         "token": access_token,
         "token_type": "bearer",
         "refresh_token": refresh_token,
-        "user": {
-            "id": db_user.id,
-            "username": db_user.username,
-            "role": db_user.role,
-            "name": db_user.name,
-            "email": db_user.email
-        }
+        "user": _serialize_auth_user(db_user),
     }
 
 @app.get("/api/check_auth")
 async def check_auth(current_user: User = Depends(get_current_user)):
-    return {"message": "Authenticated"}
+    return {
+        "message": "Authenticated",
+        "user": _serialize_auth_user(current_user),
+    }
 
 @app.post("/api/refresh", response_model=TokenResponse)
 async def refresh_tokens(payload: RefreshRequest, db: Session = Depends(get_db)):

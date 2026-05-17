@@ -4,7 +4,7 @@ import { User } from '../../types'
 import AdminShell from '../../components/admin/AdminShell'
 import FeedbackToastStack from '../../components/feedback/FeedbackToastStack'
 import { useFeedbackToasts } from '../../hooks/useFeedbackToasts'
-import { AlertTriangle, X } from 'lucide-react'
+import { AlertTriangle, UserPlus, Users, X } from 'lucide-react'
 import { getErrorDetail } from '../../utils/errors'
 
 const panelClass = 'overflow-hidden rounded-[8px] border border-[#F0F2F5] bg-white shadow-[0_2px_6px_rgba(0,0,0,0.05)]'
@@ -16,6 +16,13 @@ const roleOptions: Array<{ value: 'all' | User['role']; label: string }> = [
   { value: 'ar_staff', label: 'AR Staff' },
   { value: 'admin', label: 'Admin' },
 ]
+const assignmentAreaOptions = [
+  { value: 'admissions_records_alumni_engagement', label: 'Admissions, Records & Alumni Engagement' },
+  { value: 'documents', label: 'Documents' },
+  { value: 'results', label: 'Results' },
+  { value: 'teaching_and_learning', label: 'Teaching and Learning' },
+  { value: 'general', label: 'General' },
+] as const
 
 const roleLabel = (role: User['role']) => {
   if (role === 'ar_staff') return 'AR Staff'
@@ -77,6 +84,8 @@ const generateTemporaryPassword = () => {
   return Array.from({ length: 12 }, () => chars[Math.floor(Math.random() * chars.length)]).join('')
 }
 
+const normalizeAreas = (areas: string[]) => Array.from(new Set(areas.filter(Boolean)))
+
 const AdminUsersPage: React.FC = () => {
   const [users, setUsers] = useState<User[]>([])
   const [username, setUsername] = useState('')
@@ -84,12 +93,20 @@ const AdminUsersPage: React.FC = () => {
   const [email, setEmail] = useState('')
   const [department, setDepartment] = useState('')
   const [role, setRole] = useState<User['role']>('student')
+  const [assignmentAreas, setAssignmentAreas] = useState<string[]>(['general'])
+  const [maxConcurrentLoad, setMaxConcurrentLoad] = useState('10')
+  const [isAvailable, setIsAvailable] = useState(true)
+  const [priorityWeight, setPriorityWeight] = useState('1')
   const [isLoading, setIsLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
   const [roleFilter, setRoleFilter] = useState<'all' | User['role']>('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [userToEdit, setUserToEdit] = useState<User | null>(null)
   const [editRole, setEditRole] = useState<User['role']>('student')
+  const [editAssignmentAreas, setEditAssignmentAreas] = useState<string[]>(['general'])
+  const [editMaxConcurrentLoad, setEditMaxConcurrentLoad] = useState('10')
+  const [editIsAvailable, setEditIsAvailable] = useState(true)
+  const [editPriorityWeight, setEditPriorityWeight] = useState('1')
   const [isUpdatingRole, setIsUpdatingRole] = useState(false)
   const [editError, setEditError] = useState('')
   const [userToDelete, setUserToDelete] = useState<User | null>(null)
@@ -127,7 +144,15 @@ const AdminUsersPage: React.FC = () => {
       return
     }
     try {
-      await adminAPI.createUser(username.trim(), password.trim(), role)
+      await adminAPI.createUser(username.trim(), password.trim(), role, {
+        assignment_areas: role === 'ar_staff' ? normalizeAreas(assignmentAreas) : [],
+        max_concurrent_load:
+          role === 'ar_staff' && maxConcurrentLoad.trim()
+            ? Number(maxConcurrentLoad)
+            : null,
+        is_available: role === 'ar_staff' ? isAvailable : true,
+        priority_weight: role === 'ar_staff' && priorityWeight.trim() ? Number(priorityWeight) : 1,
+      })
       const createdUsername = username.trim()
       const createdRole = role
       setUsername('')
@@ -135,6 +160,10 @@ const AdminUsersPage: React.FC = () => {
       setEmail('')
       setDepartment('')
       setRole('student')
+      setAssignmentAreas(['general'])
+      setMaxConcurrentLoad('10')
+      setIsAvailable(true)
+      setPriorityWeight('1')
       await loadUsers()
       showSuccess({
         title: 'User created',
@@ -186,7 +215,18 @@ const AdminUsersPage: React.FC = () => {
     setEditError('')
     try {
       const updatedUsername = userToEdit.username
-      await adminAPI.updateUserRole(userToEdit.id, editRole)
+      await adminAPI.updateUserRole(
+        userToEdit.id,
+        editRole,
+        editRole === 'ar_staff'
+          ? {
+              assignment_areas: normalizeAreas(editAssignmentAreas),
+              max_concurrent_load: editMaxConcurrentLoad.trim() ? Number(editMaxConcurrentLoad) : null,
+              is_available: editIsAvailable,
+              priority_weight: editPriorityWeight.trim() ? Number(editPriorityWeight) : 1,
+            }
+          : undefined,
+      )
       setUserToEdit(null)
       await loadUsers()
       showSuccess({
@@ -203,6 +243,19 @@ const AdminUsersPage: React.FC = () => {
     } finally {
       setIsUpdatingRole(false)
     }
+  }
+
+  const toggleArea = (
+    nextArea: string,
+    setter: React.Dispatch<React.SetStateAction<string[]>>,
+  ) => {
+    setter((prev) => {
+      if (prev.includes(nextArea)) {
+        const next = prev.filter((area) => area !== nextArea)
+        return next.length > 0 ? next : ['general']
+      }
+      return normalizeAreas([...prev, nextArea])
+    })
   }
 
   const filteredUsers = useMemo(() => {
@@ -247,6 +300,7 @@ const AdminUsersPage: React.FC = () => {
     <AdminShell
       title="User Management"
       subtitle="Manage institutional access, user roles, and account administration for ArASSIST."
+      titleIcon={<Users />}
       fullWidth
     >
       <style>{`
@@ -469,6 +523,10 @@ const AdminUsersPage: React.FC = () => {
       <FeedbackToastStack toasts={toasts} onDismiss={dismissToast} />
 
       <div className="user-management-screen space-y-6">
+        <h2 className="section-heading">
+          Account Overview
+          <span className="section-subtitle">Current user distribution across students, staff, and administrators.</span>
+        </h2>
         <section className="user-stats-grid">
           <article className="user-stat-card">
             <div className="user-stat-value">{stats.activeUsers}</div>
@@ -486,6 +544,13 @@ const AdminUsersPage: React.FC = () => {
 
         <section className={panelClass}>
           <div className="space-y-5 px-5 py-5 sm:px-6">
+            <div>
+              <h2 className="card-title">
+                <Users className="h-4 w-4" />
+                User Directory
+              </h2>
+              <p className="section-subtitle">Search, filter, and manage account access across the administration workspace.</p>
+            </div>
             <div className="user-filter-row">
               <input
                 type="text"
@@ -558,6 +623,14 @@ const AdminUsersPage: React.FC = () => {
                               onClick={() => {
                                 setUserToEdit(user)
                                 setEditRole(user.role)
+                                setEditAssignmentAreas(user.assignment_areas && user.assignment_areas.length > 0 ? user.assignment_areas : ['general'])
+                                setEditMaxConcurrentLoad(
+                                  user.max_concurrent_load != null ? String(user.max_concurrent_load) : '',
+                                )
+                                setEditIsAvailable(user.is_available ?? true)
+                                setEditPriorityWeight(
+                                  user.priority_weight != null ? String(user.priority_weight) : '1',
+                                )
                                 setEditError('')
                               }}
                             >
@@ -637,7 +710,11 @@ const AdminUsersPage: React.FC = () => {
         </section>
 
         <section className="create-user-card">
-          <h2 className="mb-4 text-xl font-semibold text-[#1E6B3B]">Create New User</h2>
+          <h2 className="card-title">
+            <UserPlus className="h-4 w-4" />
+            Create New User
+          </h2>
+          <p className="section-subtitle">Provision student, staff, and admin accounts with the existing role rules.</p>
 
           <div className="create-user-grid">
             <div>
@@ -697,6 +774,60 @@ const AdminUsersPage: React.FC = () => {
                 {password ? <span className="temporary-password-chip">{password}</span> : null}
               </div>
             </div>
+
+            {role === 'ar_staff' ? (
+              <>
+                <div className="create-user-span">
+                  <label className="mb-2 block text-sm font-medium text-[#333333]">Assignment Areas</label>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {assignmentAreaOptions.map((option) => (
+                      <label key={option.value} className="flex items-center gap-2 text-sm text-[#333333]">
+                        <input
+                          type="checkbox"
+                          checked={assignmentAreas.includes(option.value)}
+                          onChange={() => toggleArea(option.value, setAssignmentAreas)}
+                        />
+                        <span>{option.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-[#333333]">Max Concurrent Load</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={maxConcurrentLoad}
+                    onChange={(e) => setMaxConcurrentLoad(e.target.value)}
+                    className="user-form-input w-full"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-[#333333]">Priority Weight</label>
+                  <input
+                    type="number"
+                    min="0.1"
+                    step="0.1"
+                    value={priorityWeight}
+                    onChange={(e) => setPriorityWeight(e.target.value)}
+                    className="user-form-input w-full"
+                  />
+                </div>
+
+                <div className="create-user-span">
+                  <label className="flex items-center gap-2 text-sm font-medium text-[#333333]">
+                    <input
+                      type="checkbox"
+                      checked={isAvailable}
+                      onChange={(e) => setIsAvailable(e.target.checked)}
+                    />
+                    <span>Officer is available for assignment</span>
+                  </label>
+                </div>
+              </>
+            ) : null}
           </div>
 
           <button
@@ -815,6 +946,58 @@ const AdminUsersPage: React.FC = () => {
                   <option value="admin">Admin</option>
                 </select>
               </div>
+
+              {editRole === 'ar_staff' ? (
+                <>
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-[#333333]">Assignment Areas</label>
+                    <div className="grid gap-2">
+                      {assignmentAreaOptions.map((option) => (
+                        <label key={option.value} className="flex items-center gap-2 text-sm text-[#333333]">
+                          <input
+                            type="checkbox"
+                            checked={editAssignmentAreas.includes(option.value)}
+                            onChange={() => toggleArea(option.value, setEditAssignmentAreas)}
+                          />
+                          <span>{option.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-[#333333]">Max Concurrent Load</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={editMaxConcurrentLoad}
+                      onChange={(e) => setEditMaxConcurrentLoad(e.target.value)}
+                      className="user-form-input w-full"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-[#333333]">Priority Weight</label>
+                    <input
+                      type="number"
+                      min="0.1"
+                      step="0.1"
+                      value={editPriorityWeight}
+                      onChange={(e) => setEditPriorityWeight(e.target.value)}
+                      className="user-form-input w-full"
+                    />
+                  </div>
+
+                  <label className="flex items-center gap-2 text-sm font-medium text-[#333333]">
+                    <input
+                      type="checkbox"
+                      checked={editIsAvailable}
+                      onChange={(e) => setEditIsAvailable(e.target.checked)}
+                    />
+                    <span>Officer is available for assignment</span>
+                  </label>
+                </>
+              ) : null}
 
               {editError ? (
                 <div className="rounded-[8px] border border-[#B8860B] bg-[#F5EDD6] px-4 py-3 text-sm text-[#333333]">

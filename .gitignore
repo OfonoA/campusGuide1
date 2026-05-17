@@ -20,12 +20,34 @@ build/
 backend/university_documents/
 backend/uploaded_attachments/
 backend/faiss_index/
+artifacts/
+renders/
+accuracy_report.json
+backend/scripts/accuracy_report.json
+backend/crawl_checkpoint.json
 backups/
 logs/
 *.faiss
 *.pkl
 *.db
 *.sqlite
+
+# One-off investigation / local analysis scripts and assets
+check_joining_instructions.py
+debug_detailed.py
+debug_joining.py
+diagnose_fees.py
+read_more_pages.py
+read_pdf_content.py
+search_all_pdfs.py
+backend/embeddingtest.py
+PROJECT REPORT Final.pdf
+flow.png
+RETRIEVAL_ANALYSIS.md
+animations/
+docs/demo-video-automation.md
+docs/demo-video-simulation.md
+scripts/demo_video_runner.py
 
 # Local previews / OS files
 preview/

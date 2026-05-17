@@ -11,6 +11,9 @@ class TicketSummary(BaseModel):
     resolved_at: Optional[datetime] = None
     preview_text: Optional[str] = None
     student_identifier: Optional[str] = None
+    assignment_area: Optional[str] = None
+    assignment_area_confidence: Optional[float] = None
+    assignment_area_reason: Optional[str] = None
 
     class Config:
         from_attributes = True

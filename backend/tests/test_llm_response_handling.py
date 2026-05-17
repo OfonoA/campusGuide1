@@ -72,6 +72,19 @@ def test_normalize_structured_response_rejects_conflicting_decision_flags():
         )
 
 
+def test_build_final_result_sanitizes_placeholder_email_text():
+    result = llm._build_final_result(
+        can_answer=True,
+        needs_clarification=False,
+        answer="Email: [ email @ protected ] or [email protected]",
+        citations=[1],
+    )
+
+    assert result["found_answer"] is True
+    assert "[email protected]" not in result["answer"].lower()
+    assert "email address protected on the source page" in result["answer"]
+
+
 def test_format_chat_history_keeps_only_latest_turn():
     formatted = llm._format_chat_history(
         [
@@ -129,6 +142,17 @@ def test_ask_campusguide_returns_clarifying_question_without_escalation(monkeypa
     assert result["reason"] == "clarification_needed"
     assert result["answer"] == "Which programme are you asking about?"
     assert result["citations"] == [1]
+
+
+def test_build_user_prompt_includes_current_date_for_relative_queries():
+    prompt = llm._build_user_prompt(
+        "What is the academic calendar for this year?",
+        ["Semester II starts on 27 January 2026."],
+        [],
+    )
+
+    assert "Current Date:" in prompt
+    assert "2026-05-10" in prompt
 
 
 def test_ask_campusguide_returns_no_answer_when_model_cannot_answer(monkeypatch):

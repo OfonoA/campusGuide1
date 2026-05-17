@@ -6,6 +6,7 @@ import { ThemeProvider } from './contexts/ThemeContext'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import Layout from './components/layout/Layout'
 import RoleRoute from './components/auth/RoleRoute'
+import { useAuth } from './contexts/AuthContext'
 
 // Pages
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'))
@@ -27,6 +28,24 @@ const RouteFallback = () => (
   </div>
 )
 
+const AppIndexRedirect = () => {
+  const { user, isLoading } = useAuth()
+
+  if (isLoading) {
+    return <RouteFallback />
+  }
+
+  if (user?.role === 'admin') {
+    return <Navigate to="/app/admin/inbox" replace />
+  }
+
+  if (user?.role === 'ar_staff') {
+    return <Navigate to="/app/staff-dashboard" replace />
+  }
+
+  return <Navigate to="/app/chat" replace />
+}
+
 function App() {
   return (
     <ThemeProvider>
@@ -45,13 +64,14 @@ function App() {
                 <Layout />
               </ProtectedRoute>
             }>
-              <Route index element={<Navigate to="/app/chat" replace />} />
+              <Route index element={<AppIndexRedirect />} />
               <Route path="chat" element={<RoleRoute role="student"><ChatPage /></RoleRoute>} />
               <Route path="tickets" element={<RoleRoute role="student"><TicketsPage /></RoleRoute>} />
 
               <Route path="staff-dashboard" element={<RoleRoute role="ar_staff"><StaffDashboardPage /></RoleRoute>} />
               <Route path="staff-chat" element={<RoleRoute role="ar_staff"><StaffDashboardPage /></RoleRoute>} />
 
+              <Route path="admin" element={<RoleRoute role="admin"><Navigate to="/app/admin/inbox" replace /></RoleRoute>} />
               <Route path="admin/dashboard" element={<RoleRoute role="admin"><DashboardPage /></RoleRoute>} />
               <Route path="admin/inbox" element={<RoleRoute role="admin"><AdminInboxPage /></RoleRoute>} />
               <Route path="admin/chat" element={<RoleRoute role="admin"><AdminChatPage /></RoleRoute>} />

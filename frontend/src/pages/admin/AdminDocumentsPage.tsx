@@ -231,6 +231,7 @@ const AdminDocumentsPage: React.FC = () => {
     <AdminShell
       title="Document Management"
       subtitle="Policy documents used by ArASSIST knowledge retrieval"
+      titleIcon={<FileText />}
       fullWidth
     >
       <style>{`
@@ -464,6 +465,10 @@ const AdminDocumentsPage: React.FC = () => {
       <FeedbackToastStack toasts={toasts} onDismiss={dismissToast} />
 
       <div className="document-management-screen space-y-6">
+        <h2 className="section-heading">
+          Archive Overview
+          <span className="section-subtitle">Track document volume, indexed chunks, and file availability.</span>
+        </h2>
         <section className="document-stats-grid">
           <article className="document-stat-card">
             <p className="document-stat-value">{archiveMetrics.totalDocuments.toLocaleString()}</p>
@@ -485,7 +490,10 @@ const AdminDocumentsPage: React.FC = () => {
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-[8px] bg-[#F5EDD6] text-[#1E6B3B]">
               <UploadCloud className="h-6 w-6" />
             </div>
-            <h2 className="mt-4 text-2xl font-semibold text-[#1E6B3B]">Upload new official documents to the knowledge base</h2>
+            <h2 className="card-title mt-4 inline-flex border-b-0 pb-0">
+              <UploadCloud className="h-4 w-4" />
+              Upload New Official Documents
+            </h2>
             <p className="mt-2 text-sm text-[#333333]">
               Select a PDF file to ingest into ArASSIST without changing the current document workflow.
             </p>
@@ -535,10 +543,15 @@ const AdminDocumentsPage: React.FC = () => {
           <div className="border-b border-[#F0F2F5] bg-[#FFFFFF] px-5 py-4 sm:px-6">
             <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#1E6B3B]">
+                <h2 className="card-title">
+                  <FileText className="h-4 w-4" />
                   Recent Documents
-                </p>
-                <p className="mt-2 text-sm text-[#333333]">{filteredDocuments.length} Records Found</p>
+                </h2>
+                <div className="status-heading">
+                  <span className="status-dot-green" />
+                  <span>Archive status</span>
+                  <span className="status-badge">{filteredDocuments.length} records</span>
+                </div>
               </div>
 
               <div className="grid w-full gap-3 lg:max-w-3xl lg:grid-cols-[minmax(0,1fr)_180px_160px]">

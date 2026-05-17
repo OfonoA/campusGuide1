@@ -10,6 +10,7 @@ interface AdminShellProps {
   subtitle: string
   children: React.ReactNode
   headerAction?: React.ReactNode
+  titleIcon?: React.ReactNode
   theme?: 'admin' | 'staff'
   workspaceLabel?: string
   hidePageHeader?: boolean
@@ -21,6 +22,7 @@ const AdminShell: React.FC<AdminShellProps> = ({
   subtitle,
   children,
   headerAction,
+  titleIcon,
   theme = 'admin',
   workspaceLabel,
   hidePageHeader = false,
@@ -46,13 +48,13 @@ const AdminShell: React.FC<AdminShellProps> = ({
       }
     : {
         headerBg: '#1E6B3B',
-        headerBorder: '#E6B422',
+        headerBorder: '#B8860B',
         badgeText: '#1E6B3B',
-        hoverAccent: '#E6B422',
+        hoverAccent: '#B8860B',
         asideBg: '#1E6B3B',
-        asideBorder: '#E6B422',
+        asideBorder: '#B8860B',
         titleColor: '#1E6B3B',
-        badgeBg: '#E6B422',
+        badgeBg: '#B8860B',
         statusDot: '#1E6B3B',
         subtitleTag: 'Admin',
       }
@@ -202,10 +204,13 @@ const AdminShell: React.FC<AdminShellProps> = ({
             <div className={fullWidth ? '' : 'mx-auto max-w-[1120px]'}>
               {!hidePageHeader ? (
                 <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
-                  <div>
+                  <div className="page-title-container">
                     <p className="eyebrow-label" style={{ color: palette.titleColor }}>{resolvedWorkspaceLabel}</p>
-                    <h1 className="display-title mt-3" style={{ color: palette.titleColor }}>{title}</h1>
-                    <p className="mt-2 text-base text-[#333333] sm:text-lg">{subtitle}</p>
+                    <h1 className="page-title mt-3">
+                      {titleIcon ? <span className="page-title-icon">{titleIcon}</span> : null}
+                      <span>{title}</span>
+                    </h1>
+                    <p className="page-subtitle">{subtitle}</p>
                   </div>
                   {headerAction}
                 </div>

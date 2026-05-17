@@ -400,6 +400,9 @@ export const arAPI = {
       resolved_at: t.resolved_at || null,
       preview_text: t.preview_text || null,
       student_identifier: t.student_identifier || null,
+      assignment_area: t.assignment_area ?? null,
+      assignment_area_confidence: t.assignment_area_confidence ?? null,
+      assignment_area_reason: t.assignment_area_reason ?? null,
     }))
   },
   getTicketConversation: async (ticketId: number) => {
@@ -453,6 +456,9 @@ export const adminAPI = {
       recommendation_score: t.recommendation_score ?? null,
       recommendation_reason: t.recommendation_reason ?? null,
       recommendation_created_at: t.recommendation_created_at ?? null,
+      assignment_area: t.assignment_area ?? null,
+      assignment_area_confidence: t.assignment_area_confidence ?? null,
+      assignment_area_reason: t.assignment_area_reason ?? null,
       auto_assigned: Boolean(t.auto_assigned),
       assignment_reviewed: Boolean(t.assignment_reviewed),
       assigned_to: t.assigned_to ?? t.assigned_officer_id ?? t.ar_assigned_id ?? null,
@@ -498,14 +504,63 @@ export const adminAPI = {
       name: u.name,
       created_at: u.created_at,
       last_active_at: u.last_active_at ?? null,
+      assignment_areas: Array.isArray(u.assignment_areas) ? u.assignment_areas : [],
+      max_concurrent_load: u.max_concurrent_load ?? null,
+      is_available: typeof u.is_available === 'boolean' ? u.is_available : true,
+      priority_weight: typeof u.priority_weight === 'number' ? u.priority_weight : 1,
     }))
   },
-  createUser: async (username: string, password: string, role: User['role']) => {
-    const response = await api.post('/api/admin/users', { username, password, role })
+  createUser: async (
+    username: string,
+    password: string,
+    role: User['role'],
+    assignmentProfile?: {
+      assignment_areas?: string[]
+      max_concurrent_load?: number | null
+      is_available?: boolean
+      priority_weight?: number
+    },
+  ) => {
+    const response = await api.post('/api/admin/users', {
+      username,
+      password,
+      role,
+      assignment_areas: assignmentProfile?.assignment_areas,
+      max_concurrent_load: assignmentProfile?.max_concurrent_load ?? undefined,
+      is_available: assignmentProfile?.is_available ?? true,
+      priority_weight: assignmentProfile?.priority_weight ?? 1,
+    })
     return response.data
   },
-  updateUserRole: async (userId: number, role: User['role']) => {
-    const response = await api.put(`/api/admin/users/${userId}/role`, { role })
+  updateUserRole: async (
+    userId: number,
+    role: User['role'],
+    assignmentProfile?: {
+      assignment_areas?: string[]
+      max_concurrent_load?: number | null
+      is_available?: boolean
+      priority_weight?: number
+    },
+  ) => {
+    const response = await api.put(`/api/admin/users/${userId}/role`, {
+      role,
+      assignment_areas: assignmentProfile?.assignment_areas,
+      max_concurrent_load: assignmentProfile?.max_concurrent_load ?? undefined,
+      is_available: assignmentProfile?.is_available ?? true,
+      priority_weight: assignmentProfile?.priority_weight ?? 1,
+    })
+    return response.data
+  },
+  updateUserAssignmentProfile: async (
+    userId: number,
+    profile: {
+      assignment_areas: string[]
+      max_concurrent_load?: number | null
+      is_available: boolean
+      priority_weight: number
+    },
+  ) => {
+    const response = await api.put(`/api/admin/users/${userId}/assignment-profile`, profile)
     return response.data
   },
   deleteUser: async (userId: number, password: string) => {

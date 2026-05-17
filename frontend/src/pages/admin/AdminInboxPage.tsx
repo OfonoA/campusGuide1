@@ -5,7 +5,7 @@ import AdminShell from '../../components/admin/AdminShell'
 import AttachmentList from '../../components/chat/AttachmentList'
 import FeedbackToastStack from '../../components/feedback/FeedbackToastStack'
 import { useFeedbackToasts } from '../../hooks/useFeedbackToasts'
-import { Ban, CheckSquare, Clock3, Filter, MessageSquare, Search, TrendingUp, X } from 'lucide-react'
+import { Ban, CheckSquare, Clock3, Filter, MessageSquare, Search, Ticket as TicketIcon, TrendingUp, X } from 'lucide-react'
 import { shortTicketReference } from '../../utils/tickets'
 import { getErrorDetail } from '../../utils/errors'
 
@@ -31,6 +31,13 @@ type AssignmentMode = 'recommend' | 'auto_review' | 'auto_assign'
 const panelClass = 'overflow-hidden rounded-[8px] border border-slate-200 bg-white shadow-[0_2px_6px_rgba(0,0,0,0.05)]'
 const panelHeaderClass = 'flex flex-col items-stretch justify-between gap-4 px-5 py-5 sm:px-6 lg:flex-row lg:items-center lg:gap-5'
 const modalShellClass = 'w-full overflow-hidden border-t-4 border-t-[#1E6B3B] bg-white shadow-[0_2px_6px_rgba(0,0,0,0.05)] sm:max-w-5xl sm:rounded-[8px]'
+const routingAreaLabels: Record<string, string> = {
+  admissions_records_alumni_engagement: 'Admissions, Records & Alumni Engagement',
+  documents: 'Documents',
+  results: 'Results',
+  teaching_and_learning: 'Teaching and Learning',
+  general: 'General',
+}
 
 const AdminInboxPage: React.FC = () => {
   const [tickets, setTickets] = useState<AdminTicket[]>([])
@@ -50,6 +57,7 @@ const AdminInboxPage: React.FC = () => {
   const [assignmentMode, setAssignmentMode] = useState<AssignmentMode>('recommend')
   const [isSavingAssignmentMode, setIsSavingAssignmentMode] = useState(false)
   const [isReviewingAssignmentId, setIsReviewingAssignmentId] = useState<number | null>(null)
+  const [routingInsightTicket, setRoutingInsightTicket] = useState<AdminTicket | null>(null)
   const pageSize = 10
   const { toasts, dismissToast, showSuccess, showError } = useFeedbackToasts()
 
@@ -123,6 +131,14 @@ const AdminInboxPage: React.FC = () => {
   const closeConversation = () => {
     setSelectedTicket(null)
     setMessages([])
+  }
+
+  const openRoutingInsight = (ticket: AdminTicket) => {
+    setRoutingInsightTicket(ticket)
+  }
+
+  const closeRoutingInsight = () => {
+    setRoutingInsightTicket(null)
   }
 
   const handleResolveFalseTicket = async (ticket: AdminTicket) => {
@@ -317,6 +333,51 @@ const AdminInboxPage: React.FC = () => {
       minute: '2-digit',
     })
 
+  const getAssignmentAreaLabel = (area?: string | null) =>
+    area ? routingAreaLabels[area] || area.replace(/_/g, ' ') : 'General'
+
+  const getRecommendationCardSummary = (ticket: AdminTicket) => {
+    if (ticket.assignment_area) {
+      return `Area: ${getAssignmentAreaLabel(ticket.assignment_area)}`
+    }
+    return 'Why this assignment'
+  }
+
+  const getClassificationExplanation = (ticket: AdminTicket) => {
+    const area = getAssignmentAreaLabel(ticket.assignment_area)
+    const reason = (ticket.assignment_area_reason || '').trim()
+
+    if (!reason) {
+      return `This ticket was categorized under ${area}.`
+    }
+
+    if (ticket.assignment_area === 'general') {
+      return `This ticket was categorized under General because no single specialist area was clearly dominant in the conversation.`
+    }
+
+    return `This ticket was categorized under ${area} because ${reason.charAt(0).toLowerCase()}${reason.slice(1)}`
+  }
+
+  const getRecommendationExplanation = (ticket: AdminTicket) => {
+    const officer = ticket.recommended_officer_username || 'the recommended officer'
+    const area = getAssignmentAreaLabel(ticket.assignment_area)
+    const reason = (ticket.recommendation_reason || '').toLowerCase()
+
+    if (reason.includes('fell back to general-capable officers')) {
+      return `${officer} was recommended because this ticket was routed to ${area} and no specialist was available, so the system used a General-capable officer.`
+    }
+
+    if (reason.includes('fell back to all available ar staff')) {
+      return `${officer} was recommended because this ticket was routed to ${area} and no area-matched officer was available, so the system used the next available AR staff member.`
+    }
+
+    if (ticket.assignment_area) {
+      return `${officer} was recommended because the ticket was routed to ${area} and the officer matched the assignment area.`
+    }
+
+    return `${officer} was recommended by the current assignment rules.`
+  }
+
   const cards = [
     { label: 'Open Tickets', value: metrics.open, icon: TrendingUp, accent: 'border-l-[4px] border-[#1E6B3B]', meta: '', metaClass: 'text-slate-400' },
     { label: 'Assigned Tickets', value: metrics.assigned, icon: CheckSquare, accent: '', meta: '', metaClass: 'text-slate-400' },
@@ -335,12 +396,16 @@ const AdminInboxPage: React.FC = () => {
     <AdminShell
       title="Admin Operations"
       subtitle="Ticket assignment and support oversight"
-      theme="staff"
+      titleIcon={<TicketIcon />}
       workspaceLabel="ADMIN WORKSPACE"
       fullWidth
     >
       <FeedbackToastStack toasts={toasts} onDismiss={dismissToast} />
       <div className="space-y-5">
+        <h2 className="section-heading">
+          Operations Snapshot
+          <span className="section-subtitle">Watch the live queue before assigning, reviewing, or closing tickets.</span>
+        </h2>
         <div className="grid gap-4 xl:grid-cols-4">
           {cards.map((card) => {
             const Icon = card.icon
@@ -371,20 +436,24 @@ const AdminInboxPage: React.FC = () => {
         <section className={panelClass}>
           <div className={panelHeaderClass}>
             <div>
-              <h2 className="text-[1.7rem] font-semibold text-[#1E6B3B]">Ticket Inbox</h2>
+              <h2 className="card-title">
+                <TicketIcon className="h-4 w-4" />
+                Ticket Inbox
+              </h2>
               {isRefreshingTickets ? (
                 <p className="mt-1 text-sm text-slate-500">Refreshing ticket list...</p>
               ) : null}
-              <p className="mt-1 text-sm text-slate-500">
-                Assignment mode:{' '}
-                <span className="font-semibold text-slate-700">
+              <div className="status-heading mt-2">
+                <span className="status-dot-green" />
+                <span>Assignment mode</span>
+                <span className="status-badge">
                   {assignmentMode === 'auto_review'
                     ? 'Auto-Assign + Review'
                     : assignmentMode === 'auto_assign'
                       ? 'Full Auto-Assign'
                       : 'Recommendation Only'}
                 </span>
-              </p>
+              </div>
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
@@ -452,7 +521,7 @@ const AdminInboxPage: React.FC = () => {
             <div>Reference</div>
             <div>Student</div>
             <div>Status</div>
-            <div>Recommendation</div>
+            <div>Assignment Recommendation</div>
             <div>Assigned Officer</div>
             <div>Created</div>
             <div>Resolved</div>
@@ -466,7 +535,7 @@ const AdminInboxPage: React.FC = () => {
           ) : filteredTickets.length === 0 ? (
             <div className="px-7 py-8 text-sm text-slate-500">No tickets found.</div>
           ) : (
-            paginatedTickets.map((ticket, idx) => (
+            paginatedTickets.map((ticket) => (
               <React.Fragment key={ticket.id}>
                 <div
                   className={`hidden grid-cols-[1fr_1.2fr_0.9fr_1.35fr_1.2fr_0.9fr_0.9fr_1fr] gap-5 border-b border-slate-100 px-7 py-6 lg:grid ${
@@ -509,23 +578,21 @@ const AdminInboxPage: React.FC = () => {
                   <div>
                     {ticket.recommended_officer_username ? (
                       <div className="rounded-[8px] border border-[#D4AF37]/20 bg-[#FEF9E6] p-3 shadow-[0_2px_6px_rgba(0,0,0,0.05)]">
-                        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#1E6B3B]">
-                          System Recommendation
-                        </p>
                         <div className="mt-2 space-y-2">
                           <p className="text-sm font-semibold text-slate-900">
                             {ticket.recommended_officer_username}
                           </p>
                           <p className="text-xs text-slate-500">
-                            {ticket.recommendation_reason || 'Recommendation available'}
+                            {getRecommendationCardSummary(ticket)}
                           </p>
-                          {typeof ticket.recommendation_score === 'number' ? (
-                            <p className="text-[11px] font-medium text-[#D4AF37]">
-                              Active load {ticket.recommendation_score.toFixed(0)}
-                            </p>
-                          ) : null}
                         </div>
                         <div className="mt-3 flex flex-wrap gap-2">
+                          <button
+                            onClick={() => openRoutingInsight(ticket)}
+                            className="rounded-[8px] border border-[#1E6B3B]/15 bg-white px-3 py-2 text-xs font-semibold text-[#1E6B3B] transition hover:bg-[#F4FAF6]"
+                          >
+                            View Details
+                          </button>
                           {ticket.status === 'open' && ticket.recommended_officer_id ? (
                             <button
                               onClick={() => void handleAcceptRecommendation(ticket)}
@@ -693,16 +760,17 @@ const AdminInboxPage: React.FC = () => {
                           <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#1E6B3B]">
                             System Recommendation
                           </p>
-                          <div className="mt-2 space-y-2">
-                            <p className="font-medium text-slate-900">{ticket.recommended_officer_username}</p>
-                            <p className="text-xs text-slate-500">{ticket.recommendation_reason || 'Recommendation available'}</p>
-                            {typeof ticket.recommendation_score === 'number' ? (
-                              <p className="text-xs font-medium text-[#D4AF37]">
-                                Active load {ticket.recommendation_score.toFixed(0)}
-                              </p>
-                            ) : null}
-                          </div>
+                        <div className="mt-2 space-y-2">
+                          <p className="font-medium text-slate-900">{ticket.recommended_officer_username}</p>
+                          <p className="text-xs text-slate-500">{getRecommendationCardSummary(ticket)}</p>
+                        </div>
                           <div className="mt-3 flex flex-wrap gap-2">
+                            <button
+                              onClick={() => openRoutingInsight(ticket)}
+                              className="rounded-[8px] border border-[#1E6B3B]/15 bg-white px-3 py-2 text-xs font-semibold text-[#1E6B3B] transition hover:bg-[#F4FAF6]"
+                            >
+                              View Details
+                            </button>
                             {ticket.status === 'open' && ticket.recommended_officer_id ? (
                               <button
                                 onClick={() => void handleAcceptRecommendation(ticket)}
@@ -812,6 +880,15 @@ const AdminInboxPage: React.FC = () => {
                   {selectedTicket.ar_assigned_username ? ` • ${selectedTicket.ar_assigned_username}` : ''}
                 </p>
                 <div className="mt-3 flex flex-wrap items-center gap-2">
+                  {selectedTicket.assignment_area ? (
+                    <button
+                      type="button"
+                      onClick={() => openRoutingInsight(selectedTicket)}
+                      className="inline-flex rounded-md bg-[#EAF4EE] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-[#1E6B3B] transition hover:bg-[#DCEEE3]"
+                    >
+                      Area: {getAssignmentAreaLabel(selectedTicket.assignment_area)}
+                    </button>
+                  ) : null}
                   <span className={`inline-flex rounded-md px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] shadow-sm ${statusTone(selectedTicket.status)}`}>
                     {selectedTicket.status.replace('_', ' ')}
                   </span>
@@ -933,6 +1010,72 @@ const AdminInboxPage: React.FC = () => {
           </div>
         </div>
       )}
+      {routingInsightTicket ? (
+        <div className="fixed inset-0 z-[60] flex items-end justify-center bg-slate-950/45 px-0 py-0 backdrop-blur-sm sm:items-center sm:px-4 sm:py-6">
+          <div className="w-full overflow-hidden border-t-4 border-t-[#D4AF37] bg-white shadow-[0_18px_60px_rgba(15,23,42,0.22)] sm:max-w-2xl sm:rounded-[14px]">
+            <div className="flex items-start justify-between border-b border-slate-200 px-5 py-5 sm:px-6">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#1E6B3B]">
+                  Assignment Details
+                </p>
+                <h3 className="mt-2 text-[1.5rem] font-semibold text-slate-950">
+                  {shortTicketReference(routingInsightTicket.reference_code)}
+                </h3>
+                <p className="mt-1 text-sm text-slate-500">
+                  Review how the ticket was categorized and why this officer was recommended.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={closeRoutingInsight}
+                className="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                aria-label="Close routing insight"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="space-y-5 bg-[#F8FAFB] px-5 py-5 sm:px-6 sm:py-6">
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="rounded-[12px] border border-slate-200 bg-white p-4 shadow-[0_2px_8px_rgba(15,23,42,0.04)]">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">Assignment Area</p>
+                  <p className="mt-3 text-base font-semibold text-[#1E6B3B]">
+                    {getAssignmentAreaLabel(routingInsightTicket.assignment_area)}
+                  </p>
+                </div>
+                <div className="rounded-[12px] border border-slate-200 bg-white p-4 shadow-[0_2px_8px_rgba(15,23,42,0.04)]">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">Confidence</p>
+                  <p className="mt-3 text-base font-semibold text-slate-900">
+                    {typeof routingInsightTicket.assignment_area_confidence === 'number'
+                      ? `${Math.round(routingInsightTicket.assignment_area_confidence * 100)}%`
+                      : 'Not recorded'}
+                  </p>
+                </div>
+                <div className="rounded-[12px] border border-slate-200 bg-white p-4 shadow-[0_2px_8px_rgba(15,23,42,0.04)]">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">Recommended Officer</p>
+                  <p className="mt-3 text-base font-semibold text-slate-900">
+                    {routingInsightTicket.recommended_officer_username || 'No recommendation'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="rounded-[12px] border border-[#D4AF37]/25 bg-[#FFFCF2] p-5 shadow-[0_2px_8px_rgba(15,23,42,0.04)]">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#1E6B3B]">Classification Reason</p>
+                <p className="mt-3 text-sm leading-7 text-slate-700">
+                  {getClassificationExplanation(routingInsightTicket)}
+                </p>
+              </div>
+
+              <div className="rounded-[12px] border border-slate-200 bg-white p-5 shadow-[0_2px_8px_rgba(15,23,42,0.04)]">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#1E6B3B]">Why This Officer</p>
+                <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-slate-700">
+                  {getRecommendationExplanation(routingInsightTicket)}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </AdminShell>
   )
 }

@@ -31,6 +31,10 @@ PROFILE_BOILERPLATE_TERMS = {
     "support must website",
     "must | directory",
 }
+EMAIL_PLACEHOLDER_PATTERN = re.compile(
+    r"\[\s*email\s*(?:@|&#64;)\s*protected\s*\]",
+    re.IGNORECASE,
+)
 
 
 @dataclass
@@ -77,13 +81,13 @@ def _replace_cloudflare_protected_emails(html: str) -> str:
 
     for anchor in soup.find_all("a", href=True):
         href = anchor.get("href", "")
-        match = re.search(r"/cdn-cgi/l/email-protection#([0-9a-fA-F]+)", href)
+        match = re.search(r"/cdn-cgi/l/email-protection#([0-9a-fA-F]+)", href, flags=re.IGNORECASE)
         if not match:
             continue
         decoded = _decode_cloudflare_email(match.group(1))
         if decoded:
             anchor["href"] = f"mailto:{decoded}"
-            if not anchor.get_text(strip=True) or "[email protected]" in anchor.get_text(strip=True).lower():
+            if not anchor.get_text(strip=True) or EMAIL_PLACEHOLDER_PATTERN.search(anchor.get_text(" ", strip=True)):
                 anchor.string = decoded
 
     return str(soup)

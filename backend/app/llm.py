@@ -1,5 +1,6 @@
 import os
 import json
+import re
 from dotenv import load_dotenv
 from difflib import SequenceMatcher
 from time import perf_counter
@@ -71,6 +72,9 @@ Rules for JSON fields:
 - If "can_answer" is true, include at least one citation.
 - If "needs_clarification" is true, include any chunk numbers that show why clarification is needed, otherwise use [].
 - If neither "can_answer" nor "needs_clarification" is true, use citations only for chunks that directly support the explanation of why you cannot answer.
+- Interpret relative time phrases such as "this year", "current semester", "latest", or "recent" against the current date provided in the user message.
+- If the question is broad or ambiguous and the retrieved material points to multiple possible scopes, ask one focused clarifying question instead of defaulting to no-answer.
+- If the retrieved material only supports part of what the user asked for, do not present it as the full answer. Either answer with that limitation stated clearly or ask one clarifying question if scope is the real blocker.
 """
 
 NO_ANSWER_MESSAGE = (
@@ -83,6 +87,10 @@ NO_ANSWER_PREFIXES = (
     "i do not have enough reliable information",
     "please rephrase your question",
     "ask to talk to an officer",
+)
+EMAIL_PLACEHOLDER_PATTERN = re.compile(
+    r"\[\s*email\s*(?:@|&#64;)\s*protected\s*\]",
+    re.IGNORECASE,
 )
 
 
@@ -182,6 +190,9 @@ def _build_user_prompt(query: str, context: List[str], chat_history: List[tuple[
     return f"""Previous Conversation (may contain mistakes and is not authoritative):
 {_format_chat_history(chat_history)}
 
+Current Date:
+2026-05-10
+
 Current Context:
 {_format_context_chunks(context)}
 
@@ -269,11 +280,12 @@ def _build_final_result(
     citations: Optional[List[int]] = None,
 ) -> dict[str, Any]:
     normalized_citations = list(citations or [])
+    cleaned_answer = EMAIL_PLACEHOLDER_PATTERN.sub("email address protected on the source page", str(answer or ""))
 
     if needs_clarification:
         return {
             "found_answer": True,
-            "answer": answer or "Could you clarify what specific information you need?",
+            "answer": cleaned_answer or "Could you clarify what specific information you need?",
             "reason": "clarification_needed",
             "citations": normalized_citations,
         }
@@ -281,12 +293,12 @@ def _build_final_result(
     if can_answer:
         return {
             "found_answer": True,
-            "answer": answer,
+            "answer": cleaned_answer,
             "reason": "answered",
             "citations": normalized_citations,
         }
 
-    explanation = str(answer or "").strip()
+    explanation = cleaned_answer.strip()
     if explanation:
         lowered = explanation.lower()
         if any(prefix in lowered for prefix in NO_ANSWER_PREFIXES):
@@ -373,24 +385,6 @@ def _rerank_chunks_for_query(query: str, scored_chunks: List[tuple[str, float, d
     return [item for _priority, item in ranked]
 
 
-def _has_payment_evidence(scored_chunks: List[tuple[str, float, dict]]) -> bool:
-    evidence_terms = (
-        "payment reference number",
-        "prn",
-        "uganda revenue authority",
-        "ura",
-        "commercial bank",
-        "bank",
-        "tuition",
-        "functional fees",
-    )
-    for chunk, _score, _metadata in scored_chunks[:3]:
-        text = (chunk or "").lower()
-        if any(term in text for term in evidence_terms):
-            return True
-    return False
-
-
 def generate_response(
     query: str,
     context: List[str],
@@ -423,26 +417,6 @@ def generate_response(
     except Exception as e:
         print(f"Error generating response: {e}")
         return {}
-
-
-def _is_reliable_retrieval(scored_chunks: List[tuple[str, float, dict]]) -> bool:
-    """Heuristic confidence gate from retrieval scores."""
-    if not scored_chunks:
-        return False
-
-    vector_scores = [
-        float(metadata["_vector_score"])
-        for _chunk, score, metadata in scored_chunks
-        if isinstance(metadata, dict) and metadata.get("_vector_score") is not None
-    ]
-    if vector_scores:
-        top_score = min(vector_scores)
-    else:
-        top_score = scored_chunks[0][1]
-    if top_score > 1.15:
-        return False
-
-    return True
 
 
 def _prepare_context(scored_chunks: List[tuple[str, float, dict]], max_chunks: int = 7, max_chars: int = 6000) -> List[str]:
@@ -557,22 +531,6 @@ def ask_campusguide(query: str, chat_history: List[tuple[str, str]] = None) -> d
     live_docs = get_live_context(query)
     scored_chunks = _merge_live_chunks(scored_chunks, live_docs)
     scored_chunks = _rerank_chunks_for_query(query, scored_chunks)
-
-    if not _is_reliable_retrieval(scored_chunks):
-        return _build_final_result(
-            can_answer=False,
-            needs_clarification=False,
-            answer="",
-            citations=[],
-        )
-
-    if _is_fee_payment_query(query) and not _has_payment_evidence(scored_chunks):
-        return _build_final_result(
-            can_answer=False,
-            needs_clarification=False,
-            answer="",
-            citations=[],
-        )
 
     _log_selected_context(scored_chunks, max_chunks=7)
     context = _prepare_context(scored_chunks, max_chunks=7, max_chars=6000)
